@@ -9,9 +9,9 @@
 .text
 
     # Multiboot header (required for GRUB to boot us)
-    .long MULTIBOOT_HEADER_MAGIC
-    .long MULTIBOOT_HEADER_FLAGS
-    .long -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
+    .long MULTIBOOT_HEADER_MAGIC 
+    .long MULTIBOOT_HEADER_FLAGS # flags
+    .long -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS) #checksum
 
 # Entrypoint to the kernel
 .globl start, _start
@@ -25,7 +25,7 @@ _start:
 
 continue:
     # Load the GDT
-
+    lgdt gdt_desc #IDK YET? 48 BIT THING x86_desc
     # Load CS with the new descriptor value
     ljmp    $KERNEL_CS, $keep_going
 
@@ -41,6 +41,9 @@ keep_going:
     movw    %cx, %fs
     movw    %cx, %gs
 
+
+    movl MULTIBOOT_BOOTHEADER_MAGIC, %eax # do i need to do this?
+    movl $12(MULTIBOOT_HEADER_FLAGS), %ebx # RAAHHHHHHHHHHHHHHHHHHHH bit offset 12 of header
     # Push the parameters that entry() expects (see kernel.c):
     # eax = multiboot magic
     # ebx = address of multiboot info struct
