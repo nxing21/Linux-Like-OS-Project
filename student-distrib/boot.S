@@ -25,8 +25,9 @@ _start:
 
 continue:
     # Load the GDT
-    lgdt gdt_desc #IDK YET? 48 BIT THING x86_desc
-    # Load CS with the new descriptor value
+    lgdt gdt_desc 
+    lidt idt_desc_ptr
+
     ljmp    $KERNEL_CS, $keep_going
 
 keep_going:
@@ -42,8 +43,6 @@ keep_going:
     movw    %cx, %gs
 
 
-    movl MULTIBOOT_BOOTHEADER_MAGIC, %eax # do i need to do this?
-    movl $12(MULTIBOOT_HEADER_FLAGS), %ebx # RAAHHHHHHHHHHHHHHHHHHHH bit offset 12 of header
     # Push the parameters that entry() expects (see kernel.c):
     # eax = multiboot magic
     # ebx = address of multiboot info struct

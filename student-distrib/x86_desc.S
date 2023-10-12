@@ -74,6 +74,11 @@ gdt_ptr:
     # Set up an entry for user DS
     .quad 0x00CFF2000000FFFF
 
+
+gdt_desc:
+    .word gdt_bottom - gdt - 1
+    .long gdt
+
     # Set up an entry for TSS
 tss_desc_ptr:
     .quad 0
