@@ -61,6 +61,12 @@ _gdt:
     # |                                    |                                 |
     # |----------------------------------------------------------------------|
 
+.align 4
+    .word 0 # Padding
+gdt_desc:
+    .word gdt_bottom - gdt - 1
+    .long gdt
+
 gdt_ptr:
     # Set up an entry for kernel CS
     .quad 0x00CF9A000000FFFF
@@ -73,11 +79,8 @@ gdt_ptr:
 
     # Set up an entry for user DS
     .quad 0x00CFF2000000FFFF
+gdt_bottom:
 
-
-gdt_desc:
-    .word gdt_bottom - gdt - 1
-    .long gdt
 
     # Set up an entry for TSS
 tss_desc_ptr:
@@ -87,7 +90,7 @@ tss_desc_ptr:
 ldt_desc_ptr:
     .quad 0
 
-gdt_bottom:
+
 
     .align 16
 ldt:
