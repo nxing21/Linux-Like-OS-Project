@@ -15,12 +15,12 @@
 /* Initialization control words to init each PIC.
  * See the Intel manuals for details on the meaning
  * of each word */
-#define ICW1                0x11
-#define ICW2_MASTER         0x20
-#define ICW2_SLAVE          0x28
-#define ICW3_MASTER         0x04
-#define ICW3_SLAVE          0x02
-#define ICW4                0x01
+#define ICW1                0x11 // Initialization keyword
+#define ICW2_MASTER         0x20 // ICW2: Stores information regarding
+#define ICW2_SLAVE          0x28 // the interrupt vector address
+#define ICW3_MASTER         0x04 // ICW3: Used when there is more than one
+#define ICW3_SLAVE          0x02 // PIC present, loads an 8-bit slave register
+#define ICW4                0x01 // 8086 operations are performed
 
 /* End-of-interrupt byte.  This gets OR'd with
  * the interrupt number and sent out to the PIC

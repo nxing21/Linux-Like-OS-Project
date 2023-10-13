@@ -9,6 +9,9 @@
 #include "debug.h"
 #include "tests.h"
 
+// MP 3.1: Added headers
+#include "init_devices.h"
+
 #define RUN_TESTS
 
 /* Macros. */
@@ -135,12 +138,17 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
+    // MP 3.1: How to mask all the interrupts 
 
     /* Init the PIC */
     i8259_init();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
+
+    /* Init the keyboard*/
+    init_keyboard();
+    /* Init the RTC */
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your

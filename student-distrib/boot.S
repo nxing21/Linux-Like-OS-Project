@@ -24,8 +24,8 @@ _start:
     jmp     continue
 
 continue:
-    # Load the GDT
-
+    # MP 3.1: Load the GDT
+    lgdt    gdt_desc
     # Load CS with the new descriptor value
     ljmp    $KERNEL_CS, $keep_going
 
@@ -44,6 +44,11 @@ keep_going:
     # Push the parameters that entry() expects (see kernel.c):
     # eax = multiboot magic
     # ebx = address of multiboot info struct
+    
+    ; # MP 3.1: maybe I am adding the necessary values?
+    ; movl multiboot_info_t, %ebx
+    ; movl MULTIBOOT_HEADER_MAGIC, %eax # adds the multiboot magic?
+    
     pushl   %ebx
     pushl   %eax
 
