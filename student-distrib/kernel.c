@@ -138,8 +138,9 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
-    // MP 3.1: How to mask all the interrupts 
-
+    
+    /* Mask the interrupts */
+    cli();
     /* Init the PIC */
     i8259_init();
 
@@ -149,13 +150,14 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the keyboard*/
     init_keyboard();
     /* Init the RTC */
+    init_RTC();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-    /*printf("Enabling Interrupts\n");
-    sti();*/
+    printf("Enabling Interrupts\n");
+    sti();
 
 #ifdef RUN_TESTS
     /* Run tests */

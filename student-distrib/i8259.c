@@ -78,3 +78,27 @@ void send_eoi(uint32_t irq_num) {
     }
     outb(EOI, MASTER_8259_PORT);
 }
+
+/* Helper fucntion to get info from Interrupt Status Registers 
+   The variable "ocw3" is the command word sent to the PICs that allows
+   us to read the data from certain registers.
+*/
+static uint16_t pic_get_int_reg(int ocw3){
+    outb(ocw3, MASTER_8259_PORT);
+    outb(ocw3, SLAVE_8259_PORT);
+
+    return (inb(SLAVE_8259_PORT) << 8 | inb(MASTER_8259_PORT));
+    /* Bits 0-7 are data from Master Port. Bits 8-15 are data from the Slave Port*/
+    /* Note that bit 2 will always be 1 whenever bits 8-15 are set due to the
+    cascaded nature of the PICs*/
+}
+
+/* Returns the combined value of the cascaded PICs irq request registers*/
+uint16_t pic_get_irr(void){
+    return pic_get_int_reg(PIC_READ_IRR);
+}
+
+/* Returns the combined value of the cascaded PICs in-serive registers*/
+uint16_t pic_get_isr(void){
+    return pic_get_int_reg(PIC_READ_ISR);
+}
