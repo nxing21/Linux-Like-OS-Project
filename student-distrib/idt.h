@@ -12,9 +12,9 @@ void build_idt();
 
 /*exception handler function pointer*/
 //https://stackoverflow.com/questions/5309859/how-to-define-an-array-of-functions-in-c
-typedef void (*exception_handler_t)();  //void just means the type is not defined, () means args undefined
-exception_handler_t exception_handler[256] = {&divide_error, &debug, &nmi, &breakpoint, &overflow, &bound_range_exceeded, &invalid_opcode, &device_not_available, &double_fault, &coprocessor_segment_overrun, 
-&invalid_tss, &segment_not_present, &stack_fault, &general_protection, &page_fault, NULL, &x87_fp_error, &alignment_check, &machin_check, &simd_fp_error};
+// typedef void (*exception_handler_t)();  //void just means the type is not defined, () means args undefined
+// exception_handler_t exception_handler[256] = {&divide_error, &debug, &nmi, &breakpoint, &overflow, &bound_range_exceeded, &invalid_opcode, &device_not_available, &double_fault, &coprocessor_segment_overrun, 
+// &invalid_tss, &segment_not_present, &stack_fault, &general_protection, &page_fault, NULL, &x87_fp_error, &alignment_check, &machin_check, &simd_fp_error};
 
 
 

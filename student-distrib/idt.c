@@ -18,22 +18,41 @@ void idt_init() {
 void build_idt() {
     int i;
 
-    for (i = 0; i < IDT_LENGTH; i++) { //exceptions
-        // idt[i].offset_15_00 = ?
+    for (i = 0; i < NUM_VEC; i++) { //exceptions
         idt[i].seg_selector = KERNEL_CS;
         idt[i].reserved4 = 0;
         idt[i].reserved3 = 0;
         idt[i].reserved2 = 1;
         idt[i].reserved1 = 1;
-        idt[i].size = 1; // size of gate: 1 = 32bits, 0 = 16bits
+        idt[i].size = 1;
         idt[i].reserved0 = 0;
-        idt[i].dpl = 0; // kernel level, descriptor privilege level
-        idt[i].present = 1; // segment present flag
-        // idt[i].offset_31_16 = ?
-
-        // for offset, we need to call SET_IDT_ENTRY
-        SET_IDT_ENTRY(idt[i], exception_handler[i]);
+        idt[i].dpl = 0;
+        idt[i].present = 0;
+        if (i < IDT_LENGTH) {
+            idt[i].present = 1;
+        }
     }
+
+    // for offset, we need to call SET_IDT_ENTRY
+    SET_IDT_ENTRY(idt[0], divide_error);
+    SET_IDT_ENTRY(idt[1], debug);
+    SET_IDT_ENTRY(idt[2], nmi);
+    SET_IDT_ENTRY(idt[3], breakpoint);
+    SET_IDT_ENTRY(idt[4], overflow);
+    SET_IDT_ENTRY(idt[5], bound_range_exceeded);
+    SET_IDT_ENTRY(idt[6], invalid_opcode);
+    SET_IDT_ENTRY(idt[7], device_not_available);
+    SET_IDT_ENTRY(idt[8], double_fault);
+    SET_IDT_ENTRY(idt[9], coprocessor_segment_overrun);
+    SET_IDT_ENTRY(idt[10], invalid_tss);
+    SET_IDT_ENTRY(idt[11], segment_not_present);
+    SET_IDT_ENTRY(idt[12], stack_fault);
+    SET_IDT_ENTRY(idt[13], general_protection);
+    SET_IDT_ENTRY(idt[14], page_fault);
+    SET_IDT_ENTRY(idt[16], x87_fp_error);
+    SET_IDT_ENTRY(idt[17], alignment_check);
+    SET_IDT_ENTRY(idt[18], machine_check);
+    SET_IDT_ENTRY(idt[19], simd_fp_error);
         //128 = x80 which is int for system calls 
         // idt[128].seg_selector = KERNEL_CS;
         // idt[128].reserved4 = 0;
@@ -45,7 +64,7 @@ void build_idt() {
         // idt[128].dpl = 0; // kernel level, descriptor privilege level
         // idt[128].present = 1; // segment present flag
 
-        SET_IDT_ENTRY(idt[128], &system_call_handler);
+        // SET_IDT_ENTRY(idt[128], &system_call_handler);
 
 
 
