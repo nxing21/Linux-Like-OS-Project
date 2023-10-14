@@ -37,7 +37,7 @@ void build_idt() {
         //128 = x80 which is int for system calls 
         idt[128].seg_selector = KERNEL_CS;
         idt[128].reserved4 = 0;
-        idt[128].reserved3 = 0;
+        idt[128].reserved3 = 1; //changed this bc it uses trap gate?
         idt[128].reserved2 = 1;
         idt[128].reserved1 = 1;
         idt[128].size = 1; // size of gate: 1 = 32bits, 0 = 16bits
