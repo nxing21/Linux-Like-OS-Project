@@ -45,6 +45,14 @@ int idt_test(){
 	return result;
 }
 
+int divide_error_test(){
+	TEST_HEADER;
+	int a;
+	a = 2 / 0;
+	return FAIL;
+}
+
+
 // add more tests here
 
 /* Checkpoint 2 tests */
@@ -55,6 +63,7 @@ int idt_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
+	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
+	TEST_OUTPUT("divide_error_test", divide_error_test());
 }
