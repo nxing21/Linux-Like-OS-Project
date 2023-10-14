@@ -19,4 +19,4 @@
 
 #define READ_PS2_OUTPUT 0xD0
 
-extern int init_keyboard(void);
+extern int init_ps2devices(void);

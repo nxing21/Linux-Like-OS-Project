@@ -3,18 +3,19 @@
 #include "i8259.h"
 
 /* Mapping the IRQs to devices */
-#define RTC_IRQ  8
 #define KEYBOARD_IRQ  1
 
 
 // Function to initialize the keyboard
-int init_keyboard(void){
+int init_ps2devices(void){
     uint8_t garbage;
     uint8_t config_byte;
     uint8_t test_byte; /* Used for testing purposes */
-    int timer = 0;
+    int timer;
     uint8_t status_byte;
     int poll_input_status = 1;
+
+    timer = 0;
 
     /* Disable the devices */
     outb(DISABLE_PS2_PORT1, PS2_COMMAND_PORT);
@@ -45,14 +46,14 @@ int init_keyboard(void){
     outb(ENABLE_PS2_PORT1, PS2_COMMAND_PORT);
     // outb(ENABLE_PS2_PORT2, PS2_COMMAND_PORT); // Only use if using second PS2 port
 
-    /* Enable IRQs (For now, only using first device IRQ */
+    /* Enable IRQs (For now, only using first device's IRQ) */
     outb(READ_CTR_CONFIG, PS2_COMMAND_PORT);
     config_byte = inb(PS2_DATA_PORT);
     config_byte |= 0x01; // Sets bit 0 to 1, enabling IRQs on first PS/2 port
     outb(WRITE_PS2_DATA, PS2_COMMAND_PORT);
     outb(config_byte, PS2_DATA_PORT);
 
-    /* Reset devices */
+    /* Reset device in first port */
     /* Setting up a polling timer to send data */
     while (poll_input_status == 1){
         if (timer == 100000){
@@ -88,10 +89,3 @@ int keyboard_handler(){
 
 
 }
-
-void init_RTC(){
-    /* Enables IRQ 8 on the PIC */
-    enable_irq(RTC_IRQ)
-
-
-} 
