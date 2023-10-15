@@ -1,10 +1,6 @@
-/* idt.c - Everything to do with the idt
- */
-
 #include "idt.h"
 #include "x86_desc.h"
 #include "lib.h"
-
 
 
 /* Initialize the idt */
