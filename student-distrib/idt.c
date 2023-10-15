@@ -1,8 +1,4 @@
-/* idt.c - Everything to do with the idt
- */
-
 #include "idt.h"
-
 
 /* Initialize the idt */
 void idt_init() {
@@ -125,79 +121,79 @@ void build_idt() {
 // };
 
 void divide_error() {
-    printf("Divide Error Exception");
+    printf("Divide Error Exception\n");
     while(1){};
 }
 void debug() {
-    printf("Debug Exception");
+    printf("Debug Exception\n");
     while(1){};
 }
 void nmi() {
-    printf("NMI Interrupt");
+    printf("NMI Interrupt\n");
     while(1){};
 }
 void breakpoint() {
-    printf("Breakpoint Exception");
+    printf("Breakpoint Exception\n");
     while(1){};
 }
 void overflow() {
-    printf("Overflow Exception");
+    printf("Overflow Exception\n");
     while(1){};
 }
 void bound_range_exceeded() {
-    printf("BOUND Range Exceeded Exception");
+    printf("BOUND Range Exceeded Exception\n");
     while(1){};
 }
 void invalid_opcode() {
-    printf("Invalid Opcode Exception");
+    printf("Invalid Opcode Exception\n");
     while(1){};
 }
 void device_not_available() {
-    printf("Device Not Available Exception");
+    printf("Device Not Available Exception\n");
     while(1){};
 }
 void double_fault() {
-    printf("Double Fault Exception");
+    printf("Double Fault Exception\n");
     while(1){};
 }
 void coprocessor_segment_overrun() {
-    printf("Coprocessor Segment Overrun");
+    printf("Coprocessor Segment Overrun\n");
     while(1){};
 }
 void invalid_tss() {
-    printf("Invalid TSS Exception");
+    printf("Invalid TSS Exception\n");
     while(1){};
 }
 void segment_not_present() {
-    printf("Segment Not Present");
+    printf("Segment Not Present\n");
     while(1){};
 }
 void stack_fault() {
-    printf("Stack Fault Exception");
+    printf("Stack Fault Exception\n");
     while(1){};
 }
 void general_protection() {
-    printf("General Protection Exception");
+    printf("General Protection Exception\n");
     while(1){};
 }
 void page_fault() {
-    printf("Page-Fault Exception");
+    printf("Page-Fault Exception\n");
     while(1){};
 }
 void x87_fp_error() {
-    printf("x87 FPU Floating-Point Error");
+    printf("x87 FPU Floating-Point Error\n");
     while(1){};
 }
 void alignment_check() {
-    printf("Alignment Check Exception");
+    printf("Alignment Check Exception\n");
     while(1){};
 }
 void machine_check() {
-    printf("Machine-Check Exception");
+    printf("Machine-Check Exception\n");
     while(1){};
 }
 void simd_fp_error() {
-    printf("SIMD Floating-Point Exception");
+    printf("SIMD Floating-Point Exception\n");
     while(1){};
 }
 

@@ -1,0 +1,33 @@
+#define ASM     1
+#include "page.h"
+
+.text
+
+.global loadPageDirectory
+.global enablePaging
+
+# https://wiki.osdev.org/Setting_Up_Paging#:~:text=Advanced%20Paging%20Example-,Basic%20Paging,to%20find%20the%20page%20tables.
+
+# places address into CR3
+loadPageDirectory:
+        pushl   %ebp
+        movl    %esp, %ebp
+
+        movl    8(%esp), %eax
+        movl    %eax, %cr3
+
+        leave
+        ret
+
+# enables paging
+enablePaging:
+        pushl   %ebp
+        movl    %esp, %ebp
+
+        movl    %cr0, %eax
+        orl     $0x80000000, %eax
+        movl    %eax, %cr0
+
+        leave
+        ret
+
