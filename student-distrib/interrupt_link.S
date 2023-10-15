@@ -1,9 +1,8 @@
 #define ASM 1
-#include "interrupt_link.h"
 
 #define INTR_LINK(name, func)    \
     .globl name                 ;\
-    name:
+    name:                       ;\
         pushal                  ;\
         pushfl                  ;\
         call func               ;\

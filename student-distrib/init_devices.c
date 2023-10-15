@@ -2,19 +2,16 @@
 #include "init_devices.h"
 #include "i8259.h"
 
-/* Mapping the IRQs to devices */
-#define KEYBOARD_IRQ  1
-
-
 // Function to initialize the keyboard
-int init_ps2devices(void){
+int init_ps2devices(){
     uint8_t garbage;
     uint8_t config_byte;
-    uint8_t test_byte; /* Used for testing purposes */
+    // uint8_t test_byte; /* Used for testing purposes */
     int timer;
     uint8_t status_byte;
-    int poll_input_status = 1;
+    int poll_input_status;
 
+    poll_input_status = 1;
     timer = 0;
 
     /* Disable the devices */
@@ -68,13 +65,13 @@ int init_ps2devices(void){
     /* Enable IRQ 1 in the PIC*/
     enable_irq(KEYBOARD_IRQ);
 
-    return 1; /* Successful initialization */
+    return 1;
 }
 
-int keyboard_handler(){
+void keyboard_handler(){
     /* Check if the bit is masked. If it is, we can't deal with the interrupt
     so we return*/
-    int output_buffer_status = 0;
+    // int output_buffer_status = 0;
     uint8_t response;
     /* Gets the data from the keyboard. For now, just echo the key*/
     // maybe set a while loop to check if the controller sent a response byte
@@ -86,6 +83,7 @@ int keyboard_handler(){
 
     /* Read the data from the response byte from the keyboard */
     response = inb(PS2_DATA_PORT);
-
+    putc(response);
+    send_eoi(KEYBOARD_IRQ);
 
 }
