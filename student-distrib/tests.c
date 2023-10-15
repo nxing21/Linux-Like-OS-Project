@@ -56,11 +56,20 @@ int divide_error_test(){
 
 
 // add more tests here
-int page_fault_test(){
+int page_fault_zero_test(){
 	TEST_HEADER;
-	const int N = 15625; //5^6 5 MegaBytes
-	char *bad_ptr = NULL;
-	memset(bad_ptr, 0, N); 
+	
+	char *bad_ptr = 0;
+	int lol = &bad_ptr;
+
+	return FAIL;
+}
+
+int page_fault_zero_test(){
+	TEST_HEADER;
+	
+	char *bad_ptr = 0;
+	int lol = &bad_ptr;
 
 	return FAIL;
 }
