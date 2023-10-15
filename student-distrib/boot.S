@@ -46,9 +46,9 @@ keep_going:
     # eax = multiboot magic
     # ebx = address of multiboot info struct
     
-    ; # MP 3.1: maybe I am adding the necessary values?
-    ; movl multiboot_info_t, %ebx
-    ; movl MULTIBOOT_HEADER_MAGIC, %eax # adds the multiboot magic?
+    # ; # MP 3.1: maybe I am adding the necessary values?
+    # ; movl multiboot_info_t, %ebx
+    # ; movl MULTIBOOT_HEADER_MAGIC, %eax # adds the multiboot magic?
     
     pushl   %ebx
     pushl   %eax
