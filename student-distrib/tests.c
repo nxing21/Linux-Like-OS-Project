@@ -56,9 +56,12 @@ int divide_error_test(){
 
 
 // add more tests here
-static inline int page_fault_test(){
+int page_fault_test(){
 	TEST_HEADER;
-	asm volatile("int $128");
+	const int N = 15625; //5^6 5 MegaBytes
+	char *bad_ptr = NULL;
+	memset(bad_ptr, 0, N); 
+
 	return FAIL;
 }
 
@@ -79,5 +82,6 @@ static inline int sys_call_test(){
 void launch_tests(){
 	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
-	TEST_OUTPUT("divide_error_test", divide_error_test());
+	// TEST_OUTPUT("divide_error_test", divide_error_test());
+	TEST_OUTPUT("sys_call_test", sys_call_test());
 }
