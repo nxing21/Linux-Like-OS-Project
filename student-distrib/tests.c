@@ -29,7 +29,7 @@ static inline void assertion_failure(){
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
-int idt_test(){
+int idt_test() {
 	TEST_HEADER;
 
 	int i;
@@ -45,10 +45,21 @@ int idt_test(){
 	return result;
 }
 
-int divide_error_test(){
+int divide_error_test() {
 	TEST_HEADER;
+
 	int a;
 	a = 2 / 0;
+	return FAIL;
+}
+
+// doesn't work
+int overflow_error_test() {
+	TEST_HEADER;
+
+	int32_t a;
+	a = -2147483648;
+	a *= -10;
 	return FAIL;
 }
 

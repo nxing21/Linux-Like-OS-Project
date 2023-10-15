@@ -1,7 +1,7 @@
 #ifndef IDT_H
 #define IDT_H
 
-#define IDT_LENGTH  0x14    /* length of idt */
+#define NUM_EXCEPTIONS  0x14    /* length of exceptions */
 
 /* Initialize the idt */
 void idt_init();
