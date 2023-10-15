@@ -71,6 +71,8 @@ void keyboard_handler(){
     /* Check if the bit is masked. If it is, we can't deal with the interrupt
     so we return*/
     // int output_buffer_status = 0;
+    uint8_t scan_code_data[59] = {0x0, 0x0, '1', '2', '3', '4', '5', '6', '7', '8' ,'9', '0', '-', '=', 0x0, 0x0, 'q','w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[' , ']',
+    0x0, 0x0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', 0x0, '`', 0x0, 0x0, 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', 0x0, 0x0, '*', 0x0, 0x20} ;
     uint8_t response;
     /* Gets the data from the keyboard. For now, just echo the key*/
     // maybe set a while loop to check if the controller sent a response byte
@@ -82,7 +84,9 @@ void keyboard_handler(){
 
     /* Read the data from the response byte from the keyboard */
     response = inb(PS2_DATA_PORT);
-    putc(response);
+    if (response < 58){
+        putc(scan_code_data[response]);
+    }
     send_eoi(KEYBOARD_IRQ);
 
 }

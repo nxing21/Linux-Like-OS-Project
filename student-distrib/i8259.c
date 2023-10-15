@@ -21,7 +21,7 @@ void i8259_init(void) {
     outb(ICW2_MASTER, MASTER_8259_PORT+1); // Master PIC vector offset
     outb(ICW2_SLAVE, SLAVE_8259_PORT+1); // Slave PIC vector offset
     outb(ICW3_MASTER, MASTER_8259_PORT+1); // Tells Master PIC that there is a cascae
-    outb(ICW3_SLAVE, MASTER_8259_PORT+1); // Tells the Slave its cascade itentity (2)
+    outb(ICW3_SLAVE, SLAVE_8259_PORT+1); // Tells the Slave its cascade itentity (2)
 
     outb(ICW4, MASTER_8259_PORT+1); // Have the PICs use 8086 mode
     outb(ICW4, SLAVE_8259_PORT+1);

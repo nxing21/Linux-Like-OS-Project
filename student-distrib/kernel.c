@@ -141,10 +141,8 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
     
-    /* Mask the interrupts */
-    cli();
     /* Init the PIC */
-    i8259_init();
+    //i8259_init();
 
     idt_init();
 
@@ -152,20 +150,20 @@ void entry(unsigned long magic, unsigned long addr) {
      * PIC, any other initialization stuff... */
 
     /* Init the keyboard*/
-    init_ps2devices();
+    // init_ps2devices();
     /* Init the RTC */
-    init_RTC();
+    // init_RTC();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-    // printf("Enabling Interrupts\n");
-    // sti();
+    printf("Enabling Interrupts\n");
+    sti();
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+    //launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 
