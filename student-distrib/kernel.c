@@ -141,18 +141,20 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
     
-    /* Init the PIC */
-    //i8259_init();
-
     idt_init();
+
+    /* Init the PIC */
+    i8259_init();
+
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
     /* Init the keyboard*/
-    // init_ps2devices();
+    init_ps2devices();
+
     /* Init the RTC */
-    // init_RTC();
+    init_RTC();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
@@ -162,11 +164,10 @@ void entry(unsigned long magic, unsigned long addr) {
     sti();
 
 #ifdef RUN_TESTS
-    /* Run tests */
-    //launch_tests();
+    // /* Run tests */
+    // launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
-
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }

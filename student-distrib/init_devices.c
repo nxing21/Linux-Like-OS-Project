@@ -1,5 +1,5 @@
 #include "init_devices.h"
-
+uint8_t scan_code_data[59] = {0x0, 0x0, '1', '2', '3', '4', '5', '6', '7', '8' ,'9', '0', '-', '=', 0x0, 0x0, 'q','w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[' , ']', 0x0A, 0x0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', 0x0, '`', 0x0, 0x0, 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', 0x0, 0x0, '*', 0x0, 0x20} ;
 
 // Function to initialize the keyboard
 void init_ps2devices(){
@@ -63,25 +63,15 @@ void init_ps2devices(){
 
     // /* Enable IRQ 1 in the PIC*/
     enable_irq(KEYBOARD_IRQ);
-
-    // return 1;
 }
 
 void keyboard_handler(){
     /* Check if the bit is masked. If it is, we can't deal with the interrupt
     so we return*/
     // int output_buffer_status = 0;
-    uint8_t scan_code_data[59] = {0x0, 0x0, '1', '2', '3', '4', '5', '6', '7', '8' ,'9', '0', '-', '=', 0x0, 0x0, 'q','w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[' , ']',
-    0x0, 0x0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', 0x0, '`', 0x0, 0x0, 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', 0x0, 0x0, '*', 0x0, 0x20} ;
+
     uint8_t response;
     /* Gets the data from the keyboard. For now, just echo the key*/
-    // maybe set a while loop to check if the controller sent a response byte
-    // Update: Probably won't need the while loop if IRQ is being used
-    // while (output_buffer_status == 0){ 
-    //     outb(READ_PS2_OUTPUT, PS2_COMMAND_PORT);
-    //     output_buffer_status = (inb(PS2_COMMAND_PORT) & 0x01);
-    // }
-
     /* Read the data from the response byte from the keyboard */
     response = inb(PS2_DATA_PORT);
     if (response < 58){

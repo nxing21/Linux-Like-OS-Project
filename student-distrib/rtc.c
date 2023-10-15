@@ -1,6 +1,8 @@
 /* Virtualizes the RTC */
 
 #include "rtc.h"
+#include "lib.h"
+#include "nmi.h"
 
 #define RTC_IRQ  8
 
@@ -9,7 +11,6 @@ int RTC_frequency;
 /* Initalizes the RTC. */
 void init_RTC(){
     uint8_t prev_data;
-
     /*Selects Register B and disables NMIs */
     outb(NMI_DISABLE_CMD | RTC_REG_B, RTC_REGISTER_SELECT);
 
@@ -35,12 +36,12 @@ void init_RTC(){
 
     /* Initializes the variable RTC_frequency to the current frequency */
     RTC_frequency = rtc_max_frequency >> (3-1);
-
-    /* Enables IRQ 8 on the PIC */
-    enable_irq(RTC_IRQ);
-
+   
     /* Renables NMIs */
     NMI_enable();
+    
+    /* Enables IRQ 8 on the PIC */
+    enable_irq(RTC_IRQ);
 } 
 
 /* Creates a VIRTUAL frequency, waiting until a certain number of interrupts happen to generate a */
@@ -56,10 +57,12 @@ void set_RTC_frequency(uint8_t rate){
 
 /* Handles RTC interrupts */
 void RTC_handler(){
+    uint8_t garbage;
 
+    test_interrupts();
     /* Throws away the contents of Register C, allowing for interrupts to occur. */
     outb(RTC_REG_C, RTC_REGISTER_SELECT);
-    inb(RTC_REGISTER_DATA_PORT);
+    garbage = inb(RTC_REGISTER_DATA_PORT);
 
     send_eoi(RTC_IRQ);
 
