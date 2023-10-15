@@ -10,6 +10,8 @@
 #include "tests.h"
 
 #include "idt.h"
+// MP 3.1: Added headers
+#include "init_devices.h"
 
 #define RUN_TESTS
 
@@ -137,28 +139,36 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
-
+    
+    /* Mask the interrupts */
+    cli();
     /* Init the PIC */
     i8259_init();
-    /* Init the idt */
+
     idt_init();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
+    /* Init the keyboard*/
+    init_ps2devices();
+    /* Init the RTC */
+    init_RTC();
+
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-    /*printf("Enabling Interrupts\n");
-    sti();*/
+    // printf("Enabling Interrupts\n");
+    // sti();
 
 #ifdef RUN_TESTS
     /* Run tests */
-    // launch_tests();
+    launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }
+
