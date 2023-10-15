@@ -48,7 +48,9 @@ int idt_test(){
 int divide_error_test(){
 	TEST_HEADER;
 	int a;
-	a = 2 / 0;
+	int b;
+	b = 0;
+	a = 2 / b;
 	return FAIL;
 }
 

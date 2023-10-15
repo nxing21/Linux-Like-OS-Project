@@ -17,22 +17,14 @@ void i8259_init(void) {
 
     // Starts the initializtion sequence
     outb(ICW1 , MASTER_8259_PORT);
-    io_wait(); // Waits for a command to be done
     outb(ICW1, SLAVE_8259_PORT);
-    io_wait();
     outb(ICW2_MASTER, MASTER_8259_PORT+1); // Master PIC vector offset
-    io_wait();
     outb(ICW2_SLAVE, SLAVE_8259_PORT+1); // Slave PIC vector offset
-    io_wait();
     outb(ICW3_MASTER, MASTER_8259_PORT+1); // Tells Master PIC that there is a cascae
-    io_wait();
     outb(ICW3_SLAVE, MASTER_8259_PORT+1); // Tells the Slave its cascade itentity (2)
-    io_wait();
 
     outb(ICW4, MASTER_8259_PORT+1); // Have the PICs use 8086 mode
-    io_wait();
     outb(ICW4, SLAVE_8259_PORT+1);
-    io_wait();
 
     outb(master_mask, MASTER_8259_PORT+1); // Restore the saved masks
     outb(slave_mask, SLAVE_8259_PORT+1); 
@@ -83,7 +75,7 @@ void send_eoi(uint32_t irq_num) {
    The variable "ocw3" is the command word sent to the PICs that allows
    us to read the data from certain registers.
 */
-static uint16_t pic_get_int_reg(int ocw3){
+uint16_t pic_get_int_reg(int ocw3){
     outb(ocw3, MASTER_8259_PORT);
     outb(ocw3, SLAVE_8259_PORT);
 

@@ -12,6 +12,7 @@
 #include "idt.h"
 // MP 3.1: Added headers
 #include "init_devices.h"
+#include "rtc.h"
 
 #define RUN_TESTS
 
