@@ -65,13 +65,14 @@ int page_fault_zero_test(){
 	return FAIL;
 }
 
-int page_fault_zero_test(){
+
+int page_test(){
 	TEST_HEADER;
 	
-	char *bad_ptr = 0;
-	int lol = &bad_ptr;
+	const int *good_ptr = 1024;
+	int lol = &good_ptr;
 
-	return FAIL;
+	return PASS;
 }
 
 static inline int sys_call_test(){
