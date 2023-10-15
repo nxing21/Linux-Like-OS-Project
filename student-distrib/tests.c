@@ -48,12 +48,39 @@ int idt_test(){
 int divide_error_test(){
 	TEST_HEADER;
 	int a;
-	a = 2 / 0;
+	int b;
+	b = 0;
+	a = 2 / b;
 	return FAIL;
 }
 
 
 // add more tests here
+int page_fault_zero_test(){
+	TEST_HEADER;
+	
+	const int *bad_ptr = (const int *)0;
+	const int lol = &bad_ptr;
+
+	return FAIL;
+}
+
+
+int page_test(){
+	TEST_HEADER;
+	
+	const int *good_ptr = 1024;
+	int lol = &good_ptr;
+
+	return PASS;
+}
+
+static inline int sys_call_test(){
+	TEST_HEADER;
+	asm volatile("int $128");
+	return FAIL;
+}
+
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -65,5 +92,6 @@ int divide_error_test(){
 void launch_tests(){
 	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
-	TEST_OUTPUT("divide_error_test", divide_error_test());
+	// TEST_OUTPUT("divide_error_test", divide_error_test());
+	TEST_OUTPUT("sys_call_test", sys_call_test());
 }
