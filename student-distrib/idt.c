@@ -59,9 +59,9 @@ void build_idt() {
         // SET_IDT_ENTRY(idt[128], &system_call_handler);
 
 
-    SET_IDT_ENTRY(idt[0x21], keyboard_handler_linkage);
+    SET_IDT_ENTRY(idt[33], keyboard_handler_linkage);
     idt[0x21].reserved3 = 0;
-    SET_IDT_ENTRY(idt[0x28], rtc_handler_linkage);
+    SET_IDT_ENTRY(idt[40], rtc_handler_linkage);
     idt[0x28].reserved3 = 0;
 }
 
