@@ -56,6 +56,18 @@ int divide_error_test(){
 
 
 // add more tests here
+static inline int page_fault_test(){
+	TEST_HEADER;
+	asm volatile("int $128");
+	return FAIL;
+}
+
+static inline int sys_call_test(){
+	TEST_HEADER;
+	asm volatile("int $128");
+	return FAIL;
+}
+
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
