@@ -59,8 +59,8 @@ int divide_error_test(){
 int page_fault_zero_test(){
 	TEST_HEADER;
 	
-	char *bad_ptr = 0;
-	int lol = &bad_ptr;
+	const int *bad_ptr = (const int *)0;
+	const int lol = &bad_ptr;
 
 	return FAIL;
 }
