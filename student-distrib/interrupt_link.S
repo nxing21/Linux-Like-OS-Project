@@ -1,4 +1,8 @@
-#define ASM 1
+#define ASM     1
+
+
+.text
+
 
 #define INTR_LINK(name, func)    \
     .globl name                 ;\
@@ -10,5 +14,5 @@
         popal                   ;\
         iret
 
-INTR_LINK(keyboard_handler_linkage, keyboard_handler);
-INTR_LINK(rtc_handler_linkage, rtc_handler);
+INTR_LINK(keyboard_handler_linkage, keyboard_handler)
+INTR_LINK(rtc_handler_linkage, RTC_handler)

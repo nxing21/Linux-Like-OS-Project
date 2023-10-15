@@ -1,6 +1,9 @@
 #ifndef _INIT_DEVICES_H
 #define _INIT_DEVICES_H
 
+#include "lib.h"
+#include "i8259.h"
+
 /* PS/2 Controller Ports/ Commands*/
 #define PS2_COMMAND_PORT    0x64 /* Command is sent */
 #define PS2_DATA_PORT   0x60 /* Response byte is sent to this port, also inputs to the devices are sent to this port*/
@@ -23,6 +26,8 @@
 
 #define READ_PS2_OUTPUT 0xD0
 
-int init_ps2devices();
+void init_ps2devices();
+
+void keyboard_handler();
 
 #endif

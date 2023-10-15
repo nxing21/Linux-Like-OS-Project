@@ -2,10 +2,6 @@
  */
 
 #include "idt.h"
-#include "x86_desc.h"
-#include "lib.h"
-#include "interrupt_link.h"
-
 
 
 /* Initialize the idt */

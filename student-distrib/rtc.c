@@ -1,7 +1,5 @@
 /* Virtualizes the RTC */
-#include "lib.h"
-#include "nmi.h"
-#include "i8259.h"
+
 #include "rtc.h"
 
 #define RTC_IRQ  8
