@@ -38,6 +38,7 @@ void alignment_check();
 void machine_check();
 void simd_fp_error();
 
+void system_call();
 
 
 

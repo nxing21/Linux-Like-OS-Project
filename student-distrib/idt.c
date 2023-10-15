@@ -27,10 +27,7 @@ void build_idt() {
         idt[i].size = 1;
         idt[i].reserved0 = 0;
         idt[i].dpl = 0;
-        idt[i].present = 0;
-        if (i < IDT_LENGTH) {
-            idt[i].present = 1;
-        }
+        idt[i].present = 1;
     }
 
     // for offset, we need to call SET_IDT_ENTRY
@@ -53,6 +50,8 @@ void build_idt() {
     SET_IDT_ENTRY(idt[17], alignment_check);
     SET_IDT_ENTRY(idt[18], machine_check);
     SET_IDT_ENTRY(idt[19], simd_fp_error);
+
+    SET_IDT_ENTRY(idt[0x80], system_call);
         //128 = x80 which is int for system calls 
         // idt[128].seg_selector = KERNEL_CS;
         // idt[128].reserved4 = 0;
@@ -202,6 +201,10 @@ void simd_fp_error() {
     while(1){};
 }
 
+void system_call() {
+    printf("System Call");
+    while(1){};
+}
 /*system calls*/
 // static inline int32_t halt (uint8_t status){};
 // static inline int32_t execute (const uint8_t* command){};
