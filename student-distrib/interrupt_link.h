@@ -1,3 +1,9 @@
+#ifndef _INTERRUPT_WRAPPER_H_
+#define _INTERRUPT_WRAPPER_H_
 
-void keyboard_handler_linkage();
-void rtc_handler_linkage();
+#ifndef ASM
+    extern void keyboard_handler_linkage();
+    extern void rtc_handler_linkage();
+#endif
+
+#endif

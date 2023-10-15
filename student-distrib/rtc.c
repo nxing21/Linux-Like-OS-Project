@@ -6,7 +6,7 @@
 
 #define RTC_IRQ  8
 
-uint8_t RTC_frequency;
+int RTC_frequency;
 
 /* Initalizes the RTC. */
 void init_RTC(){
@@ -62,5 +62,7 @@ void RTC_handler(){
     /* Throws away the contents of Register C, allowing for interrupts to occur. */
     outb(RTC_REG_C, RTC_REGISTER_SELECT);
     inb(RTC_REGISTER_DATA_PORT);
+
+    send_eoi(RTC_IRQ);
 
 }

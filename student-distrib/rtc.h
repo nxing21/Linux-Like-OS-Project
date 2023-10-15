@@ -12,7 +12,7 @@
 extern void init_RTC();
 
 /* Sets the RTC to a VIRTUAL frequency. */
-extern void set_RTC_frequency();
+extern void set_RTC_frequency(uint8_t rate);
 
 /* Handles RTC interrupts */
 extern void RTC_handler();
