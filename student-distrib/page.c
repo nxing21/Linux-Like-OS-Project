@@ -10,7 +10,7 @@ void init_page() {
         page_directory[i].base_addr = 0;
         page_directory[i].avail = 0;
         page_directory[i].global = 0;
-        page_directory[i].page_size = 1;   // 4 MB pages
+        page_directory[i].page_size = 0;   // 4 KB pages
         page_directory[i].reserved = 0;
         page_directory[i].accessed = 0;
         page_directory[i].cache_disabled = 0;
@@ -28,9 +28,10 @@ void init_page() {
     // setup page_directory[1] -- kernel memory
     page_directory[1].base_addr = (KERNEL_ADDR >> shift_12);
     page_directory[1].present = 1;
+    page_directory[1].page_size = 1;   // 4 MB pages
 
     // filling in page table
-    for (i = 0; i < PAGE_SIZE; i++) {
+    for (i = 0; i < PAGE_SIZE; i++) { //ask kevin abt this
         page_table[i].base_addr = i * ALIGN;
         page_table[i].avail = 0;
         page_table[i].global = 0;

@@ -1,7 +1,4 @@
 #include "idt.h"
-#include "x86_desc.h"
-#include "lib.h"
-
 
 /* Initialize the idt */
 void idt_init() {
@@ -23,33 +20,31 @@ void build_idt() {
         idt[i].size = 1;
         idt[i].reserved0 = 0;
         idt[i].dpl = 0;
-        idt[i].present = 0;
-        if (i < NUM_EXCEPTIONS) {
-            idt[i].present = 1;
-        }
+        idt[i].present = 1;
     }
 
     // for offset, we need to call SET_IDT_ENTRY
-    SET_IDT_ENTRY(idt[0], &divide_error);
-    SET_IDT_ENTRY(idt[1], &debug);
-    SET_IDT_ENTRY(idt[2], &nmi);
-    SET_IDT_ENTRY(idt[3], &breakpoint);
-    SET_IDT_ENTRY(idt[4], &overflow);
-    SET_IDT_ENTRY(idt[5], &bound_range_exceeded);
-    SET_IDT_ENTRY(idt[6], &invalid_opcode);
-    SET_IDT_ENTRY(idt[7], &device_not_available);
-    SET_IDT_ENTRY(idt[8], &double_fault);
-    SET_IDT_ENTRY(idt[9], &coprocessor_segment_overrun);
-    SET_IDT_ENTRY(idt[10], &invalid_tss);
-    SET_IDT_ENTRY(idt[11], &segment_not_present);
-    SET_IDT_ENTRY(idt[12], &stack_fault);
-    SET_IDT_ENTRY(idt[13], &general_protection);
-    SET_IDT_ENTRY(idt[14], &page_fault);
-    SET_IDT_ENTRY(idt[16], &x87_fp_error);
-    SET_IDT_ENTRY(idt[17], &alignment_check);
-    SET_IDT_ENTRY(idt[18], &machine_check);
-    SET_IDT_ENTRY(idt[19], &simd_fp_error);
-    
+    SET_IDT_ENTRY(idt[0], divide_error);
+    SET_IDT_ENTRY(idt[1], debug);
+    SET_IDT_ENTRY(idt[2], nmi);
+    SET_IDT_ENTRY(idt[3], breakpoint);
+    SET_IDT_ENTRY(idt[4], overflow);
+    SET_IDT_ENTRY(idt[5], bound_range_exceeded);
+    SET_IDT_ENTRY(idt[6], invalid_opcode);
+    SET_IDT_ENTRY(idt[7], device_not_available);
+    SET_IDT_ENTRY(idt[8], double_fault);
+    SET_IDT_ENTRY(idt[9], coprocessor_segment_overrun);
+    SET_IDT_ENTRY(idt[10], invalid_tss);
+    SET_IDT_ENTRY(idt[11], segment_not_present);
+    SET_IDT_ENTRY(idt[12], stack_fault);
+    SET_IDT_ENTRY(idt[13], general_protection);
+    SET_IDT_ENTRY(idt[14], page_fault);
+    SET_IDT_ENTRY(idt[16], x87_fp_error);
+    SET_IDT_ENTRY(idt[17], alignment_check);
+    SET_IDT_ENTRY(idt[18], machine_check);
+    SET_IDT_ENTRY(idt[19], simd_fp_error);
+
+    SET_IDT_ENTRY(idt[0x80], system_call);
         //128 = x80 which is int for system calls 
         // idt[128].seg_selector = KERNEL_CS;
         // idt[128].reserved4 = 0;
@@ -64,7 +59,10 @@ void build_idt() {
         // SET_IDT_ENTRY(idt[128], &system_call_handler);
 
 
-
+    SET_IDT_ENTRY(idt[33], keyboard_handler_linkage);
+    idt[0x21].reserved3 = 0;
+    SET_IDT_ENTRY(idt[40], rtc_handler_linkage);
+    idt[0x28].reserved3 = 0;
 }
 
 
@@ -199,6 +197,10 @@ void simd_fp_error() {
     while(1){};
 }
 
+void system_call() {
+    printf("System Call");
+    while(1){};
+}
 /*system calls*/
 // static inline int32_t halt (uint8_t status){};
 // static inline int32_t execute (const uint8_t* command){};

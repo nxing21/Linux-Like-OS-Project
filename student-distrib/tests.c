@@ -49,22 +49,51 @@ int divide_error_test() {
 	TEST_HEADER;
 
 	int a;
-	a = 2 / 0;
+	int b;
+	b = 0;
+	a = 2 / b;
 	return FAIL;
 }
 
-// doesn't work
-int overflow_error_test() {
-	TEST_HEADER;
+// // doesn't work
+// int overflow_error_test() {
+// 	TEST_HEADER;
 
-	int32_t a;
-	a = -2147483648;
-	a *= -10;
-	return FAIL;
-}
+// 	int32_t a;
+// 	a = -2147483648;
+// 	a *= -10;
+// 	return FAIL;
+// }
 
 
 // add more tests here
+int page_fault_zero_test(){
+	TEST_HEADER;
+	
+	int bad_ptr = 0;
+	int *lol1;
+	lol1 = &bad_ptr;
+
+	return FAIL;
+}
+
+
+int page_test(){
+	TEST_HEADER;
+	
+	int good_ptr = 1024;
+	int * lol2;
+	lol2 = &good_ptr;
+
+	return PASS;
+}
+
+static inline int sys_call_test(){
+	TEST_HEADER;
+	asm volatile("int $128");
+	return FAIL;
+}
+
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -76,5 +105,6 @@ int overflow_error_test() {
 void launch_tests(){
 	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
-	TEST_OUTPUT("divide_error_test", divide_error_test());
+	// TEST_OUTPUT("divide_error_test", divide_error_test());
+	TEST_OUTPUT("page_fault_zero_test", page_fault_zero_test());
 }
