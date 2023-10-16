@@ -16,5 +16,5 @@ Oct 15th, 2023:
 
 Oct 15th, 2023:
     - Ran into an issue where the OS would be continually boot looping after implementing paging
-    - Fixed by changing the page table's base addresses.
+    - Fixed by changing the page table's base addresses from 'i * ALIGN' to 'i'.
     - Took about 4 hours.
