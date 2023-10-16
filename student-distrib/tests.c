@@ -110,8 +110,8 @@ int page_fault_null_test() {
  */
 int page_fault_big_test() {
 	TEST_HEADER;
-
-	int* ptr = (int*)(0x800000 + 8); // pointer pointing to memory that shouldn't be accessed
+	uint32_t kernel_start_addr = 0x800000;
+	int* ptr = (int*)(kernel_start_addr + 8); // pointer pointing to memory that shouldn't be accessed
 	int test_value;
 	test_value = *(ptr);
 
@@ -126,8 +126,8 @@ int page_fault_big_test() {
  */
 int page_fault_too_small_test() {
 	TEST_HEADER;
-
-	int* ptr = (int*)(0x400000 - 8); // pointer pointing to memory that shouldn't be accessed
+	uint32_t kernel_addr = 0x400000;
+	int* ptr = (int*)(kernel_addr - 8); // pointer pointing to memory that shouldn't be accessed
 	int test_value;
 	test_value = *(ptr);
 
@@ -158,8 +158,8 @@ int page_test(){
  */
 int page_videomem_test(){
 	TEST_HEADER;
-	
-	int* videomem_ptr = (int*)(0xB8000 + 1); // ptr to address within video mem
+	uint32_t vid_addr = 0xB8000;
+	int* videomem_ptr = (int*)(vid_addr + 1); // ptr to address within video mem
 	int lol2;
 	lol2 = *videomem_ptr;
 
@@ -188,15 +188,15 @@ static inline int sys_call_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	// TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 	// TEST_OUTPUT("divide_error_test", divide_error_test());
 	// TEST_OUTPUT("page_fault_zero_test", page_fault_zero_test());
-	// TEST_OUTPUT("test_page_fault", test_page_fault());
+	// TEST_OUTPUT("page_test", page_test());
 	// TEST_OUTPUT("page_fault_big_test", page_fault_big_test());
 	// TEST_OUTPUT("page_fault_null_test", page_fault_null_test());
 	// TEST_OUTPUT("boundrange_error_test", boundrange_error_test());
 	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
-	TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
+	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
 	
 }
