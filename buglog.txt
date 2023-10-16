@@ -1,11 +1,20 @@
+Oct 12th, 2023:
+    - Had a bug where running the OS would boot-loop.
+    - Fixed by commenting out 'launch tests()' from kernel.c and implementing gdt.
+    - Took about 7 hours.
+
 Oct 14th, 2023:
     - Fixed an issue with implementing the PIC
     - The OS would crash and close out every time the PIC was initialized
-    - Fixed by sending 0xFF to the data port of the PIC at the end of 
-    initializing the PIC.
+    - Fixed by sending 0xFF to the data port of the PIC at the end of initializing the PIC.
     - Took about 5 hours to solve.
-RESOLVED AT Oct 15th, 2023 @ 12:12 pm
 
 Oct 15th, 2023:
-    - Ran into an issue where the OS would be continually boot looping
-    after impelementing paging
+    - Incorrect addresses after running 'info mem'.
+    - Fixed by correcting video memory from being a page table to being a page.
+    - Took about 4 hours.
+
+Oct 15th, 2023:
+    - Ran into an issue where the OS would be continually boot looping after implementing paging
+    - Fixed by changing the page table's base addresses.
+    - Took about 4 hours.
