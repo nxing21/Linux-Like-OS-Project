@@ -155,9 +155,9 @@ void entry(unsigned long magic, unsigned long addr) {
     init_ps2devices();
 
     /* Init the RTC */
-    // init_RTC();
+    init_RTC();
 
-    // init_page();
+    init_page();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
