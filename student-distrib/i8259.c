@@ -9,15 +9,20 @@
 uint8_t master_mask = 0xFF; /* IRQs 0-7  */
 uint8_t slave_mask = 0xFF;  /* IRQs 8-15 */
 
-/* Initialize the 8259 PIC */
+/* 
+ * i9259_init
+ *   DESCRIPTION: Sends preset command words to both the Master and Slave PIC for initialization.
+ *                Enables IRQ2, as that allows the Slave PIC to send interrupts.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Initializes both the Master and Slave PICs.
+ */
 void i8259_init(void) {
-    // Saves the masks
-    // master_mask = inb(MASTER_8259_PORT+1);
-    // slave_mask = inb(SLAVE_8259_PORT+1);
-
     // Starts the initializtion sequence
     outb(ICW1, MASTER_8259_PORT);
     outb(ICW1, SLAVE_8259_PORT);
+
     outb(ICW2_MASTER, MASTER_8259_PORT+1); // Master PIC vector offset
     outb(ICW2_SLAVE, SLAVE_8259_PORT+1); // Slave PIC vector offset
     outb(ICW3_MASTER, MASTER_8259_PORT+1); // Tells Master PIC that there is a cascae
@@ -31,7 +36,14 @@ void i8259_init(void) {
     enable_irq(2); /* Enables the second PIC*/
 }
 
-/* Enable (unmask) the specified IRQ */
+/* 
+ * enable_irq
+ *   DESCRIPTION: Enables a certain IRQ on the PIC.
+ *   INPUTS: irq_num - An IRQ number that corresponds to a certain device on the PIC.
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Allows for interrupts on a certain IRQ.
+ */
 void enable_irq(uint32_t irq_num) {
     uint16_t port;
     uint8_t value;
@@ -48,7 +60,14 @@ void enable_irq(uint32_t irq_num) {
 
 }
 
-/* Disable (mask) the specified IRQ */
+/* 
+ * disable_irq
+ *   DESCRIPTION: Disbles a certain IRQ on the PIC.
+ *   INPUTS: irq_num - An IRQ number that corresponds to a certain device on the PIC.
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Diasbles interrupts on a certain IRQ.
+ */
 void disable_irq(uint32_t irq_num) {
     uint16_t port;
     uint8_t value;
@@ -64,40 +83,24 @@ void disable_irq(uint32_t irq_num) {
     outb(value, port);
 }
 
-/* Send end-of-interrupt signal for the specified IRQ */
+/* 
+ * send_eoi
+ *   DESCRIPTION: Sends an EOI command OR'd with the IRQ number, to the PIC, indicating
+ *                that a certain interrupt has been serviced.
+ *   INPUTS: irq_num - An IRQ number that corresponds to a certain device on the PIC.
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Tells the PIC that a certain IRQ has been serviced.
+ */
 void send_eoi(uint32_t irq_num) {
-    if (irq_num > 15){
+    if (irq_num > 15){ /* Not a valid IRQ */
         return;
     }
-    else if (irq_num < 8){
+    else if (irq_num < 8){ /* IRQ came from the Master PIC */
         outb(EOI | irq_num, MASTER_8259_PORT);
     }
-    else{
+    else{ /* IRQ came from the Slave, must also unmask IRQ 2 on Master PIC */
         outb((EOI | irq_num) - 8, SLAVE_8259_PORT);
         outb(EOI | 2, MASTER_8259_PORT);
     }
 }
-
-// /* Helper fucntion to get info from Interrupt Status Registers 
-//    The variable "ocw3" is the command word sent to the PICs that allows
-//    us to read the data from certain registers.
-// */
-// uint16_t pic_get_int_reg(int ocw3){
-//     outb(ocw3, MASTER_8259_PORT);
-//     outb(ocw3, SLAVE_8259_PORT);
-
-//     return (inb(SLAVE_8259_PORT) << 8 | inb(MASTER_8259_PORT));
-//     /* Bits 0-7 are data from Master Port. Bits 8-15 are data from the Slave Port*/
-//     /* Note that bit 2 will always be 1 whenever bits 8-15 are set due to the
-//     cascaded nature of the PICs*/
-// }
-
-// /* Returns the combined value of the cascaded PICs irq request registers*/
-// uint16_t pic_get_irr(void){
-//     return pic_get_int_reg(PIC_READ_IRR);
-// }
-
-// /* Returns the combined value of the cascaded PICs in-serive registers*/
-// uint16_t pic_get_isr(void){
-//     return pic_get_int_reg(PIC_READ_ISR);
-// }
