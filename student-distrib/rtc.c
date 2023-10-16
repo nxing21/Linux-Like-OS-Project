@@ -28,7 +28,7 @@ void init_RTC(){
     /* Select Register B again */
     outb(NMI_DISABLE_CMD | RTC_REG_B, RTC_REGISTER_SELECT);
 
-    /* Turns on periodic interrupts by setting bit 6 of prev data to 1 */
+    /* Turns on periodic interrupts by setting bit 6 of prev data to 1 (hence 0x40) */
     outb(prev_data | 0x40, RTC_REGISTER_DATA_PORT);
 
     /* Setting the RTC to the highest interrupt frequency.*/
@@ -40,7 +40,7 @@ void init_RTC(){
     outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
     
     /* Sets RTC to the highest rate possible, 3. */
-    outb((prev_data & 0xF0) | 0x03, RTC_REGISTER_DATA_PORT);
+    outb((prev_data & 0xF0) | 0x03, RTC_REGISTER_DATA_PORT); /* 0xF0 saves the most significant 4 bits */
 
     /* Initializes the variable RTC_frequency to the current frequency */
     RTC_frequency = rtc_max_frequency >> (3-1);
@@ -62,7 +62,7 @@ void init_RTC(){
  *   SIDE EFFECTS: Sets the RTC to a virtual frequency.
  */
 void set_RTC_frequency(uint8_t rate){
-    if (rate < 2 || rate > 15){
+    if (rate < 2 || rate > 15){ /* We can set the RTC rate from (2-15) */
         printf(("Rate is not valid!"));
     }
     else{
