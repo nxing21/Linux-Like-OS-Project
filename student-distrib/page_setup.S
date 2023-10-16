@@ -9,6 +9,7 @@
 # https://wiki.osdev.org/Setting_Up_Paging#:~:text=Advanced%20Paging%20Example-,Basic%20Paging,to%20find%20the%20page%20tables.
 
 # places address into CR3
+.align 4
 loadPageDirectory:
         pushl   %ebp
         movl    %esp, %ebp
@@ -24,6 +25,7 @@ loadPageDirectory:
         ret
 
 # enables paging
+.align 4
 enablePaging:
         pushl   %ebp
         movl    %esp, %ebp

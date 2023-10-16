@@ -79,9 +79,11 @@ int page_fault_zero_test(){
 }
 
 int test_page_fault() {
-	int* ptr = (int*)(0x800000 + 8);
-	int test_value = *(ptr);
+	// int* ptr = (int*)(0x800000 + 8);
+	// int test_value = *(ptr);
 
+	int *p = NULL;
+	*p = 1;
 	return FAIL;
 }
 
