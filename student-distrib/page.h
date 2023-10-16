@@ -5,15 +5,17 @@
 
 #include "types.h"
 
-#define ALIGN           4096
-#define PAGE_SIZE       1024
-#define VIDEO_ADDR      0xB8000    // lib.c
-#define KERNEL_ADDR     0x400000   // documentation (Appendix C)
+#define ALIGN           4096        // alignment
+#define PAGE_SIZE       1024        // total entry size of each page
+#define VIDEO_ADDR      0xB8000     // lib.c
+#define KERNEL_ADDR     0x400000    // documentation (Appendix C)
 
 
-/* Assembly functions to set up paging */
+/* loads page directory */
 extern void loadPageDirectory(unsigned int*);
+/* enables paging */
 extern void enablePaging();
+/* initializes paging */
 extern void init_page();
 
 /* page directory entry structure */
@@ -48,6 +50,7 @@ typedef struct __attribute__((packed)) page_table_entry {
 
 /* page directory */
 page_directory_entry_t page_directory[PAGE_SIZE] __attribute__ ((aligned(ALIGN)));
+/* page table */
 page_table_entry_t page_table[PAGE_SIZE] __attribute__ ((aligned(ALIGN)));
 
 #endif /* ASM */
