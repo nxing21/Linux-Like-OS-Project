@@ -1,17 +1,30 @@
 #include "idt.h"
 
-/* Initialize the idt */
+/* idt_init()
+ * Inputs: none
+ * Return Value: none
+ * Function: Initializes the IDT and loads the IDTR register
+ */
 void idt_init() {
-    // build idt
+    /* Initializes the IDT */
     build_idt();
-    // lidt macro
+    /* Loads the IDTR register */
     lidt(idt_desc_ptr);
 }
 
+/* build_idt()
+ * Inputs: none
+ * Return Value: none
+ * Function: Builds the IDT
+ */
 void build_idt() {
-    int i;
+    int i; // loop counter
 
-    for (i = 0; i < NUM_VEC; i++) {
+    for (i = 0; i < NUM_VEC; i++) { // iterate though IDT
+        /*
+         * Set everything according to trap gate.
+         * See ISA manual page 156.
+         */
         idt[i].seg_selector = KERNEL_CS;
         idt[i].reserved4 = 0;
         idt[i].reserved3 = 1;
@@ -23,192 +36,237 @@ void build_idt() {
         idt[i].present = 1;
     }
 
-    // for offset, we need to call SET_IDT_ENTRY
-    SET_IDT_ENTRY(idt[0], divide_error);
-    SET_IDT_ENTRY(idt[1], debug);
-    SET_IDT_ENTRY(idt[2], nmi);
-    SET_IDT_ENTRY(idt[3], breakpoint);
-    SET_IDT_ENTRY(idt[4], overflow);
-    SET_IDT_ENTRY(idt[5], bound_range_exceeded);
-    SET_IDT_ENTRY(idt[6], invalid_opcode);
-    SET_IDT_ENTRY(idt[7], device_not_available);
-    SET_IDT_ENTRY(idt[8], double_fault);
-    SET_IDT_ENTRY(idt[9], coprocessor_segment_overrun);
-    SET_IDT_ENTRY(idt[10], invalid_tss);
-    SET_IDT_ENTRY(idt[11], segment_not_present);
-    SET_IDT_ENTRY(idt[12], stack_fault);
-    SET_IDT_ENTRY(idt[13], general_protection);
-    SET_IDT_ENTRY(idt[14], page_fault);
-    SET_IDT_ENTRY(idt[16], x87_fp_error);
-    SET_IDT_ENTRY(idt[17], alignment_check);
-    SET_IDT_ENTRY(idt[18], machine_check);
-    SET_IDT_ENTRY(idt[19], simd_fp_error);
+    /* 
+     * Set first 20 entries of IDT with their
+     * corresponding exception function pointer.
+     */
+    SET_IDT_ENTRY(idt[DIVIDE_ERROR], divide_error);
+    SET_IDT_ENTRY(idt[DEBUG], debug);
+    SET_IDT_ENTRY(idt[NMI], nmi);
+    SET_IDT_ENTRY(idt[BREAKPOINT], breakpoint);
+    SET_IDT_ENTRY(idt[OVERFLOW], overflow);
+    SET_IDT_ENTRY(idt[BOUND_RANGE_EXCEEDED], bound_range_exceeded);
+    SET_IDT_ENTRY(idt[INVALID_OPCODE], invalid_opcode);
+    SET_IDT_ENTRY(idt[DEVICE_NOT_AVAILABLE], device_not_available);
+    SET_IDT_ENTRY(idt[DOUBLE_FAULT], double_fault);
+    SET_IDT_ENTRY(idt[COPROCESSOR_SEGMENT_OVERRUN], coprocessor_segment_overrun);
+    SET_IDT_ENTRY(idt[INVALID_TSS], invalid_tss);
+    SET_IDT_ENTRY(idt[SEGMENT_NOT_PRESENT], segment_not_present);
+    SET_IDT_ENTRY(idt[STACK_FAULT], stack_fault);
+    SET_IDT_ENTRY(idt[GENERAL_PROTECTION], general_protection);
+    SET_IDT_ENTRY(idt[PAGE_FAULT], page_fault);
+    SET_IDT_ENTRY(idt[x87_FP_ERROR], x87_fp_error);
+    SET_IDT_ENTRY(idt[ALIGNMENT_CHECK], alignment_check);
+    SET_IDT_ENTRY(idt[MACHINE_CHECK], machine_check);
+    SET_IDT_ENTRY(idt[SIMD_FP_ERROR], simd_fp_error);
 
-    SET_IDT_ENTRY(idt[0x80], system_call);
-        //128 = x80 which is int for system calls 
-        // idt[128].seg_selector = KERNEL_CS;
-        // idt[128].reserved4 = 0;
-        // idt[128].reserved3 = 1; //changed this bc it uses trap gate?
-        // idt[128].reserved2 = 1;
-        // idt[128].reserved1 = 1;
-        // idt[128].size = 1; // size of gate: 1 = 32bits, 0 = 16bits
-        // idt[128].reserved0 = 0;
-        // idt[128].dpl = 0; // kernel level, descriptor privilege level
-        // idt[128].present = 1; // segment present flag
+    // Sets system call vector (x80) with corresponding function pointer
+    SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], system_call);
 
-        // SET_IDT_ENTRY(idt[128], &system_call_handler);
-
-
-    SET_IDT_ENTRY(idt[33], keyboard_handler_linkage);
-    idt[0x21].reserved3 = 0;
-    SET_IDT_ENTRY(idt[40], rtc_handler_linkage);
-    idt[0x28].reserved3 = 0;
+    // Sets each interrupt with corresponding function pointer
+    SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler_linkage);
+    idt[KEYBOARD].reserved3 = 0; // Need to change to interrupt gate. See ISA manual page 156.
+    SET_IDT_ENTRY(idt[RTC], rtc_handler_linkage);
+    idt[RTC].reserved3 = 0; // Need to change to interrupt gate. See ISA manual page 156.
 }
 
-
-// idt[0], divide_error
-// idt[1], debug
-// idt[2], nmi
-// idt[3], breakpoint
-// idt[4], overflow
-// idt[5], bound_range_exceeded
-// idt[6], invalid_opcode
-// idt[7], device_not_available
-// idt[8], double_fault
-// idt[9], coprocessor_segment_overrun
-// idt[10], invalid_tss
-// idt[11], segment_not_present
-// idt[12], stack_fault
-// idt[13], general_protection
-// idt[14], page_fault
-// idt[16], x87_fp_error
-// idt[17], alignment_check
-// idt[18], machine_check
-// idt[19], simd_fp_error
-
-
-
-//idt[128], system call handler
-
-
-// int32_t system_call_handler(uint8_t arg, int32_t fd, int32_t nbytes, void* address){
-//     switch(/*something*/){
-//         case /*something*/:
-//             return halt(arg);
-//         case /*something*/:
-//             return execute((const)arg);
-//         case /*something*/:
-//             return read (fd, (void*)arg, nbytes);
-//         case /*something*/:
-//             return write (fd, (const void*)arg, nbytes);
-//         case /*something*/:
-//             return close (fd);
-//         case /*something*/:
-//             return open ((const uint8_t*) arg);
-//         case /*something*/:
-//             return getargs ((const uint8_t*) arg, nbytes);
-//         case /*something*/:
-//             return vidmap ((uint8_t**) arg);
-//         case /*something*/:
-//             return set_handler (nbytes /*probably bad practice but the type fits*/, address);
-//         case /*something*/:
-//             return sigreturn ();
-//         default:
-//             return -1; //failed call is -1
-        
-//     }
-
-// };
-
+/* divide_error()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void divide_error() {
     printf("Divide Error Exception\n");
     while(1){};
 }
+
+/* debug()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void debug() {
     printf("Debug Exception\n");
     while(1){};
 }
+
+/* nmi()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void nmi() {
     printf("NMI Interrupt\n");
     while(1){};
 }
+
+/* breakpoint()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void breakpoint() {
     printf("Breakpoint Exception\n");
     while(1){};
 }
+
+/* overflow()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void overflow() {
     printf("Overflow Exception\n");
     while(1){};
 }
+
+/* bound_range_exceeded()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void bound_range_exceeded() {
     printf("BOUND Range Exceeded Exception\n");
     while(1){};
 }
+
+/* invalid_opcode()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void invalid_opcode() {
     printf("Invalid Opcode Exception\n");
     while(1){};
 }
+
+/* device_not_available()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void device_not_available() {
     printf("Device Not Available Exception\n");
     while(1){};
 }
+
+/* double_fault()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void double_fault() {
     printf("Double Fault Exception\n");
     while(1){};
 }
+
+/* coprocessor_segment_overrun()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void coprocessor_segment_overrun() {
     printf("Coprocessor Segment Overrun\n");
     while(1){};
 }
+
+/* invalid_tss()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void invalid_tss() {
     printf("Invalid TSS Exception\n");
     while(1){};
 }
+
+/* segment_not_present()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void segment_not_present() {
     printf("Segment Not Present\n");
     while(1){};
 }
+
+/* stack_fault()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void stack_fault() {
     printf("Stack Fault Exception\n");
     while(1){};
 }
+
+/* general_protection()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void general_protection() {
     printf("General Protection Exception\n");
     while(1){};
 }
+
+/* page_fault()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void page_fault() {
     printf("Page-Fault Exception\n");
     while(1){};
 }
+
+/* x87_fp_error()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void x87_fp_error() {
     printf("x87 FPU Floating-Point Error\n");
     while(1){};
 }
+
+/* alignment_check()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void alignment_check() {
     printf("Alignment Check Exception\n");
     while(1){};
 }
+
+/* machine_check()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void machine_check() {
     printf("Machine-Check Exception\n");
     while(1){};
 }
+
+/* simd_fp_error()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints exception message and sends to infinite loop.
+ */
 void simd_fp_error() {
     printf("SIMD Floating-Point Exception\n");
     while(1){};
 }
 
+/* system_call()
+ * Inputs: none
+ * Return Value: none
+ * Function: Prints system call message and sends to infinite loop.
+ *           Will be changed in later checkpoints.
+ */
 void system_call() {
     printf("System Call");
     while(1){};
 }
-/*system calls*/
-// static inline int32_t halt (uint8_t status){};
-// static inline int32_t execute (const uint8_t* command){};
-// static inline int32_t read (int32_t fd, void* buf, int32_t nbytes){};
-// static inline int32_t write (int32_t fd, const void* buf, int32_t nbytes){};
-// static inline int32_t close (int32_t fd){};
-// static inline int32_t open (const uint8_t* filename){};
-// static inline int32_t getargs (uint8_t* buf, int32_t nbytes){};
-// static inline int32_t vidmap (uint8_t** screen_start){};
-// static inline int32_t set_handler (int32_t signum, void* handler_address){};
-// static inline int32_t sigreturn (void){};
