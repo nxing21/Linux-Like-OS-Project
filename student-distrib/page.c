@@ -1,5 +1,7 @@
 #include "page.h"
 
+#define shift_12   12
+
 void init_page() {
     unsigned int i, mem;
 
@@ -8,7 +10,7 @@ void init_page() {
         page_directory[i].base_addr = 0;
         page_directory[i].avail = 0;
         page_directory[i].global = 0;
-        page_directory[i].page_size = 1;   // 4 MB pages
+        page_directory[i].page_size = 0;   // 4 KB pages
         page_directory[i].reserved = 0;
         page_directory[i].accessed = 0;
         page_directory[i].cache_disabled = 0;
@@ -19,16 +21,17 @@ void init_page() {
     }
 
     // setup page_directory[0]
-    page_directory[0].base_addr = (unsigned int)page_table;   // **fix this**
+    page_directory[0].base_addr = (unsigned int)(page_table) >> shift_12;   // **fix this**
     page_directory[0].page_size = 0;   // 4 kB pages
     page_directory[0].present = 1;   // present
 
-    // setup page_directory[1] (kernel memory)
-    page_directory[1].base_addr = KERNEL_ADDR;
+    // setup page_directory[1] -- kernel memory
+    page_directory[1].base_addr = (KERNEL_ADDR >> shift_12);
     page_directory[1].present = 1;
+    page_directory[1].page_size = 1;   // 4 MB pages
 
     // filling in page table
-    for (i = 0; i < PAGE_SIZE; i++) {
+    for (i = 0; i < PAGE_SIZE; i++) { //ask kevin abt this
         page_table[i].base_addr = i * ALIGN;
         page_table[i].avail = 0;
         page_table[i].global = 0;
@@ -43,26 +46,24 @@ void init_page() {
     }
 
     mem = VIDEO_ADDR / ALIGN;
-    page_directory[mem].base_addr = (unsigned int)video_mem_table;
-    
+    page_table[mem].base_addr = (unsigned int)(video_mem) >> shift_12;
+
     for (i = 0; i < PAGE_SIZE; i++) {
-        video_mem_table[i].base_addr = i;
-        video_mem_table[i].avail = 0;
-        video_mem_table[i].global = 0;
-        video_mem_table[i].attr_idx = 0;
-        video_mem_table[i].dirty = 0;
-        video_mem_table[i].accessed = 0;
-        video_mem_table[i].cache_disabled = 0;
-        video_mem_table[i].write_through = 0;
-        video_mem_table[i].user_supervisor = 0;
-        video_mem_table[i].read_write = 1;
-        video_mem_table[i].present = 1;
+        video_mem[i].base_addr = i;
+        video_mem[i].avail = 0;
+        video_mem[i].global = 0;
+        video_mem[i].attr_idx = 0;
+        video_mem[i].dirty = 0;
+        video_mem[i].accessed = 0;
+        video_mem[i].cache_disabled = 0;
+        video_mem[i].write_through = 0;
+        video_mem[i].user_supervisor = 0;
+        video_mem[i].read_write = 1;
+        video_mem[i].present = 1;
     }
+    page_table[mem].present = 1;
 
-
-    // page_directory[0] = ((unsigned_int)page_table) | 3;
-
-    loadPageDirectory(page_directory);
+    loadPageDirectory((unsigned int*)page_directory);
     enablePaging();
 }
 

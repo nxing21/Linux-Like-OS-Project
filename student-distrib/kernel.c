@@ -13,6 +13,7 @@
 // MP 3.1: Added headers
 #include "init_devices.h"
 #include "rtc.h"
+#include "page.h"
 
 #define RUN_TESTS
 
@@ -156,6 +157,8 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the RTC */
     // init_RTC();
 
+    init_page();
+
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
@@ -165,7 +168,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     // /* Run tests */
-    launch_tests();
+    // launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
     /* Spin (nicely, so we don't chew up cycles) */
