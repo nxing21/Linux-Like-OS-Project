@@ -55,6 +55,22 @@ int divide_error_test() {
 	return FAIL;
 }
 
+int overflow_error_test() {
+	TEST_HEADER;
+
+	int a[3];
+	int x;
+	x = a[0];
+	
+	return FAIL;
+}
+
+static inline int boundrange_error_test(){
+	TEST_HEADER;
+	asm volatile("int $5");
+	return FAIL;
+}
+
 // // doesn't work
 // int overflow_error_test() {
 // 	TEST_HEADER;
@@ -79,12 +95,23 @@ int page_fault_zero_test(){
 	return FAIL;
 }
 
-int test_page_fault() {
+int page_fault_null_test() {
+	TEST_HEADER;
 	// int* ptr = (int*)(0x800000 + 8);
 	// int test_value = *(ptr);
 
 	int *p = NULL;
 	*p = 1;
+	return FAIL;
+}
+
+int page_fault_big_test() {
+	TEST_HEADER;
+
+	int* ptr = (int*)(0x800000 + 8);
+	int test_value;
+	test_value = *(ptr);
+
 	return FAIL;
 }
 
@@ -119,6 +146,8 @@ void launch_tests(){
 	// TEST_OUTPUT("divide_error_test", divide_error_test());
 	// TEST_OUTPUT("page_fault_zero_test", page_fault_zero_test());
 	// TEST_OUTPUT("test_page_fault", test_page_fault());
-	TEST_OUTPUT("page_fault_zero_test", page_fault_zero_test());
+	// TEST_OUTPUT("page_fault_big_test", page_fault_big_test());
+	// TEST_OUTPUT("page_fault_null_test", page_fault_null_test());
+	TEST_OUTPUT("boundrange_error_test", boundrange_error_test());
 	
 }
