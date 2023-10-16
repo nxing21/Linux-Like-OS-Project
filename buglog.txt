@@ -1,0 +1,11 @@
+Oct 14th, 2023:
+    - Fixed an issue with implementing the PIC
+    - The OS would crash and close out every time the PIC was initialized
+    - Fixed by sending 0xFF to the data port of the PIC at the end of 
+    initializing the PIC.
+    - Took about 5 hours to solve.
+RESOLVED AT Oct 15th, 2023 @ 12:12 pm
+
+Oct 15th, 2023:
+    - Ran into an issue where the OS would be continually boot looping
+    after impelementing paging
