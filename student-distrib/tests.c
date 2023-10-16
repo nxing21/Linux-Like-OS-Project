@@ -166,6 +166,22 @@ int page_videomem_test(){
 	return PASS; /*should always reach here unless test failed*/ 
 }
 
+/* Page Kernel Memory Test 
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: Paging implementation specifically for kernel memory
+ */
+int page_kernelmem_test(){
+	TEST_HEADER;
+	uint32_t kernel_addr = 0x400000;
+	int* kernelmem_ptr = (int*)(kernel_addr + 1); // ptr to address within kernel mem
+	int lol2;
+	lol2 = *kernelmem_ptr;
+
+	return PASS; /*should always reach here unless test failed*/ 
+}
+
 
 /* System Call Test
  * Inputs: None
@@ -188,7 +204,7 @@ static inline int sys_call_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
+	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 	// TEST_OUTPUT("divide_error_test", divide_error_test());
 	// TEST_OUTPUT("page_fault_zero_test", page_fault_zero_test());
@@ -198,5 +214,6 @@ void launch_tests(){
 	// TEST_OUTPUT("boundrange_error_test", boundrange_error_test());
 	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
 	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
+	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
 	
 }
