@@ -57,8 +57,8 @@ int divide_error_test() {
 	int a;
 	int b;
 	b = 0;
-	a = 2 / b;
-	return FAIL;
+	a = 2 / b; // 2/0 should trigger a div by zero exception
+	return FAIL; /*shouldn't reach here unless test failed*/ 
 }
 
 /* BOUND Range Exceeded Exception Test
@@ -69,8 +69,8 @@ int divide_error_test() {
  */
 static inline int boundrange_error_test(){
 	TEST_HEADER;
-	asm volatile("int $5");
-	return FAIL;
+	asm volatile("int $5"); //interrupt #5 maps to BOUND Range Exceeded Exception
+	return FAIL; /*shouldn't reach here unless test failed*/ 
 }
 
 
@@ -83,10 +83,10 @@ static inline int boundrange_error_test(){
 int page_fault_zero_test(){
 	TEST_HEADER;
 	
-	int* bad_ptr = (int*)(0x0);
+	int* bad_ptr = (int*)(0x0); // pointer pointing to memory that shouldn't be accessed
 	int test_value;
 	test_value = *(bad_ptr);
-	return FAIL;
+	return FAIL; /*shouldn't reach here unless test failed*/ 
 }
 
 /* Page Fault Test (using null pointer)
@@ -97,9 +97,9 @@ int page_fault_zero_test(){
  */
 int page_fault_null_test() {
 	TEST_HEADER;
-	int *p = NULL;
-	*p = 1;
-	return FAIL;
+	int *p = NULL; 
+	*p = 1; // dereferencing a null ptr should cause a page fault
+	return FAIL; /*shouldn't reach here unless test failed*/ 
 }
 
 /* Page Fault Test (using out of bounds pointer)
@@ -111,11 +111,11 @@ int page_fault_null_test() {
 int page_fault_big_test() {
 	TEST_HEADER;
 
-	int* ptr = (int*)(0x800000 + 8);
+	int* ptr = (int*)(0x800000 + 8); // pointer pointing to memory that shouldn't be accessed
 	int test_value;
 	test_value = *(ptr);
 
-	return FAIL;
+	return FAIL; /*shouldn't reach here unless test failed*/ 
 }
 
 /* Page Test (using random good pointer)
@@ -127,11 +127,11 @@ int page_fault_big_test() {
 int page_test(){
 	TEST_HEADER;
 	
-	int good_ptr = 1024;
+	int good_ptr = 1024; // random num
 	int * lol2;
 	lol2 = &good_ptr;
 
-	return PASS;
+	return PASS; /*should always reach here unless test failed*/ 
 }
 
 
@@ -143,8 +143,8 @@ int page_test(){
  */
 static inline int sys_call_test(){
 	TEST_HEADER;
-	asm volatile("int $128");
-	return FAIL;
+	asm volatile("int $128"); //interrupt #0x80 (= #128) which maps to system calls
+	return FAIL; /*shouldn't reach here unless test failed*/ 
 }
 
 
