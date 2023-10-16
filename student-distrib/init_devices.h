@@ -21,6 +21,7 @@
 
 /* Mapping the IRQs to devices */
 #define KEYBOARD_IRQ  1
+#define SCAN_CODE_MAP_SIZE 59
 
 #define READ_PS2_OUTPUT 0xD0
 
