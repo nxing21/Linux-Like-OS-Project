@@ -65,4 +65,3 @@ void system_call();
 
 #endif /* IDT_H */
 
-

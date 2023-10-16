@@ -14,4 +14,3 @@ void rtc_handler_linkage();
 #endif
 
 #endif
-
