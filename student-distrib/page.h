@@ -7,8 +7,8 @@
 
 #define ALIGN           4096        // alignment
 #define PAGE_SIZE       1024        // total entry size of each page
-#define VIDEO_ADDR      0xB8000     // lib.c
-#define KERNEL_ADDR     0x400000    // documentation (Appendix C)
+#define VIDEO_ADDR      0xB8000     // from lib.c
+#define KERNEL_ADDR     0x400000    // from documentation (Appendix C)
 
 
 /* loads page directory */
