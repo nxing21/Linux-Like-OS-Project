@@ -8,7 +8,15 @@
 
 int RTC_frequency;
 
-/* Initalizes the RTC. */
+/* 
+ * init_RTC
+ *   DESCRIPTION: Initializes the RTC by enabling IRQ8 on the PIC, turning on periodic interrupts on the RTC,
+ *                and setting the RTC to the highest frequency possible.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Allows for the RTC to send periodic interrupts.
+ */
 void init_RTC(){
     uint8_t prev_data;
     /*Selects Register B and disables NMIs */
@@ -44,7 +52,15 @@ void init_RTC(){
     enable_irq(RTC_IRQ);
 } 
 
-/* Creates a VIRTUAL frequency, waiting until a certain number of interrupts happen to generate a */
+/* 
+ * set_RTC_frequency
+ *   DESCRIPTION: Sets the RTC to a virtual frequency. This means that the RTC has to wait for x number of interrupts
+ *                to equate to the set virtual frequency.
+ *   INPUTS: rate - The rate we want to set the periodic interrupts to.
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Sets the RTC to a virtual frequency.
+ */
 void set_RTC_frequency(uint8_t rate){
     if (rate < 2 || rate > 15){
         printf(("Rate is not valid!"));
@@ -55,11 +71,20 @@ void set_RTC_frequency(uint8_t rate){
     }
 }
 
-/* Handles RTC interrupts */
+/* 
+ * RTC_handler
+ *   DESCRIPTION: Handles interrupts from the RTC. After servicing, an EOI is sent to the PIC.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Handles the interrupt from the RTC, and sends and EOI to the PIC.
+ */
 void RTC_handler(){
     uint8_t garbage;
 
+    /* Function to test RTC */
     test_interrupts();
+
     /* Throws away the contents of Register C, allowing for interrupts to occur. */
     outb(RTC_REG_C, RTC_REGISTER_SELECT);
     garbage = inb(RTC_REGISTER_DATA_PORT);
