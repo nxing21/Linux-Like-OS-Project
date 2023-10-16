@@ -155,7 +155,6 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the RTC */
     init_RTC();
-    init_RTC();
 
     /* Init the page*/
     init_page();
