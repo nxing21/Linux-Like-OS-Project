@@ -32,7 +32,7 @@ void init_page() {
 
     // filling in page table
     for (i = 0; i < PAGE_SIZE; i++) {
-        page_table[i].base_addr = i * ALIGN;
+        page_table[i].base_addr = i;
         page_table[i].avail = 0;
         page_table[i].global = 0;
         page_table[i].attr_idx = 0;
