@@ -13,13 +13,12 @@ loadPageDirectory:
         pushl   %ebp
         movl    %esp, %ebp
 
-        movl    8(%esp), %eax
+        movl    8(%ebp), %eax
         movl    %eax, %cr3
 
         movl    %cr4, %eax
         orl     $0x00000010, %eax
         movl	%eax, %cr4
-        
 
         leave
         ret

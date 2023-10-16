@@ -17,33 +17,33 @@ extern void enablePaging();
 extern void init_page();
 
 /* page directory entry structure */
-typedef struct __attribute__((packed, aligned(4))) page_directory_entry {
-    uint32_t base_addr          : 20;
-    uint8_t avail               : 3;
-    uint8_t global              : 1;
-    uint8_t page_size           : 1;
-    uint8_t reserved            : 1;
-    uint8_t accessed            : 1;
-    uint8_t cache_disabled      : 1;
-    uint8_t write_through       : 1;
-    uint8_t user_supervisor     : 1;
-    uint8_t read_write          : 1;
+typedef struct __attribute__((packed)) page_directory_entry {
     uint8_t present             : 1;
+    uint8_t read_write          : 1;
+    uint8_t user_supervisor     : 1;
+    uint8_t write_through       : 1;
+    uint8_t cache_disabled      : 1;
+    uint8_t accessed            : 1;
+    uint8_t reserved            : 1;
+    uint8_t page_size           : 1;
+    uint8_t global              : 1;
+    uint8_t avail               : 3;
+    uint32_t base_addr          : 20;
 } page_directory_entry_t;
 
 /* page table entry structure */
-typedef struct __attribute__((packed, aligned(4))) page_table_entry {
-    uint32_t base_addr          : 20;
-    uint8_t avail               : 3;
-    uint8_t global              : 1;
-    uint8_t attr_idx            : 1;
-    uint8_t dirty               : 1;
-    uint8_t accessed            : 1;
-    uint8_t cache_disabled      : 1;
-    uint8_t write_through       : 1;
-    uint8_t user_supervisor     : 1;
-    uint8_t read_write          : 1;
+typedef struct __attribute__((packed)) page_table_entry {
     uint8_t present             : 1;
+    uint8_t read_write          : 1;
+    uint8_t user_supervisor     : 1;
+    uint8_t write_through       : 1;
+    uint8_t cache_disabled      : 1;
+    uint8_t accessed            : 1;
+    uint8_t dirty               : 1;
+    uint8_t attr_idx            : 1;
+    uint8_t global              : 1;
+    uint8_t avail               : 3;
+    uint32_t base_addr          : 20;
 } page_table_entry_t;
 
 /* page directory */

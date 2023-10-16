@@ -70,9 +70,17 @@ int divide_error_test() {
 int page_fault_zero_test(){
 	TEST_HEADER;
 	
-	int bad_ptr = 0;
+	int* bad_ptr = (int*)(0x0);
+	int test_value = *(bad_ptr);
 	int *lol1;
 	lol1 = &bad_ptr;
+
+	return FAIL;
+}
+
+int test_page_fault() {
+	int* ptr = (int*)(0x800000 + 8);
+	int test_value = *(ptr);
 
 	return FAIL;
 }
@@ -106,5 +114,6 @@ void launch_tests(){
 	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 	// TEST_OUTPUT("divide_error_test", divide_error_test());
-	TEST_OUTPUT("page_fault_zero_test", page_fault_zero_test());
+	// TEST_OUTPUT("page_fault_zero_test", page_fault_zero_test());
+	TEST_OUTPUT("test_page_fault", test_page_fault());
 }
