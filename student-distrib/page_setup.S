@@ -1,21 +1,29 @@
 #define ASM     1
 #include "page.h"
 
+
 .text
 
-.global loadPageDirectory
-.global enablePaging
+.global loadPageDirectory   # loads page directory
+.global enablePaging   # enables paging
 
-# https://wiki.osdev.org/Setting_Up_Paging#:~:text=Advanced%20Paging%20Example-,Basic%20Paging,to%20find%20the%20page%20tables.
 
-# places address into CR3
+# int loadPageDirectory(page_directory*)
+# Tasks:
+#	(1) load cr3 with page directory address
+#       (2) set page size extensions in cr4
+# Inputs	: page_directory* -- points to the page directory
+# Outputs	: int - ignore
+.align 4
 loadPageDirectory:
         pushl   %ebp
         movl    %esp, %ebp
 
+        # load cr3 with page directory address
         movl    8(%ebp), %eax
         movl    %eax, %cr3
 
+        # set page size extensions in cr4
         movl    %cr4, %eax
         orl     $0x00000010, %eax
         movl	%eax, %cr4
@@ -23,7 +31,13 @@ loadPageDirectory:
         leave
         ret
 
-# enables paging
+
+# int enablePaging(void)
+# Tasks:
+#	(1) enable paging and protection in cr0
+# Inputs	: none
+# Outputs	: int - ignore
+.align 4
 enablePaging:
         pushl   %ebp
         movl    %esp, %ebp

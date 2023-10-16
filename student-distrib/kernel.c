@@ -147,7 +147,6 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the PIC */
     i8259_init();
 
-
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
@@ -156,7 +155,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the RTC */
     init_RTC();
+    init_RTC();
 
+    /* Init the page*/
     init_page();
 
     /* Enable interrupts */
