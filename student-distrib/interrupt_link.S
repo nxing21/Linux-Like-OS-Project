@@ -2,8 +2,12 @@
 
 
 .text
-
-
+/* INTR_LINK(name, func)
+ * Inputs: name, func
+ * Return Value: none
+ * Function: This is assembly linkage to help the interrupts work properly.
+ * Important because need to reach previous state.
+ */
 #define INTR_LINK(name, func)    \
     .globl name                 ;\
     name:                       ;\
