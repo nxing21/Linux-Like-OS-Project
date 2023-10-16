@@ -17,28 +17,43 @@ void init_page() {
 
     // filling in blank page directory
     for (i = 0; i < PAGE_SIZE; i++) {
-        page_directory[i].present = 0;   // default: not present
-        page_directory[i].read_write = 1;   // enables read/write
-        page_directory[i].user_supervisor = 0;
-        page_directory[i].write_through = 0;
-        page_directory[i].cache_disabled = 0;
-        page_directory[i].accessed = 0;
-        page_directory[i].reserved = 0;
-        page_directory[i].page_size = 0;   // default: 4 kB pages
-        page_directory[i].global = 0;
-        page_directory[i].avail = 0;
-        page_directory[i].base_addr = 0;
+        if (i != 1) {
+            page_directory[i].kb.present = 0;   // default: not present
+            page_directory[i].kb.read_write = 1;   // enables read/write
+            page_directory[i].kb.user_supervisor = 0;
+            page_directory[i].kb.write_through = 0;
+            page_directory[i].kb.cache_disabled = 0;
+            page_directory[i].kb.accessed = 0;
+            page_directory[i].kb.reserved = 0;
+            page_directory[i].kb.page_size = 0;   // default: 4 kB pages
+            page_directory[i].kb.global = 0;
+            page_directory[i].kb.avail = 0;
+            page_directory[i].kb.base_addr = 0;
+        }
     }
 
     // setup page_directory[0]
-    page_directory[0].present = 1;   // present
-    page_directory[0].page_size = 0;   // 4 kB pages
-    page_directory[0].base_addr = (unsigned int)(page_table) >> shift_12;
+    page_directory[0].kb.present = 1;   // present
+    page_directory[0].kb.page_size = 0;   // 4 kB pages
+    page_directory[0].kb.base_addr = (unsigned int)(page_table) >> shift_12;
 
     // setup page_directory[1] -- kernel memory
-    page_directory[1].present = 1;   // present
-    page_directory[1].page_size = 1;   // 4 kB pages
-    page_directory[1].base_addr = (KERNEL_ADDR >> shift_12);
+    
+    // page_directory[1].mb.present = 1;   // present
+    // page_directory[1].mb.page_size = 1;   // 4 MB pages
+    // page_directory[1].mb.base_addr = (KERNEL_ADDR >> shift_12);
+
+    page_directory[1].mb.present = 1;   // present
+    page_directory[1].mb.read_write = 1;   // enables read/write
+    page_directory[1].mb.user_supervisor = 0;
+    page_directory[1].mb.write_through = 0;
+    page_directory[1].mb.cache_disabled = 0;
+    page_directory[1].mb.accessed = 0;
+    page_directory[1].mb.reserved = 0;
+    page_directory[1].mb.page_size = 1;   // 4 MB pages
+    page_directory[1].mb.global = 0;
+    page_directory[1].mb.avail = 0;
+    page_directory[1].mb.base_addr = (unsigned int)(KERNEL_ADDR) >> 22;
 
     // filling in page table
     for (i = 0; i < PAGE_SIZE; i++) {
