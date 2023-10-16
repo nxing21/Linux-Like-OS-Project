@@ -45,6 +45,12 @@ int idt_test() {
 	return result;
 }
 
+/* Divide by Zero Exception Test
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 0—Divide Error Exception
+ */
 int divide_error_test() {
 	TEST_HEADER;
 
@@ -55,56 +61,53 @@ int divide_error_test() {
 	return FAIL;
 }
 
-int overflow_error_test() {
-	TEST_HEADER;
-
-	int a[3];
-	int x;
-	x = a[0];
-	
-	return FAIL;
-}
-
+/* BOUND Range Exceeded Exception Test
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 5—BOUND Range Exceeded Exception
+ */
 static inline int boundrange_error_test(){
 	TEST_HEADER;
 	asm volatile("int $5");
 	return FAIL;
 }
 
-// // doesn't work
-// int overflow_error_test() {
-// 	TEST_HEADER;
 
-// 	int32_t a;
-// 	a = -2147483648;
-// 	a *= -10;
-// 	return FAIL;
-// }
-
-
-// add more tests here
+/* Page Fault Test (using zero pointer)
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 14—Page-Fault Exception and Paging implementation
+ */
 int page_fault_zero_test(){
 	TEST_HEADER;
 	
 	int* bad_ptr = (int*)(0x0);
 	int test_value;
 	test_value = *(bad_ptr);
-	// int *lol1;
-	// lol1 = &bad_ptr;
-
 	return FAIL;
 }
 
+/* Page Fault Test (using null pointer)
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 14—Page-Fault Exception and Paging implementation
+ */
 int page_fault_null_test() {
 	TEST_HEADER;
-	// int* ptr = (int*)(0x800000 + 8);
-	// int test_value = *(ptr);
-
 	int *p = NULL;
 	*p = 1;
 	return FAIL;
 }
 
+/* Page Fault Test (using out of bounds pointer)
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 14—Page-Fault Exception and Paging implementation
+ */
 int page_fault_big_test() {
 	TEST_HEADER;
 
@@ -115,7 +118,12 @@ int page_fault_big_test() {
 	return FAIL;
 }
 
-
+/* Page Test (using random good pointer)
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: Paging implementation
+ */
 int page_test(){
 	TEST_HEADER;
 	
@@ -126,6 +134,13 @@ int page_test(){
 	return PASS;
 }
 
+
+/* System Call Test
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt x80 - System Calls
+ */
 static inline int sys_call_test(){
 	TEST_HEADER;
 	asm volatile("int $128");
