@@ -29,7 +29,7 @@ static inline void assertion_failure(){
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
-int idt_test(){
+int idt_test() {
 	TEST_HEADER;
 
 	int i;
@@ -45,7 +45,140 @@ int idt_test(){
 	return result;
 }
 
-// add more tests here
+/* Divide by Zero Exception Test
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 0—Divide Error Exception
+ */
+int divide_error_test() {
+	TEST_HEADER;
+
+	int a;
+	int b;
+	b = 0;
+	a = 2 / b; // 2/0 should trigger a div by zero exception
+	return FAIL; /*shouldn't reach here unless test failed*/ 
+}
+
+/* BOUND Range Exceeded Exception Test
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 5—BOUND Range Exceeded Exception
+ */
+static inline int boundrange_error_test(){
+	TEST_HEADER;
+	asm volatile("int $5"); //interrupt #5 maps to BOUND Range Exceeded Exception
+	return FAIL; /*shouldn't reach here unless test failed*/ 
+}
+
+
+/* Page Fault Test (using zero pointer)
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 14—Page-Fault Exception and Paging implementation
+ */
+int page_fault_zero_test(){
+	TEST_HEADER;
+	
+	int* bad_ptr = (int*)(0x0); // pointer pointing to memory that shouldn't be accessed
+	int test_value;
+	test_value = *(bad_ptr);
+	return FAIL; /*shouldn't reach here unless test failed*/ 
+}
+
+/* Page Fault Test (using null pointer)
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 14—Page-Fault Exception and Paging implementation
+ */
+int page_fault_null_test() {
+	TEST_HEADER;
+	int *p = NULL; 
+	*p = 1; // dereferencing a null ptr should cause a page fault
+	return FAIL; /*shouldn't reach here unless test failed*/ 
+}
+
+/* Page Fault Test (using pointer greater than 8 MB)
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 14—Page-Fault Exception and Paging implementation
+ */
+int page_fault_big_test() {
+	TEST_HEADER;
+	uint32_t kernel_start_addr = 0x800000;
+	int* ptr = (int*)(kernel_start_addr + 8); // pointer pointing to memory that shouldn't be accessed
+	int test_value;
+	test_value = *(ptr);
+
+	return FAIL; /*shouldn't reach here unless test failed*/ 
+}
+
+/* Page Fault Test (using out of pointer less than 4MB)
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 14—Page-Fault Exception and Paging implementation
+ */
+int page_fault_too_small_test() {
+	TEST_HEADER;
+	uint32_t kernel_addr = 0x400000;
+	int* ptr = (int*)(kernel_addr - 8); // pointer pointing to memory that shouldn't be accessed
+	int test_value;
+	test_value = *(ptr);
+
+	return FAIL; /*shouldn't reach here unless test failed*/ 
+}
+
+/* Page Test (using random good pointer)
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: Paging implementation
+ */
+int page_test(){
+	TEST_HEADER;
+	
+	int good_ptr = 1024; // random num
+	int * lol2;
+	lol2 = &good_ptr;
+
+	return PASS; /*should always reach here unless test failed*/ 
+}
+
+/* Page Video Memory Test 
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: Paging implementation specifically for video memory
+ */
+int page_videomem_test(){
+	TEST_HEADER;
+	uint32_t vid_addr = 0xB8000;
+	int* videomem_ptr = (int*)(vid_addr + 1); // ptr to address within video mem
+	int lol2;
+	lol2 = *videomem_ptr;
+
+	return PASS; /*should always reach here unless test failed*/ 
+}
+
+
+/* System Call Test
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt x80 - System Calls
+ */
+static inline int sys_call_test(){
+	TEST_HEADER;
+	asm volatile("int $128"); //interrupt #0x80 (= #128) which maps to system calls
+	return FAIL; /*shouldn't reach here unless test failed*/ 
+}
+
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -57,4 +190,13 @@ int idt_test(){
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
+	// TEST_OUTPUT("divide_error_test", divide_error_test());
+	// TEST_OUTPUT("page_fault_zero_test", page_fault_zero_test());
+	// TEST_OUTPUT("page_test", page_test());
+	// TEST_OUTPUT("page_fault_big_test", page_fault_big_test());
+	// TEST_OUTPUT("page_fault_null_test", page_fault_null_test());
+	// TEST_OUTPUT("boundrange_error_test", boundrange_error_test());
+	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
+	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
+	
 }
