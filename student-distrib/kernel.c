@@ -154,7 +154,7 @@ void entry(unsigned long magic, unsigned long addr) {
     init_ps2devices();
 
     /* Init the RTC */
-    init_RTC();
+    // init_RTC();
 
     /* Init the page*/
     init_page();
@@ -165,6 +165,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     printf("Enabling Interrupts\n");
     sti();
+    clear();
 
 #ifdef RUN_TESTS
     // /* Run tests */
