@@ -9,11 +9,12 @@
 #include "debug.h"
 #include "tests.h"
 
-#include "idt.h"
 // MP 3.1: Added headers
 #include "init_devices.h"
 #include "rtc.h"
 #include "page.h"
+#include "terminal.h"
+#include "idt.h"
 
 #define RUN_TESTS
 
@@ -165,11 +166,14 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     printf("Enabling Interrupts\n");
     sti();
-    clear();
+    // clear();
+
+    /* Sets the cursor. */
+    init_cursor();
 
 #ifdef RUN_TESTS
     // /* Run tests */
-    launch_tests();
+    // launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
     /* Spin (nicely, so we don't chew up cycles) */
