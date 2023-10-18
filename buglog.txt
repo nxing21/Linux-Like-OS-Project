@@ -1,0 +1,45 @@
+Oct 12th, 2023:
+    - Had a bug where running the OS would boot-loop.
+    - Fixed by commenting out 'launch tests()' from kernel.c and implementing gdt.
+    - Took about 7 hours.
+
+Oct 14th, 2023:
+    - Fixed an issue with implementing the PIC
+    - The OS would crash and close out every time the PIC was initialized
+    - Fixed by sending 0xFF to the data port of the PIC at the end of initializing the PIC.
+    - Took about 5 hours to solve.
+
+Oct 15th, 2023:
+    - Incorrect addresses after running 'info mem'.
+    - Fixed by correcting video memory from being a page table to being a page.
+    - Took about 4 hours.
+
+Oct 15th, 2023:
+    - Ran into an issue where the OS would be continually boot looping after implementing paging
+    - Fixed by changing the page table's base addresses from 'i * ALIGN' to 'i'.
+    - Took about 4 hours.
+
+---------------------------------------------------------------------------------
+Oct 16th, 2023:
+    - Ran into some issues while implementing the CAPS lock.
+    - At first, the CAPS lock press and release was not registering.
+        - The issue was that the mapping was wrong. Fixed the scan code mapping.
+    - Weird characters appeared after turning on and typing in CAPS lock  
+        - Fixed the issue by setting a conditional that would not map scan codes that 
+        was greater than SCAN_CODE_MAP_DATA (59)
+    - Issue where the user could not leave the CAPS LOCK
+        - Fixed the issue by changing some of the logic in my conditionals.
+Overall, all of these issues took around an hour to debug.
+
+Oct 16th, 2023:
+    - Ran into some some miscallenous issues where random keys would not register
+    or would not type the right key.
+    - Fixed this issue by changing the mapping data according to the scan keys and the 
+    ASCII table.
+Overall, this issue took about 15 minutes to debug.
+
+Oct 16th, 2023:
+    - Ran into an issue when trying to implement CAPS lock and shift at the same time.
+    - The CAPS & Shift case would act the same as no special keys activated.
+    - Fixed this issue by changing some of the if logic behind implementing CAPS lock
+    and Shift. 
