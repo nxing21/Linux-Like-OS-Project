@@ -74,11 +74,18 @@ length bytes starting from position offset in the file with inode number inode a
 read and placed in the buffer. A return value of 0 thus indicates that the end of the file has been reached.
 */
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
-    if(inode > file_system.boot_block.inode_count){
+    int i, j;
+    if(inode > file_system.boot_block.inode_count || inode <= 0){
         return -1;
     }
     else{
-
+        for(i = 0; i < file_system.inode_start->length; i++){
+            uint32_t curr_block_num = file_system.inode_start->data_block_num[i];
+            for(j = 0; j < length; j++){
+                buf[j] = file_system.data_block_ptr[curr_block_num][j]; //where do I use offset
+            }
+            
+        }
     }
 
 }
