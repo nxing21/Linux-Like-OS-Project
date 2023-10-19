@@ -55,7 +55,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
     uint32_t temp_inode_num;
     uint32_t num_dentry = boot_block->dir_count;
 
-    if( (index <= num_dentry) && (index > 0))
+    if( index < num_dentry)
     {
         *dentry = dentries_array[index];
         return 0;
@@ -70,7 +70,9 @@ length bytes starting from position offset in the file with inode number inode a
 read and placed in the buffer. A return value of 0 thus indicates that the end of the file has been reached.
 */
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
-    inode_t *inode_ptr = (&boot_block + 4026);
+    inode_t *inode_ptr = (&boot_block + 4096 + inode*4096);
+    int8_t *data_start = (&boot_block + 4096 + boot_block->inode_count*4096) ; 
+
     int i, j;
     if(inode >= boot_block->inode_count){
         return -1;
