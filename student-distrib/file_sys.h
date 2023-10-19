@@ -38,10 +38,10 @@ typedef struct boot_block {
 typedef struct file_system {
     boot_block_t *boot_block;
     inode_t *inode_start;
-    uint8_t *data_block_ptr[BYTES_PER_BLOCK];
+    uint8_t *data_block_ptr;
 } file_system_t;
 
-static file_system_t *file_system;
+static file_system_t file_system;
 
 void init_file_sys();
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);

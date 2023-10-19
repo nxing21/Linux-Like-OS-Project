@@ -2,7 +2,9 @@
 
 
 void init_file_sys(uint32_t starting_addr){
-    file_system = (file_system_t *) starting_addr;
+    file_system.boot_block = (boot_block_t *) starting_addr;
+    file_system.inode_start = (inode_t *) starting_addr + BYTES_PER_BLOCK;
+    file_system.data_block_ptr = (uint8_t *) (starting_addr) + BYTES_PER_BLOCK * (file_system.boot_block->inode_count);
 }
 
 
@@ -22,7 +24,7 @@ void init_file_sys(uint32_t starting_addr){
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     dentry_t * dentries_array = file_system.boot_block->direntries;
     int i;
-    int found_flag =0;
+    int found_flag = 0;
     int len= strlen(fname);
     dentry_t found_dentry;
     if(len > FILENAME_LEN){
