@@ -1,13 +1,9 @@
 #include "file_sys.h"
 
 
-void init_file_sys(){
+void init_file_sys(uint32_t starting_addr){
     
-    int i;
-
-    for(i = 0; i < DIR_ENTRIES; i++){
-        file_system.boot_block.direntries[i] = 
-    }
+    boot_block= (boot_block_t *) starting_addr;
 }
 
 
@@ -25,7 +21,7 @@ void init_file_sys(){
 */
 
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
-    dentry_t * dentries_array = file_system.boot_block.direntries;
+    dentry_t * dentries_array = boot_block->direntries;
     int i;
     int found_flag =0;
     int len= strlen(fname);
@@ -53,11 +49,11 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 }
 
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
-    dentry_t * dentries_array = file_system.boot_block.direntries;
+    dentry_t * dentries_array = boot_block->direntries;
     
     dentry_t found_dentry;
     uint32_t temp_inode_num;
-    uint32_t num_dentry = file_system.boot_block.dir_count;
+    uint32_t num_dentry = boot_block->dir_count;
 
     if( (index <= num_dentry) && (index > 0))
     {
@@ -74,15 +70,17 @@ length bytes starting from position offset in the file with inode number inode a
 read and placed in the buffer. A return value of 0 thus indicates that the end of the file has been reached.
 */
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
+    inode_t *inode_ptr = (&boot_block + 4026);
     int i, j;
-    if(inode > file_system.boot_block.inode_count || inode <= 0){
+    if(inode >= boot_block->inode_count){
         return -1;
     }
+    
     else{
-        for(i = 0; i < file_system.inode_start->length; i++){
-            uint32_t curr_block_num = file_system.inode_start->data_block_num[i];
+        for(i = 0; i < file_system->inode_start->length; i++){
+            uint32_t curr_block_num = file_system->inode_start->data_block_num[i];
             for(j = 0; j < length; j++){
-                buf[j] = file_system.data_block_ptr[curr_block_num][j]; //where do I use offset
+                buf[j] = file_system->data_block_ptr[curr_block_num]; //where do I use offset
             }
             
         }
