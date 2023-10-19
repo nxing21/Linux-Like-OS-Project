@@ -2,10 +2,10 @@
 
 #define MAX_FILES 62
 #define FILENAME_LEN 32 /* 32 bytes/characters */
-#define ONE_KB 1023
+#define ONE_KB 1024
 #define DENTRY_RESERVED_BYTES 24
 #define BOOT_BLOCK_RESERVED_BYTES 52
-#define DIR_ENTRIES 64
+#define DIR_ENTRIES 63
 
 /* file directory entry structure from slides*/
 typedef struct dentry {
@@ -18,7 +18,7 @@ typedef struct dentry {
 /* inode structure from slides*/
 typedef struct inode {
     uint32_t length;
-    uint32_t data_block_num[ONE_KB];
+    uint32_t data_block_num[ONE_KB-1];
 } inode_t;
 
 /* inode structure from slides*/
@@ -31,13 +31,13 @@ typedef struct boot_block {
 } boot_block_t;
 
 
-inode_t * inode_start;
-uint16_t *data_block_ptr;
+// inode_t * inode_start;
+// uint16_t *data_block_ptr;
 
 typedef struct file_system {
     boot_block_t boot_block;
     inode_t *inode_start;
-    uint16_t *data_block_ptr;
+    uint8_t *data_block_ptr[4096];
 } file_system_t;
 
 file_system_t file_system;
