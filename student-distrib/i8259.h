@@ -25,6 +25,10 @@
 #define PIC_READ_IRR        0x0A // Command word that allows us to read IRR
 #define PIC_READ_ISR        0x0B // Command word that allows us to read ISR
 
+#define START_SLAVE_PIC     8 /* The start of the Slave PIC IRQs */
+#define MAX_IRQS            15
+#define SLAVE_PIC_IRQ       2
+
 /* End-of-interrupt byte.  This gets OR'd with
  * the interrupt number and sent out to the PIC
  * to declare the interrupt finished */

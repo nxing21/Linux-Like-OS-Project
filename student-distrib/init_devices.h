@@ -21,13 +21,14 @@
 
 /* Mapping the IRQs to devices */
 #define KEYBOARD_IRQ  1
-
-
+#define SCAN_CODE_MAP_SIZE 59
 
 #define READ_PS2_OUTPUT 0xD0
 
+/* Initializes the PS/2 devices. */
 void init_ps2devices();
 
+/* Handler for keyboard interrupts. */
 void keyboard_handler();
 
 #endif

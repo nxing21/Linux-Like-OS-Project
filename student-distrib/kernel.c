@@ -13,6 +13,7 @@
 // MP 3.1: Added headers
 #include "init_devices.h"
 #include "rtc.h"
+#include "page.h"
 
 #define RUN_TESTS
 
@@ -146,7 +147,6 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the PIC */
     i8259_init();
 
-
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
@@ -154,7 +154,10 @@ void entry(unsigned long magic, unsigned long addr) {
     init_ps2devices();
 
     /* Init the RTC */
-    // init_RTC();
+    init_RTC();
+
+    /* Init the page*/
+    init_page();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your

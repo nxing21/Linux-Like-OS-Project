@@ -5,7 +5,33 @@
 #include "x86_desc.h"
 #include "lib.h"
 
-#define IDT_LENGTH  0x14    /* length of idt */
+/* Interrupts and corresponding vector number. */
+#define KEYBOARD   0x21
+#define RTC        0x28
+
+/* Vector number for system calls. */
+#define SYSTEM_CALL_VECTOR    0x80
+
+/* Exceptions with corresponding vector number. */
+#define DIVIDE_ERROR    0
+#define DEBUG           1
+#define NMI             2
+#define BREAKPOINT      3
+#define OVERFLOW        4
+#define BOUND_RANGE_EXCEEDED    5
+#define INVALID_OPCODE  6
+#define DEVICE_NOT_AVAILABLE    7
+#define DOUBLE_FAULT    8
+#define COPROCESSOR_SEGMENT_OVERRUN 9
+#define INVALID_TSS     10
+#define SEGMENT_NOT_PRESENT     11
+#define STACK_FAULT     12
+#define GENERAL_PROTECTION      13
+#define PAGE_FAULT      14
+#define x87_FP_ERROR    16
+#define ALIGNMENT_CHECK 17
+#define MACHINE_CHECK   18
+#define SIMD_FP_ERROR   19
 
 /* Initialize the idt */
 void idt_init();
@@ -13,15 +39,7 @@ void idt_init();
 /* Build idt */
 void build_idt();
 
-
-/*exception handler function pointer*/
-// https://stackoverflow.com/questions/5309859/how-to-define-an-array-of-functions-in-c
-// typedef void (*exception_handler_t)();  //void just means the type is not defined, () means args undefined
-// exception_handler_t exception_handler[256] = {&divide_error, &debug, &nmi, &breakpoint, &overflow, &bound_range_exceeded, &invalid_opcode, &device_not_available, &double_fault, &coprocessor_segment_overrun, 
-// &invalid_tss, &segment_not_present, &stack_fault, &general_protection, &page_fault, NULL, &x87_fp_error, &alignment_check, &machin_check, &simd_fp_error};
-
-
-
+/* Functions for each exception. Blue screen of death. */
 void divide_error();
 void debug();
 void nmi();
@@ -42,24 +60,8 @@ void alignment_check();
 void machine_check();
 void simd_fp_error();
 
+/* Function for system calls. Will be changed in future checkpoints. */
 void system_call();
-
-
-
-
-
-// extern int32_t system_call_handler(uint8_t arg, int32_t fd, int32_t nbytes, void* address);
-// /*system calls*/
-// static inline int32_t halt (uint8_t status);
-// static inline int32_t execute (const uint8_t* command);
-// static inline int32_t read (int32_t fd, void* buf, int32_t nbytes);
-// static inline int32_t write (int32_t fd, const void* buf, int32_t nbytes);
-// static inline int32_t close (int32_t fd);
-// static inline int32_t open (const uint8_t* filename);
-// static inline int32_t getargs (uint8_t* buf, int32_t nbytes);
-// static inline int32_t vidmap (uint8_t** screen_start);
-// static inline int32_t set_handler (int32_t signum, void* handler_address);
-// static inline int32_t sigreturn (void);
 
 #endif /* IDT_H */
 
