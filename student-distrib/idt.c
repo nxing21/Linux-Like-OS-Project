@@ -270,3 +270,7 @@ void system_call() {
     printf("System Call");
     while(1){};
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> c8168a85e4a7ef6e2e3be50259b2b5a2b40b3ac8

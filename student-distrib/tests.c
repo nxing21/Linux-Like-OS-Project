@@ -102,7 +102,7 @@ int page_fault_null_test() {
 	return FAIL; /*shouldn't reach here unless test failed*/ 
 }
 
-/* Page Fault Test (using out of bounds pointer)
+/* Page Fault Test (using pointer greater than 8 MB)
  * Inputs: None
  * Outputs: FAIL on fail
  * Side Effects: None
@@ -110,8 +110,24 @@ int page_fault_null_test() {
  */
 int page_fault_big_test() {
 	TEST_HEADER;
+	uint32_t kernel_start_addr = 0x800000;
+	int* ptr = (int*)(kernel_start_addr + 8); // pointer pointing to memory that shouldn't be accessed
+	int test_value;
+	test_value = *(ptr);
 
-	int* ptr = (int*)(0x800000 + 8); // pointer pointing to memory that shouldn't be accessed
+	return FAIL; /*shouldn't reach here unless test failed*/ 
+}
+
+/* Page Fault Test (using out of pointer less than 4MB)
+ * Inputs: None
+ * Outputs: FAIL on fail
+ * Side Effects: None
+ * Coverage: Load IDT, IDT definition of Interrupt 14—Page-Fault Exception and Paging implementation
+ */
+int page_fault_too_small_test() {
+	TEST_HEADER;
+	uint32_t kernel_addr = 0x400000;
+	int* ptr = (int*)(kernel_addr - 8); // pointer pointing to memory that shouldn't be accessed
 	int test_value;
 	test_value = *(ptr);
 
@@ -130,6 +146,38 @@ int page_test(){
 	int good_ptr = 1024; // random num
 	int * lol2;
 	lol2 = &good_ptr;
+
+	return PASS; /*should always reach here unless test failed*/ 
+}
+
+/* Page Video Memory Test 
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: Paging implementation specifically for video memory
+ */
+int page_videomem_test(){
+	TEST_HEADER;
+	uint32_t vid_addr = 0xB8000;
+	int* videomem_ptr = (int*)(vid_addr + 1); // ptr to address within video mem
+	int lol2;
+	lol2 = *videomem_ptr;
+
+	return PASS; /*should always reach here unless test failed*/ 
+}
+
+/* Page Kernel Memory Test 
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: Paging implementation specifically for kernel memory
+ */
+int page_kernelmem_test(){
+	TEST_HEADER;
+	uint32_t kernel_addr = 0x400000;
+	int* kernelmem_ptr = (int*)(kernel_addr + 1); // ptr to address within kernel mem
+	int lol2;
+	lol2 = *kernelmem_ptr;
 
 	return PASS; /*should always reach here unless test failed*/ 
 }
@@ -159,10 +207,18 @@ void launch_tests(){
 	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 	// TEST_OUTPUT("divide_error_test", divide_error_test());
+<<<<<<< HEAD
 	TEST_OUTPUT("page_fault_zero_test", page_test());
 	// TEST_OUTPUT("test_page_fault", test_page_fault());
+=======
+	// TEST_OUTPUT("page_fault_zero_test", page_fault_zero_test());
+	// TEST_OUTPUT("page_test", page_test());
+>>>>>>> c8168a85e4a7ef6e2e3be50259b2b5a2b40b3ac8
 	// TEST_OUTPUT("page_fault_big_test", page_fault_big_test());
 	// TEST_OUTPUT("page_fault_null_test", page_fault_null_test());
 	// TEST_OUTPUT("boundrange_error_test", boundrange_error_test());
+	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
+	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
+	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
 	
 }
