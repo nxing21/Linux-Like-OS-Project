@@ -2,8 +2,7 @@
 
 
 void init_file_sys(uint32_t starting_addr){
-    file_system.boot_block = (boot_block_t *) starting_addr;
-    file_system.inode_start = starting_addr + BYTES_PER_BLOCK;
+    file_system = (file_system_t *) starting_addr;
 }
 
 

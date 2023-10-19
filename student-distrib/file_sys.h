@@ -41,7 +41,7 @@ typedef struct file_system {
     uint8_t *data_block_ptr[BYTES_PER_BLOCK];
 } file_system_t;
 
-static file_system_t file_system;
+static file_system_t *file_system;
 
 void init_file_sys();
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
