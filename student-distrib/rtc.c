@@ -4,9 +4,11 @@
 #include "lib.h"
 #include "nmi.h"
 
-#define RTC_IRQ  8
+#define RTC_IRQ     8
+#define BYTE_4      4
 
 int RTC_frequency;
+volatile int RTC_block;
 
 /* 
  * init_RTC
@@ -89,6 +91,54 @@ void RTC_handler(){
     outb(RTC_REG_C, RTC_REGISTER_SELECT);
     garbage = inb(RTC_REGISTER_DATA_PORT);
 
-    send_eoi(RTC_IRQ);
+    /* resets RTC_block */
+    RTC_block = 0;
 
+    send_eoi(RTC_IRQ);
 }
+
+// questions: is open supposed to do the job of init or does it just set freq to 2Hz?
+// ask JD: how does set_RTC_frequency work?
+int open() {
+    RTC_frequency = 2;
+    return 0;
+}
+
+// questions: does it literally do nothing?
+int close() {
+    return 0;
+}
+
+// link: https://linux.die.net/man/2/read
+int read() {
+    RTC_block = 1;
+    while (RTC_block == 1);
+    return 0;
+}
+
+
+int write(void* buffer, int nbytes) {
+    uint8_t i;
+    unsigned int freq;
+
+    if (nbytes != BYTE_4) {
+        return -1;
+    }
+
+    if (buffer == NULL) {
+        return -1;
+    }
+
+    freq = *((unsigned int*)(buffer));
+
+    for (i = 2; i < 16; i++) {
+        if (freq == (2^i)) {
+            RTC_frequency = (2^i);
+            return 0;
+        }
+    }
+    
+    return -1;
+}
+
+

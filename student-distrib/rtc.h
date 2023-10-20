@@ -20,3 +20,16 @@ void set_RTC_frequency(uint8_t rate);
 
 /* Handles RTC interrupts */
 void RTC_handler();
+
+/* Initialize the RTC frequency to 2 Hz */
+int open();
+
+/* Does nothing unless we virtualize */
+int close();
+
+/* Blocks RTC until next interrupt */
+int read();
+
+/* Changes the RTC frequency */
+int write(void* buffer, int nbytes);
+
