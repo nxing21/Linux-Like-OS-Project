@@ -46,6 +46,9 @@ void init_RTC(){
 
     /* Initializes the variable RTC_frequency to the current frequency */
     RTC_frequency = rtc_max_frequency >> (3-1);
+
+    /* initializes RTC_block */
+    RTC_block = 0;
    
     /* Renables NMIs */
     NMI_enable();
@@ -97,27 +100,38 @@ void RTC_handler(){
     send_eoi(RTC_IRQ);
 }
 
+
+void write_RTC_frequency(uint32_t rate) {
+    rate &= 0x0F;
+    disable_ints();
+    outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
+    char temp = inb(RTC_REGISTER_DATA_PORT);
+    
+}
+
 // questions: is open supposed to do the job of init or does it just set freq to 2Hz?
-// ask JD: how does set_RTC_frequency work?
-int open() {
+// all functions should have parameters: open(filename) close(fd) read(fd)
+// check parameter types
+int open(const unsigned char* filename) {
+    // should be function to directly change frequency
     RTC_frequency = 2;
     return 0;
 }
 
 // questions: does it literally do nothing?
-int close() {
+int close(uint32_t fd) {
     return 0;
 }
 
 // link: https://linux.die.net/man/2/read
-int read() {
+int read(uint32_t fd, void* buffer, int nbytes) {
     RTC_block = 1;
     while (RTC_block == 1);
     return 0;
 }
 
 
-int write(void* buffer, int nbytes) {
+int write(uint32_t fd, void* buffer, int nbytes) {
     uint8_t i;
     unsigned int freq;
 
@@ -131,7 +145,7 @@ int write(void* buffer, int nbytes) {
 
     freq = *((unsigned int*)(buffer));
 
-    for (i = 2; i < 16; i++) {
+    for (i = 1; i < 16; i++) {
         if (freq == (2^i)) {
             RTC_frequency = (2^i);
             return 0;
