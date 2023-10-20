@@ -71,6 +71,7 @@ read and placed in the buffer. A return value of 0 thus indicates that the end o
 */
 int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t length){
     inode_t * inode = (inode_t *)(boot_block + BYTES_PER_BLOCK);
+    uint32_t * data_blocks = (uint32_t *) (inode + inode->length * BYTES_PER_BLOCK);
     int i; // loop counter
     if (inode_num >= boot_block->inode_count) {
         return -1;
@@ -79,9 +80,53 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
         return -1;
     }
     uint32_t starting_block = offset / BYTES_PER_BLOCK;
-    uint32_t block_index = offset % BYTES_PER_BLOCK;
+    uint32_t starting_block_index = offset % BYTES_PER_BLOCK;
 
-    for (i = 0; i < (length / BYTES_PER_BLOCK + 1); i++) {
-        // memcpy stuff
+    uint32_t num_bytes_copied = 0;
+    uint32_t * cur_block = data_blocks + starting_block * BYTES_PER_BLOCK;
+
+    /**
+     * This is the case where the length of the data is all within one data block.
+    */
+    if (starting_block_index + length < BYTES_PER_BLOCK) {
+        for (i = starting_block_index; i < starting_block_index + length; i++) {
+            buf[num_bytes_copied] = cur_block[i];
+            num_bytes_copied++;
+        }
+
+        return num_bytes_copied;
     }
+
+    /**
+     * Copy the data within the first block
+    */
+    for (i = starting_block_index; i < BYTES_PER_BLOCK; i++) {
+        buf[num_bytes_copied] = cur_block[i];
+        num_bytes_copied++;
+    }
+
+    uint32_t ending_block = (offset + length - 1) / BYTES_PER_BLOCK;
+    int j; // block counter
+    cur_block += BYTES_PER_BLOCK;
+    /**
+     * This is copying all blocks except first and last
+    */
+    for (j = starting_block + 1; j <= ending_block - 1; j++) {
+        for (i = 0; i < BYTES_PER_BLOCK; i++) {
+            buf[num_bytes_copied] = cur_block[i];
+            num_bytes_copied++;
+        }
+        cur_block += BYTES_PER_BLOCK;
+    }
+
+    /**
+     * This is copying all blocks from last block
+    */
+    uint32_t num_bytes_last_block = (offset + length) % BYTES_PER_BLOCK;
+    for (i = 0; i < num_bytes_last_block; i++) {
+        buf[num_bytes_copied] = cur_block[i];
+        num_bytes_copied++;
+    }
+
+    return num_bytes_copied;
 }
