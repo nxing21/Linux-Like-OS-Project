@@ -94,7 +94,7 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
 
     // Change the length if we will be going over the last data block in the current inode
     if (offset + length > cur_inode->length) {
-        length = cur_inode;
+        length = cur_inode->length - offset;
     }
 
     for (i = 0; i < length; i++) {
