@@ -71,34 +71,41 @@ length bytes starting from position offset in the file with inode number inode a
 read and placed in the buffer. A return value of 0 thus indicates that the end of the file has been reached.
 */
 int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t length){
-    inode_t * inode = (inode_t *)(boot_block + BYTES_PER_BLOCK);
-    uint32_t * data_blocks = (uint32_t *) (inode + inode->length * BYTES_PER_BLOCK);
+    inode_t * inode = (inode_t *)(boot_block + BYTES_PER_BLOCK); // starting inode address
+    uint32_t * data_blocks = (uint32_t *) (inode + inode->length * BYTES_PER_BLOCK); // starting data blocks address
     int i; // loop counter
+
+    /* Fail cases:
+     * 1) Inode input is greater than the number of inodes we have
+     * 2) Offset is greater than the length of our inode
+     */
     if (inode_num >= boot_block->inode_count) {
         return -1;
     }
     if (offset >= inode->length) {
         return -1;
     }
-    uint32_t block = offset / BYTES_PER_BLOCK;
-    uint32_t block_index = offset % BYTES_PER_BLOCK;
 
-    int32_t num_bytes_copied = 0;
-    inode_t * cur_node = (inode_t*) (data_blocks + inode_num * BYTES_PER_BLOCK);
+    uint32_t inode_block_index = offset / BYTES_PER_BLOCK; // current data block index within inode
+    uint32_t data_block_index = offset % BYTES_PER_BLOCK; // index in data block
 
-    if (length > cur_node->length) {
-        length = cur_node;
+    int32_t num_bytes_copied = 0; // bytes copied counter
+    inode_t * cur_inode = (inode_t*) (data_blocks + inode_num * BYTES_PER_BLOCK); // get current inode
+
+    // Change the length if we will be going over the last data block in the current inode
+    if (offset + length > cur_inode->length) {
+        length = cur_inode;
     }
 
     for (i = 0; i < length; i++) {
-        uint32_t * cur_block = cur_node->data_block_num[block];
+        uint32_t * cur_block = cur_inode->data_block_num[inode_block_index];
 
-        buf[num_bytes_copied] = cur_block[block_index];
+        buf[num_bytes_copied] = cur_block[data_block_index];
         num_bytes_copied++;
-        block_index++;
-        if (block_index >= BYTES_PER_BLOCK) {
-            block_index = 0;
-            block++;
+        data_block_index++;
+        if (data_block_index >= BYTES_PER_BLOCK) {
+            data_block_index = 0;
+            inode_block_index++;
         }
     }
 
