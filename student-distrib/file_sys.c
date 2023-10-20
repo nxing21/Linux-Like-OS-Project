@@ -1,8 +1,8 @@
 #include "file_sys.h"
-
+#include "lib.h"
 
 void init_file_sys(uint32_t starting_addr){
-    
+    printf("I love men");
     boot_block= (boot_block_t *) starting_addr;
 }
 
@@ -24,7 +24,7 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     dentry_t * dentries_array = boot_block->direntries;
     int i;
     int found_flag = 0;
-    int len= strlen(fname);
+    int len= strlen((int8_t *)fname);
     dentry_t found_dentry;
     if(len > FILENAME_LEN){
         return -1;
@@ -32,7 +32,7 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     for(i = 0; i < DIR_ENTRIES; i++){
         //strncmp assumes same length
         const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
-        if( (len == strlen(cur_dentry))  && (strncmp(cur_dentry, fname, len) == 0)){
+        if( (len == strlen((int8_t *)cur_dentry))  && (strncmp((int8_t *)cur_dentry, (int8_t *)fname, len) == 0)){
             found_flag = 1;
             found_dentry = dentries_array[i];
             break;
@@ -51,8 +51,8 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
     dentry_t * dentries_array = boot_block->direntries;
     
-    dentry_t found_dentry;
-    uint32_t temp_inode_num;
+    // dentry_t found_dentry;
+    // uint32_t temp_inode_num;
     uint32_t num_dentry = boot_block->dir_count;
 
     if( index < num_dentry)
@@ -98,7 +98,7 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     }
 
     for (i = 0; i < length; i++) {
-        uint32_t * cur_block = cur_inode->data_block_num[inode_block_index]; // get current data block
+        uint32_t * cur_block = (uint32_t *) (cur_inode->data_block_num[inode_block_index]); // get current data block
 
         buf[num_bytes_copied] = cur_block[data_block_index]; // copy into buffer
 
