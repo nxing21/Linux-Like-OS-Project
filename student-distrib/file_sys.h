@@ -1,3 +1,6 @@
+#ifndef _FILE_SYS_H_
+#define _FILE_SYS_H_
+
 #include "types.h"
 
 #define MAX_FILES 62
@@ -6,6 +9,7 @@
 #define DENTRY_RESERVED_BYTES 24
 #define BOOT_BLOCK_RESERVED_BYTES 52
 #define DIR_ENTRIES 63
+#define BYTES_PER_BLOCK 4096
 
 /* file directory entry structure from slides*/
 typedef struct dentry {
@@ -30,9 +34,16 @@ typedef struct boot_block {
     dentry_t direntries[DIR_ENTRIES];
 } boot_block_t;
 
+typedef struct file_descriptor {
+    uint32_t *file_op_table_ptr;
+    uint32_t inode;
+    uint32_t file_pos;
+    uint32_t flags;
+} fd_t;
 
 
-boot_block_t *boot_block;
+
+// boot_block_t *boot_block;
 // inode_t *inode_start;
 // uint8_t *data_block_ptr;
 
@@ -47,7 +58,19 @@ boot_block_t *boot_block;
 
 // static file_system_t *file_system;
 
-void init_file_sys();
+void init_file_sys(uint32_t starting_addr);
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
+
+int32_t read_file(int32_t fd, void* buf, int32_t nbytes);
+int32_t write_file(int32_t fd, const void* buf, int32_t nbytes);
+int32_t open_file(const uint8_t* filename);
+int32_t close_file(int32_t fd);
+
+int32_t read_directory(int32_t fd, void* buf, int32_t nbytes);
+int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes);
+int32_t open_directory(const uint8_t* filename);
+int32_t close_directory(int32_t fd);
+
+#endif
