@@ -34,9 +34,16 @@ typedef struct boot_block {
     dentry_t direntries[DIR_ENTRIES];
 } boot_block_t;
 
+typedef struct file_descriptor {
+    uint32_t *file_op_table_ptr;
+    uint32_t inode;
+    uint32_t file_pos;
+    uint32_t flags;
+} fd_t;
 
 
-boot_block_t *boot_block;
+
+// boot_block_t *boot_block;
 // inode_t *inode_start;
 // uint8_t *data_block_ptr;
 

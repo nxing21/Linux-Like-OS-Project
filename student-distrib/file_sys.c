@@ -2,9 +2,14 @@
 #include "lib.h"
 
 boot_block_t *boot_block;
+fd_t file_descriptors[8];
+dentry_t *dentry;
 
 void init_file_sys(uint32_t starting_addr){
+    int i;
     boot_block= (boot_block_t *) starting_addr;
+    // file_descriptors[0] = stdin; /*keyboard input*/
+    // file_descriptors[1] = stdout; /*terminal output*/
 }
 
 /* The three routines provided by the file system module return -1 on failure, indicating a non-existent file or invalid
@@ -113,4 +118,34 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     }
 
     return num_bytes_copied;
+}
+
+int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
+    
+}
+int32_t write_file(int32_t fd, const void* buf, int32_t nbytes) {
+    // do nothing
+    return -1;
+}
+int32_t open_file(const uint8_t* filename){
+    return read_dentry_by_name(filename, dentry);
+}
+int32_t close_file(int32_t fd) {
+    // do nothing
+    return 0;
+}
+
+int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
+
+}
+int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes) {
+    // do nothing
+    return -1;
+}
+int32_t open_directory(const uint8_t* filename) {
+    return read_dentry_by_name(filename, dentry);
+}
+int32_t close_directory(int32_t fd) {
+    // do nothing
+    return 0;
 }
