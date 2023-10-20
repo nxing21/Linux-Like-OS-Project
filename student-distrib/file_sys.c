@@ -31,8 +31,8 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     }
     for(i = 0; i < DIR_ENTRIES; i++){
         //strncmp assumes same length
-        const int8_t* curr_dentry = (const int8_t*) dentries_array[i].filename;
-        if( (len == strlen(curr_dentry))  && (strncmp(curr_dentry, fname, len) == 0)){
+        const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
+        if( (len == strlen(cur_dentry))  && (strncmp(cur_dentry, fname, len) == 0)){
             found_flag = 1;
             found_dentry = dentries_array[i];
             break;
@@ -51,8 +51,8 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
     dentry_t * dentries_array = boot_block->direntries;
     
-    // dentry_t found_dentry;
-    // uint32_t temp_inode_num;
+    dentry_t found_dentry;
+    uint32_t temp_inode_num;
     uint32_t num_dentry = boot_block->dir_count;
 
     if( index < num_dentry)
@@ -64,6 +64,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
 
     return -1; // not found
 }
+
 
 /*The last routine works much like the read system call, reading up to
 length bytes starting from position offset in the file with inode number inode and returning the number of bytes
@@ -79,53 +80,26 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     if (offset >= inode->length) {
         return -1;
     }
-    uint32_t starting_block = offset / BYTES_PER_BLOCK;
-    uint32_t starting_block_index = offset % BYTES_PER_BLOCK;
+    uint32_t block = offset / BYTES_PER_BLOCK;
+    uint32_t block_index = offset % BYTES_PER_BLOCK;
 
-    uint32_t num_bytes_copied = 0;
-    uint32_t * cur_block = data_blocks + starting_block * BYTES_PER_BLOCK;
+    int32_t num_bytes_copied = 0;
+    inode_t * cur_node = (inode_t*) (data_blocks + inode_num * BYTES_PER_BLOCK);
 
-    /**
-     * This is the case where the length of the data is all within one data block.
-    */
-    if (starting_block_index + length < BYTES_PER_BLOCK) {
-        for (i = starting_block_index; i < starting_block_index + length; i++) {
-            buf[num_bytes_copied] = cur_block[i];
-            num_bytes_copied++;
-        }
-
-        return num_bytes_copied;
+    if (length > cur_node->length) {
+        length = cur_node;
     }
 
-    /**
-     * Copy the data within the first block
-    */
-    for (i = starting_block_index; i < BYTES_PER_BLOCK; i++) {
-        buf[num_bytes_copied] = cur_block[i];
+    for (i = 0; i < length; i++) {
+        uint32_t * cur_block = cur_node->data_block_num[block];
+
+        buf[num_bytes_copied] = cur_block[block_index];
         num_bytes_copied++;
-    }
-
-    uint32_t ending_block = (offset + length - 1) / BYTES_PER_BLOCK;
-    int j; // block counter
-    cur_block += BYTES_PER_BLOCK;
-    /**
-     * This is copying all blocks except first and last
-    */
-    for (j = starting_block + 1; j <= ending_block - 1; j++) {
-        for (i = 0; i < BYTES_PER_BLOCK; i++) {
-            buf[num_bytes_copied] = cur_block[i];
-            num_bytes_copied++;
+        block_index++;
+        if (block_index >= BYTES_PER_BLOCK) {
+            block_index = 0;
+            block++;
         }
-        cur_block += BYTES_PER_BLOCK;
-    }
-
-    /**
-     * This is copying all blocks from last block
-    */
-    uint32_t num_bytes_last_block = (offset + length) % BYTES_PER_BLOCK;
-    for (i = 0; i < num_bytes_last_block; i++) {
-        buf[num_bytes_copied] = cur_block[i];
-        num_bytes_copied++;
     }
 
     return num_bytes_copied;
