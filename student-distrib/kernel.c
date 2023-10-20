@@ -14,6 +14,8 @@
 #include "init_devices.h"
 #include "rtc.h"
 #include "page.h"
+// MP 3.2: Added headers
+#include "file_sys.h"
 
 #define RUN_TESTS
 
@@ -58,6 +60,7 @@ void entry(unsigned long magic, unsigned long addr) {
         int mod_count = 0;
         int i;
         module_t* mod = (module_t*)mbi->mods_addr;
+        init_file_sys(mod->mod_start);
         while (mod_count < mbi->mods_count) {
             printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);
             printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);

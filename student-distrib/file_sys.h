@@ -1,3 +1,6 @@
+#ifndef _FILE_SYS_H_
+#define _FILE_SYS_H_
+
 #include "types.h"
 
 #define MAX_FILES 62
@@ -62,3 +65,5 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes);
 int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes);
 int32_t open_directory(const uint8_t* filename);
 int32_t close_directory(int32_t fd);
+
+#endif

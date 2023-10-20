@@ -1,12 +1,11 @@
 #include "file_sys.h"
 #include "lib.h"
 
+boot_block_t *boot_block;
+
 void init_file_sys(uint32_t starting_addr){
-    printf("I love men");
     boot_block= (boot_block_t *) starting_addr;
 }
-
-
 
 /* The three routines provided by the file system module return -1 on failure, indicating a non-existent file or invalid
 * index in the case of the first two calls, or an invalid inode number in the case of the last routine. Note that the directory
