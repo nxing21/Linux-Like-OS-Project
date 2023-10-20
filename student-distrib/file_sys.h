@@ -6,6 +6,7 @@
 #define DENTRY_RESERVED_BYTES 24
 #define BOOT_BLOCK_RESERVED_BYTES 52
 #define DIR_ENTRIES 63
+#define BYTES_PER_BLOCK 4096
 
 /* file directory entry structure from slides*/
 typedef struct dentry {
@@ -47,7 +48,7 @@ boot_block_t *boot_block;
 
 // static file_system_t *file_system;
 
-void init_file_sys();
+void init_file_sys(uint32_t starting_addr);
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
