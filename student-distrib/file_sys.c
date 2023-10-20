@@ -98,7 +98,7 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     }
 
     for (i = 0; i < length; i++) {
-        uint32_t * cur_block = cur_inode->data_block_num[inode_block_index];
+        uint32_t * cur_block = cur_inode->data_block_num[inode_block_index]; // get current data block
 
         buf[num_bytes_copied] = cur_block[data_block_index]; // copy into buffer
 
