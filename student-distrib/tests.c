@@ -244,11 +244,11 @@ int read_data_test(){
 	printf("TESTING READ DATA\n");
 	int32_t bytes_read;
 	uint32_t inode_num = 38;
-	bytes_read = read_data(inode_num, 0, buf, 64);
-	//clear();
+	bytes_read = read_data(inode_num, 0, buf, 187);
+	clear();
 	int i;
 	for (i = 0; i < bytes_read; i++) {
-		putc(buf[i]);
+		printf("%c", buf[i]);
 	}
 
 	return PASS; /*should always reach here unless test failed*/ 
