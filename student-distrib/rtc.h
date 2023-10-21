@@ -22,7 +22,7 @@ void set_RTC_frequency(uint8_t rate);
 void RTC_handler();
 
 /* Initialize the RTC frequency to 2 Hz */
-int open(const unsigned char* filename);
+int open(const char* filename);
 
 /* Does nothing unless we virtualize */
 int close(uint32_t fd);

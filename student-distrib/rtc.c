@@ -47,6 +47,9 @@ void init_RTC(){
     /* Initializes the variable RTC_frequency to the current frequency */
     RTC_frequency = rtc_max_frequency >> (3-1);
 
+    /* sets frequency to highest possible frequency */
+    write_RTC_frequency(3);
+
     /* initializes RTC_block */
     RTC_block = 0;
    
@@ -100,7 +103,7 @@ void RTC_handler(){
     send_eoi(RTC_IRQ);
 }
 
-
+/* 2 < rate < 16 */
 void write_RTC_frequency(uint32_t rate) {
     rate &= 0x0F;
     cli();
@@ -112,11 +115,10 @@ void write_RTC_frequency(uint32_t rate) {
     sti();
 }
 
-
 // questions: is open supposed to do the job of init or does it just set freq to 2Hz?
 // all functions should have parameters: open(filename) close(fd) read(fd)
 // check parameter types
-int open(const unsigned char* filename) {
+int open(const char* filename) {
     // should be function to directly change frequency
     RTC_frequency = 2;
     write_RTC_frequency(15);
@@ -134,7 +136,6 @@ int read(uint32_t fd, void* buffer, int nbytes) {
     while (RTC_block == 1);
     return 0;
 }
-
 
 int write(uint32_t fd, void* buffer, int nbytes) {
     uint8_t i;
