@@ -4,7 +4,6 @@
 boot_block_t *boot_block;
 inode_t * inode;
 uint32_t * data_blocks;
-fd_t file_descriptors[8];
 dentry_t *dentry;
 
 void init_file_sys(uint32_t starting_addr){
@@ -30,28 +29,22 @@ void init_file_sys(uint32_t starting_addr){
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     dentry_t * dentries_array = boot_block->direntries;
     int i;
-    int found_flag = 0;
-    int len= strlen((int8_t *)fname);
+    int len = strlen((int8_t *)fname);
     dentry_t found_dentry;
     if(len > FILENAME_LEN){
         return -1;
     }
     for(i = 0; i < DIR_ENTRIES; i++){
         //strncmp assumes same length
-        const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
-        if( (len == strlen((int8_t *)cur_dentry))  && (strncmp((int8_t *)cur_dentry, (int8_t *)fname, len) == 0)){
-            found_flag = 1;
-            found_dentry = dentries_array[i];
-            break;
+        int8_t* cur_dentry = (int8_t*) dentries_array[i].filename;
+        if ((len == strlen((int8_t *)cur_dentry)) && (strncmp((int8_t *)cur_dentry, (int8_t *)fname, len) == 0)){
+            read_dentry_by_index(i, dentry);
+            return 0;
         }
     }
 
-    if(found_flag == 1){
-        *dentry = found_dentry;
-        return 0;
-    }
-
     return -1; // not found
+
     
 }
 
@@ -62,7 +55,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
     // uint32_t temp_inode_num;
     uint32_t num_dentry = boot_block->dir_count;
 
-    if( index < num_dentry)
+    if (index < num_dentry)
     {
         *dentry = dentries_array[index];
         return 0;
@@ -86,7 +79,7 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     clear();
     printf("1: %d, %d, %d\n", boot_block, inode, data_blocks);
     //printf("2: %d, %d, %d\n", boot_block, inode2, data_blocks2);
-    int i; // loop counter
+    uint32_t i; // loop counter
     printf("reached line 83\n");
     printf("Inode: %d\n", inode[inode_num]);
 
@@ -123,8 +116,8 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
         uint32_t cur_block_num = cur_inode->data_block_num[inode_block_index]; // get current data block
         //printf("%d, %d\n", boot_block->data_count, cur_block_num);
         uint32_t * cur_block_addr = data_blocks + cur_block_num * BYTES_PER_BLOCK;
-        //printf("reached line 115, i = %d\n, cur block addr[0] = %d\n", i, cur_block_addr[data_block_index]);
-        // buf[num_bytes_copied] = cur_block_addr[data_block_index]; // copy into buffer
+        // printf("reached line 115, i = %d, cur block addr[0] = %d\n", i, cur_block_addr);
+        buf[num_bytes_copied] = cur_block_addr[data_block_index]; // copy into buffer
         //printf("reached line 117, i = %d\n", i);
 
         // update counters and index trackers
@@ -171,3 +164,4 @@ int32_t close_directory(int32_t fd) {
     // do nothing
     return 0;
 }
+
