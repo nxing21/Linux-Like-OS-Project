@@ -2,12 +2,15 @@
 #include "lib.h"
 
 boot_block_t *boot_block;
+inode_t * inode;
+uint32_t * data_blocks;
 fd_t file_descriptors[8];
 dentry_t *dentry;
 
 void init_file_sys(uint32_t starting_addr){
-    int i;
     boot_block= (boot_block_t *) starting_addr;
+    inode = (inode_t *)(starting_addr + BYTES_PER_BLOCK); // starting inode address
+    data_blocks = (uint32_t *) (starting_addr + BYTES_PER_BLOCK + boot_block->inode_count * BYTES_PER_BLOCK); // starting data blocks address
     // file_descriptors[0] = stdin; /*keyboard input*/
     // file_descriptors[1] = stdout; /*terminal output*/
 }
@@ -75,9 +78,17 @@ length bytes starting from position offset in the file with inode number inode a
 read and placed in the buffer. A return value of 0 thus indicates that the end of the file has been reached.
 */
 int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t length){
-    inode_t * inode = (inode_t *)(boot_block + BYTES_PER_BLOCK); // starting inode address
-    uint32_t * data_blocks = (uint32_t *) (inode + inode->length * BYTES_PER_BLOCK); // starting data blocks address
+    // printf("reached line 77\n");
+    // //inode_t * inode2 = (inode_t *)(&boot_block + BYTES_PER_BLOCK); // starting inode address
+    // printf("reached line 79\n");
+    // //uint32_t * data_blocks2 = (uint32_t *) (&inode + boot_block->inode_count * BYTES_PER_BLOCK); // starting data blocks address
+    // printf("reached line 81\n");
+    clear();
+    printf("1: %d, %d, %d\n", boot_block, inode, data_blocks);
+    //printf("2: %d, %d, %d\n", boot_block, inode2, data_blocks2);
     int i; // loop counter
+    printf("reached line 83\n");
+    printf("Inode: %d\n", inode[inode_num]);
 
     /* Fail cases:
      * 1) Inode input is greater than the number of inodes we have
@@ -86,25 +97,35 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     if (inode_num >= boot_block->inode_count) {
         return -1;
     }
-    if (offset >= inode->length) {
+    printf("reached line 92\n");
+    if (offset >= boot_block->inode_count) {
         return -1;
     }
+    printf("reached line 96\n");
 
     uint32_t inode_block_index = offset / BYTES_PER_BLOCK; // current data block index within inode
     uint32_t data_block_index = offset % BYTES_PER_BLOCK; // index in data block
+    printf("reached line 100\n");
 
     int32_t num_bytes_copied = 0; // bytes copied counter
-    inode_t * cur_inode = (inode_t*) (data_blocks + inode_num * BYTES_PER_BLOCK); // get current inode
+    inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_num * BYTES_PER_BLOCK); // get current inode
+    printf("reached line 104\n");
+    printf("%d, %d, %d\n", boot_block, cur_inode, cur_inode->length);
 
     // Change the length if we will be going over the last data block in the current inode
-    if (offset + length > cur_inode->length) {
-        length = cur_inode->length - offset;
-    }
+    // if (offset + length > cur_inode->length) {
+    //     length = cur_inode->length - offset;
+    // }
+    printf("reached line 110, length = %d\n", length);
 
     for (i = 0; i < length; i++) {
-        uint32_t * cur_block = (uint32_t *) (cur_inode->data_block_num[inode_block_index]); // get current data block
-
-        buf[num_bytes_copied] = cur_block[data_block_index]; // copy into buffer
+        //printf("reached line 113, i = %d\n", i);
+        uint32_t cur_block_num = cur_inode->data_block_num[inode_block_index]; // get current data block
+        //printf("%d, %d\n", boot_block->data_count, cur_block_num);
+        uint32_t * cur_block_addr = data_blocks + cur_block_num * BYTES_PER_BLOCK;
+        //printf("reached line 115, i = %d\n, cur block addr[0] = %d\n", i, cur_block_addr[data_block_index]);
+        // buf[num_bytes_copied] = cur_block_addr[data_block_index]; // copy into buffer
+        //printf("reached line 117, i = %d\n", i);
 
         // update counters and index trackers
         num_bytes_copied++;
@@ -116,6 +137,7 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
             inode_block_index++;
         }
     }
+    printf("reached line 139\n");
 
     return num_bytes_copied;
 }
@@ -136,7 +158,7 @@ int32_t close_file(int32_t fd) {
 }
 
 int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
-
+    
 }
 int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes) {
     // do nothing

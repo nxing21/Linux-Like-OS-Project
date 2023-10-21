@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "file_sys.h"
 
 #define PASS 1
 #define FAIL 0
@@ -197,6 +198,57 @@ static inline int sys_call_test(){
 
 
 /* Checkpoint 2 tests */
+
+/* read_dentry_test
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if read dentry funcs works
+ */
+int read_dentry_test(){
+	clear();
+	TEST_HEADER;
+	dentry_t* dentry;
+	const uint8_t* fname = "frame0.txt";
+	int32_t out = read_dentry_by_name(fname, dentry);
+	if(out != 0){
+		return FAIL;
+	}
+	
+	printf("%s %d  lol1 \n", dentry->filename, dentry->inode_num);
+
+
+	if(read_dentry_by_index (1, dentry) != 0){
+		
+		return FAIL;
+	}
+	
+	printf("%s %d  lol2 \n", dentry->filename, dentry->inode_num);
+
+	return PASS; /*should always reach here unless test failed*/ 
+}
+
+/* Checkpoint 2 tests */
+
+/* read_data_test
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if read data works
+ */
+int read_data_test(){
+	//clear();
+	TEST_HEADER;
+	uint8_t *buf;
+	printf("TESTING READ DATA\n");
+	if(read_data(1, 0, buf, 8) == -1){
+		return FAIL;
+	}
+	// printf("%s", buf);
+
+	return PASS; /*should always reach here unless test failed*/ 
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -215,5 +267,10 @@ void launch_tests(){
 	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
 	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
 	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
+	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
+	TEST_OUTPUT("read_data_test", read_data_test());
+	
+	
 	
 }
+
