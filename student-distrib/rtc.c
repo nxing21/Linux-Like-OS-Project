@@ -103,11 +103,15 @@ void RTC_handler(){
 
 void write_RTC_frequency(uint32_t rate) {
     rate &= 0x0F;
-    disable_ints();
+    cli();
     outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
     char temp = inb(RTC_REGISTER_DATA_PORT);
-    
+    outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
+    outb((temp & 0xF0) | rate, RTC_REGISTER_DATA_PORT);
+    NMI_enable();
+    sti();
 }
+
 
 // questions: is open supposed to do the job of init or does it just set freq to 2Hz?
 // all functions should have parameters: open(filename) close(fd) read(fd)
@@ -115,6 +119,7 @@ void write_RTC_frequency(uint32_t rate) {
 int open(const unsigned char* filename) {
     // should be function to directly change frequency
     RTC_frequency = 2;
+    write_RTC_frequency(15);
     return 0;
 }
 
@@ -145,9 +150,10 @@ int write(uint32_t fd, void* buffer, int nbytes) {
 
     freq = *((unsigned int*)(buffer));
 
-    for (i = 1; i < 16; i++) {
-        if (freq == (2^i)) {
-            RTC_frequency = (2^i);
+    for (i = 1; i < 14; i++) {
+        if (freq == (2 << (i-1))) {
+            RTC_frequency = (2 << (i-1));
+            write_RTC_frequency(16-i);
             return 0;
         }
     }
