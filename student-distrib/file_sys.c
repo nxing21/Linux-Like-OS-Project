@@ -1,15 +1,23 @@
 #include "file_sys.h"
 #include "lib.h"
 
-boot_block_t *boot_block;
-fd_t file_descriptors[8];
-dentry_t *dentry;
+static boot_block_t *boot_block;
+static fd_t file_descriptors[8];
+static dentry_t *dentry;
+static int fds_in_use;
 
 void init_file_sys(uint32_t starting_addr){
     int i;
     boot_block= (boot_block_t *) starting_addr;
     // file_descriptors[0] = stdin; /*keyboard input*/
     // file_descriptors[1] = stdout; /*terminal output*/
+    for(i = 2; i < 8; i++){
+        file_descriptors[i].file_op_table_ptr = NULL; // unkown type so set to NULL
+        file_descriptors[i].inode = -1; // -1 because it's not set
+        file_descriptors[i].file_pos = 0; //default to 0
+        file_descriptors[i].flags = -1; // -1 means not in use
+        fds_in_use = 2; //easy way to keep track of how many fd slots if any are open
+    }
 }
 
 /* The three routines provided by the file system module return -1 on failure, indicating a non-existent file or invalid
@@ -120,32 +128,98 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     return num_bytes_copied;
 }
 
+
+
+
+
+
 int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
+    int offset;
+    if(fd > 7 || fd < 0){
+        return -1;
+    }
+    else{
+        offset = file_descriptors[fd].file_pos; //the order of me doing this seems wrong
+        file_descriptors[fd].file_pos += nbytes;
+        return read_data(file_descriptors[fd].inode, offset, (uint8_t*) buf, nbytes);
+    }
     
 }
+
 int32_t write_file(int32_t fd, const void* buf, int32_t nbytes) {
     // do nothing
     return -1;
 }
+
 int32_t open_file(const uint8_t* filename){
-    return read_dentry_by_name(filename, dentry);
+    
+    if(read_dentry_by_name(filename, dentry) != -1 && fds_in_use < 8 ){
+        file_descriptors[fds_in_use+1].flags = 1; 
+        file_descriptors[fds_in_use+1].inode = dentry->inode_num;
+        fds_in_use++;
+        return 0;
+    }
+    else{
+        return -1;
+    }
+
+
+    
 }
+
 int32_t close_file(int32_t fd) {
-    // do nothing
-    return 0;
+    if(fd >= 0 && fd < 8 ){
+        file_descriptors[fd].flags = -1; 
+        file_descriptors[fd].inode = -1;
+        file_descriptors[fd].file_pos = 0;
+        file_descriptors[fd].file_op_table_ptr = NULL;
+        fds_in_use--;
+        return 0;
+    }
+    else{
+        return -1;
+    }
 }
 
 int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
-
+    int offset;
+    if(fd > 7 || fd < 0){
+        return -1;
+    }
+    else{
+        offset = file_descriptors[fd].file_pos; //the order of me doing this seems wrong
+        file_descriptors[fd].file_pos += nbytes;
+        return read_data(0, offset, (uint8_t*) buf, nbytes);
+    }
 }
+
 int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes) {
     // do nothing
     return -1;
 }
 int32_t open_directory(const uint8_t* filename) {
-    return read_dentry_by_name(filename, dentry);
+    if(read_dentry_by_name(filename, dentry) != -1 && fds_in_use < 8 ){
+        file_descriptors[fds_in_use+1].flags = 1; 
+        file_descriptors[fds_in_use+1].inode = dentry->inode_num;
+        fds_in_use++;
+        return 0;
+    }
+    else{
+        return -1;
+    }
 }
+
 int32_t close_directory(int32_t fd) {
-    // do nothing
-    return 0;
+    if(fd >= 0 && fd < 8 ){
+        file_descriptors[fd].flags = -1; 
+        file_descriptors[fd].inode = -1;
+        file_descriptors[fd].file_pos = 0;
+        file_descriptors[fd].file_op_table_ptr = NULL;
+        fds_in_use--;
+        return 0;
+    }
+    else{
+        return -1;
+    }
 }
+
