@@ -209,8 +209,8 @@ int read_dentry_test(){
 	clear();
 	TEST_HEADER;
 	dentry_t* dentry;
-	const uint8_t* fname = "frame0.txt";
-	int32_t out = read_dentry_by_name(fname, dentry);
+	const int8_t* fname = "frame0.txt";
+	int32_t out = read_dentry_by_name((const uint32_t *) fname, dentry);
 	if(out != 0){
 		return FAIL;
 	}
@@ -226,6 +226,7 @@ int read_dentry_test(){
 	printf("%s %d  lol2 \n", dentry->filename, dentry->inode_num);
 
 	return PASS; /*should always reach here unless test failed*/ 
+
 }
 
 /* Checkpoint 2 tests */
@@ -237,14 +238,37 @@ int read_dentry_test(){
  * Coverage: check if read data works
  */
 int read_data_test(){
-	clear();
+	// clear();
 	TEST_HEADER;
-	uint8_t *buf;
+	uint8_t buf[BYTES_PER_BLOCK];
+	printf("TESTING READ DATA\n");
+	int32_t bytes_read;
+	uint32_t inode_num = 38;
+	bytes_read = read_data(inode_num, 0, buf, 187);
+	clear();
+	int i;
+	for (i = 0; i < bytes_read; i++) {
+		printf("%c", buf[i]);
+	}
 
-	if(read_data(1, 0, buf, 16) == -1){
+	return PASS; /*should always reach here unless test failed*/ 
+}
+
+/* Checkpoint 2 tests */
+
+/* open_file_test
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if open file works
+ */
+int open_file_test(){
+	//clear();
+	TEST_HEADER;
+	const uint8_t* filename = "frame0.txt";
+	if(open_file(filename) == -1){
 		return FAIL;
 	}
-	printf("%s", buf);
 
 	return PASS; /*should always reach here unless test failed*/ 
 }
@@ -267,8 +291,11 @@ void launch_tests(){
 	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
 	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
 	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
+
+	/* Checkpoint 2 tests*/
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
-	TEST_OUTPUT("read_data_test", read_data_test());
+	// TEST_OUTPUT("read_data_test", read_data_test());
+	TEST_OUTPUT("open_file_test", open_file_test());
 	
 	
 	

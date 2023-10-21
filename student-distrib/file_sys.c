@@ -1,14 +1,21 @@
 #include "file_sys.h"
 #include "lib.h"
 
-static boot_block_t *boot_block;
+boot_block_t *boot_block;
+inode_t * inode;
+uint32_t data_blocks;
+dentry_t *dentry;
+
 static fd_t file_descriptors[8];
-static dentry_t *dentry;
 static int fds_in_use;
 
 void init_file_sys(uint32_t starting_addr){
     int i;
     boot_block= (boot_block_t *) starting_addr;
+    inode = (inode_t *)(starting_addr + BYTES_PER_BLOCK); // starting inode address
+    data_blocks = (starting_addr + BYTES_PER_BLOCK + boot_block->inode_count * BYTES_PER_BLOCK); // starting data blocks address
+
+
     // file_descriptors[0] = stdin; /*keyboard input*/
     // file_descriptors[1] = stdout; /*terminal output*/
     for(i = 2; i < 8; i++){
@@ -35,26 +42,29 @@ void init_file_sys(uint32_t starting_addr){
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     dentry_t * dentries_array = boot_block->direntries;
     int i;
-    int found_flag = 0;
     int len= strlen((int8_t *)fname);
-    dentry_t found_dentry;
     if(len > FILENAME_LEN){
-        return -1;
-    }
-    for(i = 0; i < DIR_ENTRIES; i++){
-        //strncmp assumes same length
-        const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
-        if( (len == strlen((int8_t *)cur_dentry))  && (strncmp((int8_t *)cur_dentry, (int8_t *)fname, len) == 0)){
-            found_flag = 1;
-            found_dentry = dentries_array[i];
-            break;
+        for(i = 0; i < DIR_ENTRIES; i++){
+            //strncmp assumes same length
+            const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
+            if( (strncmp((int8_t *)cur_dentry, (int8_t *)fname, FILENAME_LEN) == 0)){
+                *dentry = dentries_array[i];
+                return 0;
+            }
         }
     }
-
-    if(found_flag == 1){
-        *dentry = found_dentry;
-        return 0;
+    else{
+        for(i = 0; i < DIR_ENTRIES; i++){
+            //strncmp assumes same length
+            const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
+            if( (len == strlen((int8_t *)cur_dentry))  && (strncmp((int8_t *)cur_dentry, (int8_t *)fname, len) == 0)){
+                *dentry = dentries_array[i];
+                return 0;
+            }
+        }
     }
+    
+
 
     return -1; // not found
     
@@ -83,9 +93,8 @@ length bytes starting from position offset in the file with inode number inode a
 read and placed in the buffer. A return value of 0 thus indicates that the end of the file has been reached.
 */
 int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t length){
-    inode_t * inode = (inode_t *)(boot_block + BYTES_PER_BLOCK); // starting inode address
-    uint32_t * data_blocks = (uint32_t *) (inode + inode->length * BYTES_PER_BLOCK); // starting data blocks address
-    int i; // loop counter
+
+    uint32_t i; // loop counter
 
     /* Fail cases:
      * 1) Inode input is greater than the number of inodes we have
@@ -94,26 +103,35 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     if (inode_num >= boot_block->inode_count) {
         return -1;
     }
-    if (offset >= inode->length) {
-        return -1;
-    }
 
     uint32_t inode_block_index = offset / BYTES_PER_BLOCK; // current data block index within inode
     uint32_t data_block_index = offset % BYTES_PER_BLOCK; // index in data block
 
     int32_t num_bytes_copied = 0; // bytes copied counter
-    inode_t * cur_inode = (inode_t*) (data_blocks + inode_num * BYTES_PER_BLOCK); // get current inode
-
-    // Change the length if we will be going over the last data block in the current inode
-    if (offset + length > cur_inode->length) {
-        length = cur_inode->length - offset;
+    inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_num * BYTES_PER_BLOCK); // get current inode
+    if (offset >= cur_inode->length) {
+        return -1;
     }
 
+    printf("reached line 104\n");
+    printf("%d, %d, %d, %d, %d, %d, %d\n", boot_block, inode, cur_inode, cur_inode->length, data_blocks, cur_inode->data_block_num[1],cur_inode->data_block_num[2]);
+    // Change the length if we will be going over the last data block in the current inode
+    // if (offset + length > cur_inode->length) {
+    //     length = cur_inode->length - offset;
+    // }
+    
     for (i = 0; i < length; i++) {
-        uint32_t * cur_block = (uint32_t *) (cur_inode->data_block_num[inode_block_index]); // get current data block
-
-        buf[num_bytes_copied] = cur_block[data_block_index]; // copy into buffer
-
+        //printf("reached line 113, i = %d\n", i);
+        // uint32_t cur_block_num = cur_inode->data_block_num[inode_block_index]; // get current data block
+        // //printf("%d, %d\n", boot_block->data_count, cur_block_num);
+        // uint32_t * cur_block_addr = data_blocks + cur_block_num * BYTES_PER_BLOCK;
+        
+        // buf[num_bytes_copied] = 
+        uint8_t * src = (uint8_t *) (data_blocks + cur_inode->data_block_num[inode_block_index] * BYTES_PER_BLOCK + data_block_index); // copy into buffer
+        memcpy(buf + num_bytes_copied, src, 1);
+        // putc((uint8_t *) (data_blocks + cur_inode->data_block_num[inode_block_index] * BYTES_PER_BLOCK + data_block_index));
+        //printf("reached line 117, i = %d\n", i);
+        //010101010101010101010101
         // update counters and index trackers
         num_bytes_copied++;
         data_block_index++;
@@ -124,11 +142,10 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
             inode_block_index++;
         }
     }
+    printf("reached line 139\n");
 
     return num_bytes_copied;
 }
-
-
 
 
 
@@ -152,8 +169,8 @@ int32_t write_file(int32_t fd, const void* buf, int32_t nbytes) {
 }
 
 int32_t open_file(const uint8_t* filename){
-    
-    if(read_dentry_by_name(filename, dentry) != -1 && fds_in_use < 8 ){
+    dentry_t *dentry_temp;
+    if(read_dentry_by_name(filename, dentry_temp) != -1 && fds_in_use < 8 ){
         file_descriptors[fds_in_use+1].flags = 1; 
         file_descriptors[fds_in_use+1].inode = dentry->inode_num;
         fds_in_use++;
@@ -163,7 +180,7 @@ int32_t open_file(const uint8_t* filename){
         return -1;
     }
 
-
+    // return read_dentry_by_name(filename, dentry);
     
 }
 
