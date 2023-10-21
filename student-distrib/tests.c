@@ -244,9 +244,8 @@ int read_data_test(){
 	printf("TESTING READ DATA\n");
 	int32_t bytes_read;
 	uint32_t inode_num = 38;
-	bytes_read = read_data(inode_num, 0, buf, 187);
-	printf("reached 148\n");
-	clear();
+	bytes_read = read_data(inode_num, 0, buf, 64);
+	//clear();
 	int i;
 	for (i = 0; i < bytes_read; i++) {
 		putc(buf[i]);

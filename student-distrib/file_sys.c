@@ -81,7 +81,7 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     //printf("2: %d, %d, %d\n", boot_block, inode2, data_blocks2);
     uint32_t i; // loop counter
     printf("reached line 83\n");
-    printf("Inode: %d\n", inode[inode_num]);
+    printf("%d\n", boot_block->inode_count);
 
     /* Fail cases:
      * 1) Inode input is greater than the number of inodes we have
@@ -90,34 +90,31 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     if (inode_num >= boot_block->inode_count) {
         return -1;
     }
-    printf("reached line 92\n");
     if (offset >= boot_block->inode_count) {
         return -1;
     }
-    printf("reached line 96\n");
 
     uint32_t inode_block_index = offset / BYTES_PER_BLOCK; // current data block index within inode
     uint32_t data_block_index = offset % BYTES_PER_BLOCK; // index in data block
-    printf("reached line 100\n");
 
     int32_t num_bytes_copied = 0; // bytes copied counter
     inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_num * BYTES_PER_BLOCK); // get current inode
     printf("reached line 104\n");
-    printf("%d, %d, %d\n", boot_block, cur_inode, cur_inode->length);
-
+    printf("%d, %d, %d, %d, %d, %d, %d\n", boot_block, inode, cur_inode->length, boot_block->inode_count, cur_inode->data_block_num[0], cur_inode->data_block_num[1],cur_inode->data_block_num[2]);
     // Change the length if we will be going over the last data block in the current inode
     // if (offset + length > cur_inode->length) {
     //     length = cur_inode->length - offset;
     // }
+    // printf("dfsafdfa %d\n", &inode[inode_num].data_block_num[0]);
     printf("reached line 110, length = %d\n", length);
 
     for (i = 0; i < length; i++) {
         //printf("reached line 113, i = %d\n", i);
-        uint32_t cur_block_num = cur_inode->data_block_num[inode_block_index]; // get current data block
-        //printf("%d, %d\n", boot_block->data_count, cur_block_num);
-        uint32_t * cur_block_addr = data_blocks + cur_block_num * BYTES_PER_BLOCK;
-        // printf("reached line 115, i = %d, cur block addr[0] = %d\n", i, cur_block_addr);
-        buf[num_bytes_copied] = cur_block_addr[data_block_index]; // copy into buffer
+        // uint32_t cur_block_num = cur_inode->data_block_num[inode_block_index]; // get current data block
+        // //printf("%d, %d\n", boot_block->data_count, cur_block_num);
+        // uint32_t * cur_block_addr = data_blocks + cur_block_num * BYTES_PER_BLOCK;
+        
+        buf[num_bytes_copied] = (uint8_t *) (data_blocks + cur_inode->data_block_num[inode_block_index] * BYTES_PER_BLOCK + data_block_index); // copy into buffer
         //printf("reached line 117, i = %d\n", i);
 
         // update counters and index trackers
