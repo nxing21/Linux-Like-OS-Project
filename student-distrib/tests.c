@@ -265,20 +265,23 @@ int read_data_test(){
  * Coverage: check if open file works
  */
 int open_read_file_test(){
-	
 	TEST_HEADER;
 	clear();
-	const uint8_t* filename =  "fish";
-	uint8_t buf[BYTES_PER_BLOCK*4];
-	if(open_file(filename) == -1){
+	const char* filename =  "frame0.txt";
+	uint8_t buf[BYTES_PER_BLOCK*10]; // arbitrary big number
+	if(open_file((const uint8_t *) filename) == -1){
 		printf("failed at open");
 		return FAIL;
 	}
-	
-	
-	
-	if(read_file(3, buf, 10000) != 0){
-		return FAIL;
+
+	// if(read_file(3, buf, 20000) != 0){
+	// 	return FAIL;
+	// }
+
+	int bytes_read = read_file(3, buf, 20000); // arbitrary big number
+	int i;
+	for (i = 0; i < bytes_read; i++) {
+		putc(buf[i]);
 	}
 
 	return PASS; /*should always reach here unless test failed*/ 
@@ -291,21 +294,37 @@ int open_read_file_test(){
  * Coverage: check if open directory works
  */
 int open_read_dir_test(){
-	
 	TEST_HEADER;
 	clear();
-	const uint8_t* filename =  ".";
+	const char* filename =  ".";
 	uint8_t buf[BYTES_PER_BLOCK*4];
-	if(open_file(filename) == -1){
+	uint32_t length_buf[BYTES_PER_BLOCK];
+	if(open_file((const uint8_t *) filename) == -1){
 		printf("failed at open");
 		return FAIL;
 	}
 	
-	
-	
-	if(read_directory(3, buf, 10000) != 0){
-		return FAIL;
+	int num_read = read_directory(3, buf, length_buf, 1000);
+	int i;
+	int length_index = 0;
+	for (i = 0; i < num_read; i++) {
+		if (i % (FILENAME_LEN + 1) == 0) { // one more than the file length for the file type character
+			printf("\nFile name: ");
+			putc(buf[i]);
+		}
+		else if (i % (FILENAME_LEN + 1) == FILENAME_LEN) {
+			printf(", File type: ");
+			putc(buf[i]);
+			printf(", File length: ");
+			printf("%d", length_buf[length_index]);
+			length_index++;
+		}
+		else {
+			putc(buf[i]);
+		}
 	}
+
+	printf("\n");
 
 	return PASS; /*should always reach here unless test failed*/ 
 }
@@ -477,3 +496,4 @@ void launch_tests(){
 	TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());
 	// TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
 }
+

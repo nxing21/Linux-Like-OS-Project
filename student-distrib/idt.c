@@ -217,7 +217,7 @@ void general_protection() {
  */
 void page_fault() {
     
-    int location = page_fault_location();
+    uint32_t location = page_fault_location();
     printf("Page-Fault Exception: %x \n", location);
     while(1){};
 }
