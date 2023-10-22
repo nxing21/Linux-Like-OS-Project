@@ -166,14 +166,11 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     printf("Enabling Interrupts\n");
     sti();
-    // clear();
-
-    /* Sets the cursor. */
-    init_cursor();
+    clear();
 
 #ifdef RUN_TESTS
     // /* Run tests */
-    // launch_tests();
+    launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
     /* Spin (nicely, so we don't chew up cycles) */

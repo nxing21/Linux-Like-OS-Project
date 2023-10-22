@@ -1,10 +1,15 @@
 #include "init_devices.h"
+#include "terminal.h"
 
 /* Global variables for handling keyboard */
 static int shift_held = 0;
 static int caps_locked_activated = 0;
 static int caps_lock_held = 0;
 static int ctrl_held = 0;
+
+/* Making a keyboard buffer. */
+uint8_t keyboard_buffer[128];
+int keyboard_buffer_size = 0;
 
 /* 
  * init_ps2devices
@@ -16,9 +21,9 @@ static int ctrl_held = 0;
  */
 void init_ps2devices(){
     /* Enable IRQ 1 in the PIC*/
+    keyboard_buffer_size = 0;
     enable_irq(KEYBOARD_IRQ);
 }
-
 
 /* 
  * keyboard_handler
@@ -53,6 +58,21 @@ void keyboard_handler(){
             break;
         case RIGHT_SHIFT_RELEASED:
             shift_key_handler(RIGHT_SHIFT_RELEASED);
+            break;
+        case LEFT_CTL_PRESSED:
+            ctrl_key_handler(LEFT_CTL_PRESSED);
+            break;
+        case LEFT_CTL_RELEASED:
+            ctrl_key_handler(LEFT_CTL_RELEASED);
+            break;
+        case BACKSPACE_PRESSED:
+            backspace_handler();
+            break;
+        case ENTER_PRESESED:
+            enter_key_handler();
+            break;
+        case TAB_PRESSED:
+            tab_key_handler();
             break;
         default:
             typing_handler(response);
@@ -89,6 +109,24 @@ void shift_key_handler(uint8_t response){
     }
 }
 
+/* Takes care of cases w/ CTRL key */
+void ctrl_key_handler(uint8_t response){
+    if (response == LEFT_CTL_PRESSED){
+        ctrl_held = 1;
+    }
+
+    if (response == LEFT_CTL_RELEASED){
+        ctrl_held = 0;
+    }
+
+    /* CTRL-L: Performs a clear screen. */
+    if (response == 'l' || response == 'L'){
+        clear();
+        keyboard_buffer_size = 0;
+
+    }
+}
+
 /* Takes care of typing. */
 void typing_handler(uint8_t response){
     uint8_t printed_char; /* The character to print on the keyboard */
@@ -114,10 +152,67 @@ void typing_handler(uint8_t response){
         }   
     }
 
-    if (printed_char != 0x0){
-        putc(printed_char);
+    if (ctrl_held == 1){
+        ctrl_key_handler(printed_char);
+        return;
     }
 
+    if (printed_char != 0x0){
+        if (keyboard_buffer_size < 0){
+            keyboard_buffer_size = 0;
+        }
+        if (keyboard_buffer_size == 127){
+        }
+        else{
+            keyboard_buffer[keyboard_buffer_size] = printed_char;
+            keyboard_buffer_size++;
+            putc(printed_char);
+            edit_buffer(printed_char);
+        }
+    }
+}
+
+/* Takes care of backspace. */
+void backspace_handler(){
+    if (keyboard_buffer_size > 0){
+        erase_char();
+        keyboard_buffer[keyboard_buffer_size] = 0x0;
+        keyboard_buffer_size--;
+        edit_buffer(BACKSPACE_PRESSED);
+    }
+    if (keyboard_buffer_size == 0){
+        edit_buffer(BACKSPACE_PRESSED);
+        keyboard_buffer[keyboard_buffer_size] = 0x0;
+    }
+}
+
+/* Takes care of enter key. */
+void enter_key_handler(){
+    int i; 
+    edit_buffer(ENTER_PRESESED);
+    putc('\n');
+    
+    /* Clear out the keyboard buffer. */
+    for (i = 0; i < keyboard_buffer_size +1; i++){
+        keyboard_buffer[i] = 0x0;
+    }
+    keyboard_buffer_size = 0;
+}
+
+/* Takes care of the tab key. */
+void tab_key_handler(){
+    int i;
+    for (i = 0; i < 4; i++){
+         if (keyboard_buffer_size > 126){
+            return;
+        }
+        else{
+            keyboard_buffer[keyboard_buffer_size] = SPACE_ASCII;
+            keyboard_buffer_size++;
+            putc(SPACE_ASCII);
+            edit_buffer(0x32);
+        }
+    }
 }
 
 /* Maps a scan code with a character.  */

@@ -32,6 +32,15 @@
 #define LEFT_SHIFT_RELEASED 0xAA
 #define RIGHT_SHIFT_RELEASED 0xB6
 
+#define LEFT_CTL_PRESSED 0x1D
+#define LEFT_CTL_RELEASED 0x9D
+// #define RIGHT_CTL_PRESSED 0xE01D
+// #define RIGHT_CTL_RELEASED 0xE09D
+#define ENTER_PRESESED 0x1C
+#define TAB_PRESSED 0x0F
+
+#define SPACE_ASCII  0x00
+
 #define READ_PS2_OUTPUT 0xD0
 
 /* Initializes the PS/2 devices. */
@@ -46,8 +55,17 @@ void caps_lock_handler(uint8_t response);
 /* Takes care of cases w/ SHIFT key */
 void shift_key_handler(uint8_t response);
 
+/* Takes care for cases w/ CTL key*/
+void ctrl_key_handler(uint8_t response);
+
 /* Takes care of typing. */
 void typing_handler(uint8_t response);
+
+/* Takes care of backspace. */
+void backspace_handler();
+
+/* Takes care of ENTER key. */
+void enter_key_handler();
 
 /* Retrieves a character based on scan code. */
 uint8_t default_scan_code_data(uint8_t response);
@@ -60,6 +78,7 @@ uint8_t shift_key_scan_data(uint8_t response);
 
 /* Maps a scan code to a character if both SHIFT and CAPS Lock is on*/
 uint8_t shift_and_caps_data(uint8_t response);
+
 
 
 #endif

@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "terminal.h"
 
 #define PASS 1
 #define FAIL 0
@@ -197,6 +198,16 @@ static inline int sys_call_test(){
 
 
 /* Checkpoint 2 tests */
+void test_terminal_read_write(){
+	uint8_t * buf;
+	int numbytes;
+	while (1){
+		numbytes = terminal_read(0, buf, 128);
+		if (numbytes != -1){
+			terminal_write(0, buf, numbytes);
+		}
+	}
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -215,5 +226,6 @@ void launch_tests(){
 	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
 	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
 	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
+	test_terminal_read_write();
 	
 }
