@@ -262,11 +262,46 @@ int read_data_test(){
  * Side Effects: None
  * Coverage: check if open file works
  */
-int open_file_test(){
-	//clear();
+int open_read_file_test(){
+	
 	TEST_HEADER;
-	const int8_t* filename =  "frame0.txt";
-	if(open_file( (const uint8_t *) filename) == -1){
+	clear();
+	const uint8_t* filename =  "frame0.txt";
+	uint8_t buf[BYTES_PER_BLOCK*4];
+	if(open_file(filename) == -1){
+		printf("failed at open");
+		return FAIL;
+	}
+	
+	
+	
+	if(read_file(3, buf, 10000) != 0){
+		return FAIL;
+	}
+
+	return PASS; /*should always reach here unless test failed*/ 
+}
+
+/* open_read_dir_test()
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if open directory works
+ */
+int open_read_dir_test(){
+	
+	TEST_HEADER;
+	clear();
+	const uint8_t* filename =  ".";
+	uint8_t buf[BYTES_PER_BLOCK*4];
+	if(open_file(filename) == -1){
+		printf("failed at open");
+		return FAIL;
+	}
+	
+	
+	
+	if(read_directory(3, buf, 10000) != 0){
 		return FAIL;
 	}
 
@@ -295,7 +330,8 @@ void launch_tests(){
 	/* Checkpoint 2 tests*/
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
-	TEST_OUTPUT("open_file_test", open_file_test());
+	TEST_OUTPUT("open_read_file_test", open_read_file_test());
+	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
 	
 	
 	

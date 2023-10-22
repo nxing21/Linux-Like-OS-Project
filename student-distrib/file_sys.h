@@ -63,14 +63,14 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 
-extern int32_t read_file(int32_t fd, void* buf, int32_t nbytes);
-extern int32_t write_file(int32_t fd, const void* buf, int32_t nbytes);
-extern int32_t open_file(const uint8_t* filename);
-extern int32_t close_file(int32_t fd);
+int32_t read_file(int32_t fd, void* buf, int32_t nbytes);
+int32_t write_file(int32_t fd, const void* buf, int32_t nbytes);
+int32_t open_file(const uint8_t* filename);
+int32_t close_file(int32_t fd);
 
-extern int32_t read_directory(int32_t fd, void* buf, int32_t nbytes);
-extern int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes);
-extern int32_t open_directory(const uint8_t* filename);
-extern int32_t close_directory(int32_t fd);
+int32_t read_directory(int32_t fd, void* buf, int32_t nbytes);
+int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes);
+int32_t open_directory(const uint8_t* filename);
+int32_t close_directory(int32_t fd);
 
 #endif
