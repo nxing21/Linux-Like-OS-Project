@@ -170,7 +170,7 @@ int32_t write_file(int32_t fd, const void* buf, int32_t nbytes) {
 
 int32_t open_file(const uint8_t* filename){
     // uint8_t exists = read_dentry_by_name(filename, dentry);
-    if( read_dentry_by_name((const uint8_t*)filename, dentry) != -1 && fds_in_use < 8 ){
+    if( (read_dentry_by_name((const uint8_t*)filename, dentry) != -1) && fds_in_use < 8 ){
         file_descriptors[fds_in_use+1].flags = 1; 
         file_descriptors[fds_in_use+1].inode = dentry->inode_num;
         fds_in_use++;
@@ -181,6 +181,8 @@ int32_t open_file(const uint8_t* filename){
     }
     
     // return exists;
+    // return read_dentry_by_name(filename, dentry);
+    
     
 }
 

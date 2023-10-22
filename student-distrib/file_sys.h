@@ -12,34 +12,34 @@
 #define BYTES_PER_BLOCK 4096
 
 /* file directory entry structure from slides*/
-typedef struct __attribute__((packed)) dentry {
+typedef struct dentry {
     uint8_t filename[FILENAME_LEN];
     uint32_t filetype; //File types are 0 for user-level access to RTC, 1 for the directory, and 2 for a regular file.
     uint32_t inode_num; // The index node number is only meaningful for regular files and should be ignored for the RTC and directory types.
     uint8_t reserved[DENTRY_RESERVED_BYTES]; 
-} dentry_t;
+} dentry_t __attribute__((packed));
 
 /* inode structure from slides*/
-typedef struct __attribute__((packed)) inode {
+typedef struct  inode {
     uint32_t length;
     uint32_t data_block_num[ONE_KB-1];
-} inode_t;
+} inode_t __attribute__((packed));
 
 /* inode structure from slides*/
-typedef struct __attribute__((packed)) boot_block {
+typedef struct  boot_block {
     uint32_t dir_count;
     uint32_t inode_count;
     uint32_t data_count;
     uint8_t reserved[BOOT_BLOCK_RESERVED_BYTES];
     dentry_t direntries[DIR_ENTRIES];
-} boot_block_t;
+} boot_block_t __attribute__((packed));
 
-typedef struct __attribute__((packed)) file_descriptor {
+typedef struct  file_descriptor {
     int32_t *file_op_table_ptr; /* The file operations jump table associated with the correct file type */
     int32_t inode; /*The inode number for this file. This is only valid for data files, and should be 0 for directories and the RTC device file.*/
     int32_t file_pos; /* keeps track of where the user is currently reading from in the file. Every read system call should update this member.*/
     int32_t flags; /* among other things, marking this file descriptor as “in-use.” */
-} fd_t;
+} fd_t __attribute__((packed));
 
 
 
