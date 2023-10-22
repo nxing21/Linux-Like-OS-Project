@@ -209,7 +209,7 @@ int read_dentry_test(){
 	clear();
 	TEST_HEADER;
 	dentry_t* dentry;
-	const int8_t* fname = "verylargetextwithverylongname.txt";
+	const int8_t* fname = "frame0.txt";
 	int32_t out = read_dentry_by_name((const uint8_t *) fname, dentry);
 	if(out != 0){
 		return FAIL;
@@ -238,12 +238,13 @@ int read_dentry_test(){
  * Coverage: check if read data works
  */
 int read_data_test(){
-	//clear();
+	// clear();
 	TEST_HEADER;
-	uint8_t buf[4 * BYTES_PER_BLOCK];
+	uint8_t buf[BYTES_PER_BLOCK*4];
+	printf("TESTING READ DATA\n");
 	int32_t bytes_read;
 	uint32_t inode_num = 38;
-	bytes_read = read_data(inode_num, 0, buf, 4 * BYTES_PER_BLOCK);
+	bytes_read = read_data(inode_num, 0, buf, 187);
 	clear();
 	int i;
 	for (i = 0; i < bytes_read; i++) {
@@ -253,22 +254,55 @@ int read_data_test(){
 	return PASS; /*should always reach here unless test failed*/ 
 }
 
-int read_dir_test() {
-	TEST_HEADER;
-	int32_t fd;
-	uint8_t buf[FILENAME_LEN];
-	read_directory(fd, buf, 0);
+/* Checkpoint 2 tests */
 
-	return PASS;
+/* open_file_test
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if open file works
+ */
+int open_read_file_test(){
+	TEST_HEADER;
+	clear();
+	const char* filename =  "grep";
+	uint8_t buf[BYTES_PER_BLOCK*10];
+	if(open_file((const uint8_t *) filename) == -1){
+		printf("failed at open");
+		return FAIL;
+	}
+
+	if(read_file(3, buf, 20000) != 0){
+		return FAIL;
+	}
+
+	return PASS; /*should always reach here unless test failed*/ 
 }
 
-int read_file_test() {
+/* open_read_dir_test()
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if open directory works
+ */
+int open_read_dir_test(){
+	
 	TEST_HEADER;
-	int32_t fd;
-	uint8_t buf[BYTES_PER_BLOCK * 4];
-	read_file(fd, buf, 0);
+	clear();
+	const char* filename =  ".";
+	uint8_t buf[BYTES_PER_BLOCK*4];
+	if(open_file((const uint8_t *) filename) == -1){
+		printf("failed at open");
+		return FAIL;
+	}
+	
+	
+	
+	if(read_directory(3, buf, 10000) != 0){
+		return FAIL;
+	}
 
-	return PASS;
+	return PASS; /*should always reach here unless test failed*/ 
 }
 
 /* Checkpoint 3 tests */
@@ -292,10 +326,8 @@ void launch_tests(){
 
 	/* Checkpoint 2 tests*/
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
-	// TEST_OUTPUT("read_dir_test", read_dir_test());
-	TEST_OUTPUT("read_file_test", read_file_test());
-	
-	
-	
+	// TEST_OUTPUT("read_data_test", read_data_test());
+	TEST_OUTPUT("open_read_file_test", open_read_file_test());
+	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
 }
 

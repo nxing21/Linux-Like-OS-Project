@@ -216,7 +216,9 @@ void general_protection() {
  * Function: Prints exception message and sends to infinite loop.
  */
 void page_fault() {
-    printf("Page-Fault Exception\n");
+    
+    int location = page_fault_location();
+    printf("Page-Fault Exception: %x \n", location);
     while(1){};
 }
 

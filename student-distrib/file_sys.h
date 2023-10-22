@@ -10,7 +10,6 @@
 #define BOOT_BLOCK_RESERVED_BYTES 52
 #define DIR_ENTRIES 63
 #define BYTES_PER_BLOCK 4096
-#define DENTRY_SIZE 64
 
 /* file directory entry structure from slides*/
 typedef struct dentry {
@@ -21,13 +20,13 @@ typedef struct dentry {
 } dentry_t;
 
 /* inode structure from slides*/
-typedef struct inode {
+typedef struct  inode {
     uint32_t length;
     uint32_t data_block_num[ONE_KB-1];
 } inode_t;
 
 /* inode structure from slides*/
-typedef struct boot_block {
+typedef struct  boot_block {
     uint32_t dir_count;
     uint32_t inode_count;
     uint32_t data_count;
@@ -35,29 +34,12 @@ typedef struct boot_block {
     dentry_t direntries[DIR_ENTRIES];
 } boot_block_t;
 
-// typedef struct file_descriptor {
-//     uint32_t *file_op_table_ptr;
-//     uint32_t inode;
-//     uint32_t file_pos;
-//     uint32_t flags;
-// } fd_t;
-
-
-
-// boot_block_t *boot_block;
-// inode_t *inode_start;
-// uint8_t *data_block_ptr;
-
-// inode_t * inode_start;
-// uint16_t *data_block_ptr;
-
-// typedef struct file_system {
-//     boot_block_t *boot_block;
-//     inode_t *inode_start;
-//     uint8_t *data_block_ptr;
-// } file_system_t;
-
-// static file_system_t *file_system;
+typedef struct  file_descriptor {
+    int32_t *file_op_table_ptr; /* The file operations jump table associated with the correct file type */
+    int32_t inode; /*The inode number for this file. This is only valid for data files, and should be 0 for directories and the RTC device file.*/
+    int32_t file_pos; /* keeps track of where the user is currently reading from in the file. Every read system call should update this member.*/
+    int32_t flags; /* among other things, marking this file descriptor as “in-use.” */
+} fd_t;
 
 void init_file_sys(uint32_t starting_addr);
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
