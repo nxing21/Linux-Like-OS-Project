@@ -17,6 +17,8 @@ static inline void assertion_failure(){
 	asm volatile("int $15");
 }
 
+int RTC_read(uint32_t fd, void* buffer, int nbytes);
+int RTC_write(uint32_t fd, void* buffer, int nbytes);
 
 /* Checkpoint 1 tests */
 
@@ -181,6 +183,27 @@ static inline int sys_call_test(){
 
 
 /* Checkpoint 2 tests */
+
+int RTC_frequencies_test(){
+	TEST_HEADER;
+	printf("\n");
+	clear();
+	printf(" ");
+	int i, k, temp;
+
+	for (i = 1; i <= 10; i++) {
+		temp = 2 << i;
+		RTC_write(0,&temp,4);
+		for (k = 0; k < 8; k++) {
+			printf("o ");
+			RTC_read(0, 0, 4);
+		}
+		printf("\n");
+		printf(" ");
+	}
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -188,7 +211,7 @@ static inline int sys_call_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
+	// TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
 	// TEST_OUTPUT("divide_error_test", divide_error_test());
 	// TEST_OUTPUT("page_fault_zero_test", page_fault_zero_test());
@@ -198,5 +221,5 @@ void launch_tests(){
 	// TEST_OUTPUT("boundrange_error_test", boundrange_error_test());
 	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
 	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
-	
+	TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 }

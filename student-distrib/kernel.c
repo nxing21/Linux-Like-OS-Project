@@ -155,10 +155,6 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the RTC */
     init_RTC();
-    RTC_open("RANDOM");
-    unsigned int temp = 0x04;
-    RTC_read(0,&temp,3);
-
 
     /* Init the page*/
     init_page();

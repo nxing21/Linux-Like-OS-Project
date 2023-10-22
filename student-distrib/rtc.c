@@ -8,8 +8,8 @@
 #define BYTE_4          4
 #define RATE_OFFSET     3
 
-int RTC_frequency;
-volatile int RTC_block;
+int RTC_frequency, RTC_max_counter;
+volatile int RTC_block, RTC_counter;
 
 /* 
  * init_RTC
@@ -49,8 +49,10 @@ void init_RTC(){
     // RTC_frequency = rtc_max_frequency >> (3-1);
 
     /* sets frequency to highest possible frequency */
-    set_RTC_frequency(rtc_lowest_rate);
+    // set_RTC_frequency(rtc_lowest_rate);
     RTC_frequency = rtc_max_usable_frequency;
+    RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
+    RTC_counter = RTC_max_counter;
 
     /* initializes RTC_block */
     RTC_block = 0;
@@ -96,14 +98,18 @@ void RTC_handler(){
     uint8_t garbage;
 
     /* Function to test RTC */
-    test_interrupts();
+    // test_interrupts();
 
     /* Throws away the contents of Register C, allowing for interrupts to occur. */
     outb(RTC_REG_C, RTC_REGISTER_SELECT);
     garbage = inb(RTC_REGISTER_DATA_PORT);
 
-    /* resets RTC_block */
-    RTC_block = 0;
+    if (RTC_counter == 0) {
+        RTC_block = 0;
+        RTC_counter = RTC_max_counter;
+    } else {
+        RTC_counter--;
+    }
 
     send_eoi(RTC_IRQ);
 }
@@ -113,7 +119,9 @@ void RTC_handler(){
 // check parameter types
 int RTC_open(const char* filename) {
     RTC_frequency = rtc_min_frequency;
-    set_RTC_frequency(rtc_highest_rate);
+    RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
+    RTC_counter = RTC_max_counter;
+    // set_RTC_frequency(rtc_highest_rate);
     return 0;
 }
 
@@ -144,9 +152,11 @@ int RTC_write(uint32_t fd, void* buffer, int nbytes) {
     freq = *((unsigned int*)(buffer));
 
     for (i = rtc_lowest_rate; i <= rtc_highest_rate; i++) {
-        if (freq == (rtc_max_frequency >> i)) {
-            RTC_frequency = (rtc_max_frequency >> i);
-            set_RTC_frequency(i);
+        if (freq == (rtc_max_frequency >> (i-1))) {
+            RTC_frequency = (rtc_max_frequency >> (i-1));
+            RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
+            RTC_counter = RTC_max_counter;
+            // set_RTC_frequency(i);
             return 0;
         }
     }
