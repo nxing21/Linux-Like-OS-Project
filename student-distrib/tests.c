@@ -191,10 +191,10 @@ int RTC_frequencies_test(){
 	printf(" ");
 	int i, k, temp;
 
-	for (i = 1; i <= 10; i++) {
+	for (i = 0; i <= 9; i++) {
 		temp = 2 << i;
 		RTC_write(0,&temp,4);
-		for (k = 0; k < 8; k++) {
+		for (k = 0; k < 16; k++) {
 			printf("o ");
 			RTC_read(0, 0, 4);
 		}
@@ -283,8 +283,8 @@ void launch_tests(){
 	// TEST_OUTPUT("boundrange_error_test", boundrange_error_test());
 	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
 	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
-	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
+	TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
 	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
-	TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
+	// TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
 }
