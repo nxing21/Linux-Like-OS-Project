@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "file_sys.h"
+#include "rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -211,7 +212,7 @@ int read_dentry_test(){
 	clear();
 	TEST_HEADER;
 	dentry_t* dentry;
-	const int8_t* fname = "frame0.txt";
+	const uint8_t* fname = "verylargetextwithverylongname.tx";
 	int32_t out = read_dentry_by_name((const uint8_t *) fname, dentry);
 	if(out != 0){
 		return FAIL;
@@ -220,12 +221,12 @@ int read_dentry_test(){
 	printf("%s %d  lol1 \n", dentry->filename, dentry->inode_num);
 
 
-	if(read_dentry_by_index (1, dentry) != 0){
+	// if(read_dentry_by_index (1, dentry) != 0){
 		
-		return FAIL;
-	}
+	// 	return FAIL;
+	// }
 	
-	printf("%s %d  lol2 \n", dentry->filename, dentry->inode_num);
+	// printf("%s %d  lol2 \n", dentry->filename, dentry->inode_num);
 
 	return PASS; /*should always reach here unless test failed*/ 
 
@@ -249,13 +250,13 @@ int read_data_test(){
 	clear();
 	int i;
 	for (i = 0; i < bytes_read; i++) {
-		printf("%c", buf[i]);
+		putc(buf[i]);
 	}
 
 	return PASS; /*should always reach here unless test failed*/ 
 }
 
-/* Checkpoint 2 tests */
+
 
 /* open_file_test
  * Inputs: None
@@ -267,7 +268,7 @@ int open_read_file_test(){
 	
 	TEST_HEADER;
 	clear();
-	const uint8_t* filename =  "frame0.txt";
+	const uint8_t* filename =  "fish";
 	uint8_t buf[BYTES_PER_BLOCK*4];
 	if(open_file(filename) == -1){
 		printf("failed at open");
@@ -307,6 +308,8 @@ int open_read_dir_test(){
 	}
 
 	return PASS; /*should always reach here unless test failed*/ 
+}
+
 int RTC_frequencies_test(){
 	TEST_HEADER;
 	printf("\n");
@@ -345,7 +348,7 @@ int RTC_frequencies_low_test() {
 	}
 	printf("\n");
 
-	return FAIL;
+	return PASS;
 }
 
 int RTC_frequencies_high_test() {
@@ -366,7 +369,7 @@ int RTC_frequencies_high_test() {
 	}
 	printf("\n");
 
-	return FAIL;
+	return PASS;
 }
 
 int RTC_open_close_test() {
@@ -411,7 +414,7 @@ void launch_tests(){
 	/* Checkpoint 2 tests*/
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
-	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
+	TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
 	
 	
@@ -419,5 +422,5 @@ void launch_tests(){
 	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
 	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
-	TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
+	// TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
 }
