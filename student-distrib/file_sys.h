@@ -10,6 +10,7 @@
 #define BOOT_BLOCK_RESERVED_BYTES 52
 #define DIR_ENTRIES 63
 #define BYTES_PER_BLOCK 4096
+#define DENTRY_SIZE 64
 
 /* file directory entry structure from slides*/
 typedef struct dentry {

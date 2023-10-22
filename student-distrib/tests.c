@@ -209,8 +209,8 @@ int read_dentry_test(){
 	clear();
 	TEST_HEADER;
 	dentry_t* dentry;
-	const int8_t* fname = "ls";
-	int32_t out = read_dentry_by_name((const uint32_t *) fname, dentry);
+	const int8_t* fname = "verylargetextwithverylongname.txt";
+	int32_t out = read_dentry_by_name((const uint8_t *) fname, dentry);
 	if(out != 0){
 		return FAIL;
 	}
@@ -241,10 +241,9 @@ int read_data_test(){
 	//clear();
 	TEST_HEADER;
 	uint8_t buf[4 * BYTES_PER_BLOCK];
-	printf("TESTING READ DATA\n");
 	int32_t bytes_read;
-	uint32_t inode_num = 5;
-	bytes_read = read_data(inode_num, 0, buf, 5000);
+	uint32_t inode_num = 38;
+	bytes_read = read_data(inode_num, 0, buf, 4 * BYTES_PER_BLOCK);
 	clear();
 	int i;
 	for (i = 0; i < bytes_read; i++) {
@@ -252,6 +251,24 @@ int read_data_test(){
 	}
 
 	return PASS; /*should always reach here unless test failed*/ 
+}
+
+int read_dir_test() {
+	TEST_HEADER;
+	int32_t fd;
+	uint8_t buf[FILENAME_LEN];
+	read_directory(fd, buf, 0);
+
+	return PASS;
+}
+
+int read_file_test() {
+	TEST_HEADER;
+	int32_t fd;
+	uint8_t buf[BYTES_PER_BLOCK * 4];
+	read_file(fd, buf, 0);
+
+	return PASS;
 }
 
 /* Checkpoint 3 tests */
@@ -275,9 +292,8 @@ void launch_tests(){
 
 	/* Checkpoint 2 tests*/
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
-	int32_t fd;
-	uint8_t buf[4 * BYTES_PER_BLOCK];
-	TEST_OUTPUT("read_data_test", read_directory(fd, buf, 1000));
+	// TEST_OUTPUT("read_dir_test", read_dir_test());
+	TEST_OUTPUT("read_file_test", read_file_test());
 	
 	
 	
