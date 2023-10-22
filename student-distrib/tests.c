@@ -310,6 +310,12 @@ int open_read_dir_test(){
 	return PASS; /*should always reach here unless test failed*/ 
 }
 
+/* RTC_frequencies_test()
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if valid frequencies work
+ */
 int RTC_frequencies_test(){
 	TEST_HEADER;
 	printf("\n");
@@ -317,7 +323,7 @@ int RTC_frequencies_test(){
 	printf(" ");
 	int i, k, temp;
 
-	for (i = 1; i <= 10; i++) {
+	for (i = 0; i <= 9; i++) {
 		temp = 2 << i;
 		RTC_write(0,&temp,4);
 		for (k = 0; k < 8; k++) {
@@ -330,6 +336,12 @@ int RTC_frequencies_test(){
 	return PASS;
 }
 
+/* RTC_frequencies_low_test()
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if low invalid frequencies don't work
+ */
 int RTC_frequencies_low_test() {
 	TEST_HEADER;
 	printf("\n");
@@ -351,6 +363,12 @@ int RTC_frequencies_low_test() {
 	return PASS;
 }
 
+/* RTC_frequencies_high_test()
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if high invalid frequencies don't work
+ */
 int RTC_frequencies_high_test() {
 	TEST_HEADER;
 	printf("\n");
@@ -372,6 +390,42 @@ int RTC_frequencies_high_test() {
 	return PASS;
 }
 
+/* RTC_frequencies_invalid_test()
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if invalid frequencies don't work
+ */
+ int RTC_frequencies_invalid_test() {
+	TEST_HEADER;
+	printf("\n");
+	clear();
+	printf(" ");
+	int i, k, temp;
+
+	temp = 4;
+	RTC_write(0,&temp,4);
+
+	for (i = 1; i < 5; i++) {
+		temp = i*200;
+		RTC_write(0,&temp,4);
+		for (k = 0; k < 4; k++) {
+			printf("o ");
+			RTC_read(0,0,4);
+		}
+		printf("\n");
+		printf(" ");
+	}
+
+	return PASS;
+}
+
+/* RTC_open_close_test()
+ * Inputs: None
+ * Outputs: PASS on correct close(); FAIL on else
+ * Side Effects: None
+ * Coverage: check if open() and close() work
+ */
 int RTC_open_close_test() {
 	TEST_HEADER;
 	printf("\n");
@@ -414,13 +468,12 @@ void launch_tests(){
 	/* Checkpoint 2 tests*/
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
-	TEST_OUTPUT("open_read_file_test", open_read_file_test());
+	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
-	
-	
 	
 	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
 	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
+	TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());
 	// TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
 }
