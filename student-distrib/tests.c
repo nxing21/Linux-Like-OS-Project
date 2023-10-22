@@ -240,7 +240,7 @@ int read_dentry_test(){
 int read_data_test(){
 	// clear();
 	TEST_HEADER;
-	uint8_t buf[BYTES_PER_BLOCK];
+	uint8_t buf[BYTES_PER_BLOCK*4];
 	printf("TESTING READ DATA\n");
 	int32_t bytes_read;
 	uint32_t inode_num = 38;

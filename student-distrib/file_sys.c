@@ -6,8 +6,8 @@ inode_t * inode;
 uint32_t data_blocks;
 dentry_t *dentry;
 
-static fd_t file_descriptors[8];
-static int fds_in_use;
+fd_t file_descriptors[8];
+uint8_t fds_in_use;
 
 void init_file_sys(uint32_t starting_addr){
     int i;
@@ -169,8 +169,8 @@ int32_t write_file(int32_t fd, const void* buf, int32_t nbytes) {
 }
 
 int32_t open_file(const uint8_t* filename){
-    dentry_t *dentry_temp;
-    if(read_dentry_by_name(filename, dentry_temp) != -1 && fds_in_use < 8 ){
+    // uint8_t exists = read_dentry_by_name(filename, dentry);
+    if( read_dentry_by_name((const uint8_t*)filename, dentry) != -1 && fds_in_use < 8 ){
         file_descriptors[fds_in_use+1].flags = 1; 
         file_descriptors[fds_in_use+1].inode = dentry->inode_num;
         fds_in_use++;
@@ -179,8 +179,8 @@ int32_t open_file(const uint8_t* filename){
     else{
         return -1;
     }
-
-    // return read_dentry_by_name(filename, dentry);
+    
+    // return exists;
     
 }
 
