@@ -6,7 +6,7 @@ inode_t * inode;
 uint32_t data_blocks;
 dentry_t *dentry;
 
-fd_t file_descriptors[8];
+fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
 uint8_t fds_in_use;
 
 void init_file_sys(uint32_t starting_addr){
@@ -18,13 +18,13 @@ void init_file_sys(uint32_t starting_addr){
 
     // file_descriptors[0] = stdin; /*keyboard input*/
     // file_descriptors[1] = stdout; /*terminal output*/
-    for(i = 2; i < 8; i++){
+    for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){
         file_descriptors[i].file_op_table_ptr = NULL; // unkown type so set to NULL
         file_descriptors[i].inode = -1; // -1 because it's not set
         file_descriptors[i].file_pos = 0; //default to 0
         file_descriptors[i].flags = -1; // -1 means not in use
-        fds_in_use = 2; //easy way to keep track of how many fd slots if any are open
     }
+    fds_in_use = FILE_DESCRIPTOR_MIN; //easy way to keep track of how many fd slots if any are open
 }
 
 /* The three routines provided by the file system module return -1 on failure, indicating a non-existent file or invalid
@@ -57,10 +57,22 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
             break;
         }
     }
+<<<<<<< HEAD
 
     if(found_flag == 1){
         *dentry = found_dentry;
         return 0;
+=======
+    else{
+        for(i = 0; i < DIR_ENTRIES; i++){
+            //strncmp assumes same length
+            const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
+            if( (len == strlen((int8_t *)cur_dentry)) && (strncmp((int8_t *)cur_dentry, (int8_t *)fname, len) == 0)){
+                *dentry = dentries_array[i];
+                return 0;
+            }
+        }
+>>>>>>> 4cfc0600aca17efe48da90ee007669fb2291d90c
     }
     printf("didn't find");
     return -1; // not found
@@ -75,7 +87,6 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
         *dentry = dentries_array[index];
         return 0;
     } 
-
 
     return -1; // not found
 }
@@ -135,7 +146,7 @@ int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
     int i;
     int32_t bytes_read;
     uint8_t * buffer = (uint8_t*) buf;
-    if(fd > 7 || fd < 0){
+    if(fd >= FILE_DESCRIPTOR_MAX || fd < 0){
         return -1;
     }
     else{
@@ -143,13 +154,12 @@ int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
         offset = file_descriptors[fd].file_pos; //the order of me doing this seems wrong
         file_descriptors[fd].file_pos += nbytes;
         bytes_read = read_data(file_descriptors[fd].inode, offset, buffer, nbytes);
-        for (i = 0; i < bytes_read; i++) {
-		    putc(buffer[i]);
-	    }
+        // for (i = 0; i < bytes_read; i++) {
+		//     // printf("%c", buffer[i]);
+	    // }
 
-        return 0;
-    }
-    
+        return bytes_read;
+    }  
 }
 
 int32_t write_file(int32_t fd, const void* buf, int32_t nbytes) {
@@ -160,8 +170,8 @@ int32_t write_file(int32_t fd, const void* buf, int32_t nbytes) {
 int32_t open_file(const uint8_t* filename){
     dentry_t temp_dentry;
     
-    if( (read_dentry_by_name(filename, &temp_dentry) != -1) && fds_in_use < 8 ){
-        file_descriptors[fds_in_use+1].flags = 0x1; 
+    if( (read_dentry_by_name(filename, &temp_dentry) != -1) && fds_in_use < FILE_DESCRIPTOR_MAX ){
+        file_descriptors[fds_in_use+1].flags = 1; 
         file_descriptors[fds_in_use+1].inode = temp_dentry.inode_num;
         fds_in_use++;
         return 0;
@@ -169,15 +179,10 @@ int32_t open_file(const uint8_t* filename){
     else{
         return -1;
     }
-    
-    // return exists;
-    // return read_dentry_by_name(filename, &temp_dentry);
-    
-    
 }
 
 int32_t close_file(int32_t fd) {
-    if(fd >= 0 && fd < 8 ){
+    if(fd >= 0 && fd < FILE_DESCRIPTOR_MAX ){
         file_descriptors[fd].flags = -1; 
         file_descriptors[fd].inode = -1;
         file_descriptors[fd].file_pos = 0;
@@ -190,41 +195,42 @@ int32_t close_file(int32_t fd) {
     }
 }
 
-int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
+int32_t read_directory(int32_t fd, void* buf, void* length_buf, int32_t nbytes) {
     int offset;
     uint32_t i;
     uint32_t j;
     uint8_t * buffer = (uint8_t*) buf;
-
-    if(fd > 7 || fd < 0){
+    uint32_t * length_buffer = (uint32_t *) length_buf;
+    uint32_t num_read = 0;
+    uint32_t num_length_read = 0;
+    if(fd >= FILE_DESCRIPTOR_MAX || fd < 0){
         return -1;
     }
     else{
-        printf("\n \n");
         offset = file_descriptors[fd].file_pos; //the order of me doing this seems wrong
         file_descriptors[fd].file_pos += nbytes;
-        read_data(file_descriptors[fd].inode, offset, buffer, nbytes);
 
         for (i = 0; i < boot_block->dir_count; i++) {
-            printf("File Name: ");
             dentry_t dentry = boot_block->direntries[i];
             read_dentry_by_index(i, &dentry);
             for (j = 0; j < FILENAME_LEN; j++) {
-                putc(dentry.filename[j]);
+                // printf("%c", dentry.filename[j]);
+                // printf("reached %d", num_read);
+                buffer[num_read] = dentry.filename[j];
+                num_read++;
             }
-            printf(", File Type: %d, File Size: ", dentry.filetype);
+            // printf(", File Type: %d, File Size: ", dentry.filetype);
+            buffer[num_read] = dentry.filetype + '0';
+            num_read++;
 
             uint32_t inode_number = dentry.inode_num;
             inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_number * BYTES_PER_BLOCK); // get current inode
-            printf("%d", cur_inode->length);
-            printf("\n");
+            // printf("%d", cur_inode->length);
+            // printf("\n");
+            length_buffer[num_length_read] = cur_inode->length;
+            num_length_read++;
         }
-
-
-
-
-
-        return 0;
+        return num_read;
     }
 }
 
@@ -233,7 +239,7 @@ int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes) {
     return -1;
 }
 int32_t open_directory(const uint8_t* filename) {
-    if(read_dentry_by_name(filename, dentry) != -1 && fds_in_use < 8 ){
+    if(read_dentry_by_name(filename, dentry) != -1 && fds_in_use < FILE_DESCRIPTOR_MAX ){
         file_descriptors[fds_in_use+1].flags = 1; 
         file_descriptors[fds_in_use+1].inode = dentry->inode_num;
         fds_in_use++;
@@ -245,7 +251,7 @@ int32_t open_directory(const uint8_t* filename) {
 }
 
 int32_t close_directory(int32_t fd) {
-    if(fd >= 0 && fd < 8 ){
+    if(fd >= 0 && fd < FILE_DESCRIPTOR_MAX){
         file_descriptors[fd].flags = -1; 
         file_descriptors[fd].inode = -1;
         file_descriptors[fd].file_pos = 0;
@@ -257,4 +263,5 @@ int32_t close_directory(int32_t fd) {
         return -1;
     }
 }
+
 

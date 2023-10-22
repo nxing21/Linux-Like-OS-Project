@@ -43,3 +43,12 @@ Oct 16th, 2023:
     - The CAPS & Shift case would act the same as no special keys activated.
     - Fixed this issue by changing some of the if logic behind implementing CAPS lock
     and Shift. 
+
+Oct 20th, 2023:
+    - Ran into issue with file system, where program page faults after trying to access
+    the starting data block address.
+    - Found by adding print statements throughout the read_data function, and seeing
+    where is the last print statement reached.
+    - Fixed by editing one variable that was incorrect (used inode length instead
+    of number of inodes).
+    - Took about 30 minutes to fix.
