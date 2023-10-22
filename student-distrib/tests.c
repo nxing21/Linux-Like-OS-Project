@@ -18,6 +18,8 @@ static inline void assertion_failure(){
 	asm volatile("int $15");
 }
 
+int RTC_read(uint32_t fd, void* buffer, int nbytes);
+int RTC_write(uint32_t fd, void* buffer, int nbytes);
 
 /* Checkpoint 1 tests */
 
@@ -229,7 +231,6 @@ int read_dentry_test(){
 
 }
 
-/* Checkpoint 2 tests */
 
 /* read_data_test
  * Inputs: None
@@ -306,6 +307,86 @@ int open_read_dir_test(){
 	}
 
 	return PASS; /*should always reach here unless test failed*/ 
+int RTC_frequencies_test(){
+	TEST_HEADER;
+	printf("\n");
+	clear();
+	printf(" ");
+	int i, k, temp;
+
+	for (i = 1; i <= 10; i++) {
+		temp = 2 << i;
+		RTC_write(0,&temp,4);
+		for (k = 0; k < 8; k++) {
+			printf("o ");
+			RTC_read(0, 0, 4);
+		}
+		printf("\n");
+		printf(" ");
+	}
+	return PASS;
+}
+
+int RTC_frequencies_low_test() {
+	TEST_HEADER;
+	printf("\n");
+	clear();
+	printf(" ");
+	int i, temp;
+
+	temp = 10;
+	RTC_write(0,&temp,4);
+	temp = 1;
+	RTC_write(0,&temp,4);
+
+	for (i = 0; i < 8; i++) {
+		printf("o ");
+		RTC_read(0,0,4);
+	}
+	printf("\n");
+
+	return FAIL;
+}
+
+int RTC_frequencies_high_test() {
+	TEST_HEADER;
+	printf("\n");
+	clear();
+	printf(" ");
+	int i, temp;
+
+	temp = 2;
+	RTC_write(0,&temp,4);
+	temp = 2048;
+	RTC_write(0,&temp,4);
+
+	for (i = 0; i < 8; i++) {
+		printf("o ");
+		RTC_read(0,0,4);
+	}
+	printf("\n");
+
+	return FAIL;
+}
+
+int RTC_open_close_test() {
+	TEST_HEADER;
+	printf("\n");
+	clear();
+	printf(" ");
+	RTC_open("AAAAA");
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		printf("o ");
+		RTC_read(0,0,4);
+	}
+	printf("\n");
+
+	if (RTC_close(0) == 0) {
+		return PASS;
+	}
+	return FAIL;
 }
 
 /* Checkpoint 3 tests */
@@ -330,9 +411,13 @@ void launch_tests(){
 	/* Checkpoint 2 tests*/
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
-	TEST_OUTPUT("open_read_file_test", open_read_file_test());
+	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
 	
 	
 	
+	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
+	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
+	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
+	TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
 }

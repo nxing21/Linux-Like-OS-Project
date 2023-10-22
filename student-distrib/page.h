@@ -29,8 +29,8 @@ typedef struct __attribute__((packed)) page_directory_entry_kb {
     uint8_t reserved            : 1;
     uint8_t page_size           : 1;
     uint8_t global              : 1;
-    uint8_t avail               : 3;
-    uint32_t base_addr          : 20;
+    uint8_t avail               : 3;    // bit size: 3
+    uint32_t base_addr          : 20;   // bit size: 20
 } page_directory_entry_kb_t;
 
 /* mb page directory entry structure */
@@ -44,10 +44,10 @@ typedef struct __attribute__((packed)) page_directory_entry_mb {
     uint8_t dirty               : 1;
     uint8_t page_size           : 1;
     uint8_t global              : 1;
-    uint8_t avail               : 3;
+    uint8_t avail               : 3;    // bit size: 3
     uint8_t attr_idx            : 1;
-    uint16_t reserved           : 9;
-    uint16_t base_addr          : 10;
+    uint16_t reserved           : 9;    // bit size: 9
+    uint16_t base_addr          : 10;   // bit size: 10
 } page_directory_entry_mb_t;
 
 /* page directory entry structure */
@@ -67,8 +67,8 @@ typedef struct __attribute__((packed)) page_table_entry {
     uint8_t dirty               : 1;
     uint8_t attr_idx            : 1;
     uint8_t global              : 1;
-    uint8_t avail               : 3;
-    uint32_t base_addr          : 20;
+    uint8_t avail               : 3;    // bit size: 3
+    uint32_t base_addr          : 20;   // bit size: 20
 } page_table_entry_t;
 
 /* page directory */
