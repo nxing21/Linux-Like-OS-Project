@@ -99,18 +99,17 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
 }
 
 int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
-    uint8_t* fname = "frame0.txt"; // Edit this line for a different file
+    uint8_t* fname = "frame1.txt"; // Edit this line for a different file
     dentry_t dentry;
     read_dentry_by_name((const uint8_t *) fname, &dentry);
 	
-	printf("%s %d  lol1 \n", dentry.filename, dentry.inode_num);
     uint32_t inode_number = dentry.inode_num;
 
     uint8_t buffer[4 * BYTES_PER_BLOCK]; // 4 is an arbitrary number, we just wanted a large size
 	int32_t bytes_read;
 	bytes_read = read_data(inode_number, 0, buffer, 4 * BYTES_PER_BLOCK); // 4 is an arbitrary number, we just wanted a large size
 	clear();
-    printf(" \n");
+    printf("\n \n");
 	int i;
 	for (i = 0; i < bytes_read; i++) {
 		printf("%c", buffer[i]);
