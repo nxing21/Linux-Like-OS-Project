@@ -210,7 +210,7 @@ int read_dentry_test(){
 	TEST_HEADER;
 	dentry_t* dentry;
 	const int8_t* fname = "frame0.txt";
-	int32_t out = read_dentry_by_name((const uint32_t *) fname, dentry);
+	int32_t out = read_dentry_by_name((const uint8_t *) fname, dentry);
 	if(out != 0){
 		return FAIL;
 	}
@@ -265,8 +265,8 @@ int read_data_test(){
 int open_file_test(){
 	//clear();
 	TEST_HEADER;
-	const uint8_t* filename = "frame0.txt";
-	if(open_file(filename) == -1){
+	const int8_t* filename =  "frame0.txt";
+	if(open_file( (const uint8_t *) filename) == -1){
 		return FAIL;
 	}
 
