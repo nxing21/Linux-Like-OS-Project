@@ -209,7 +209,7 @@ int read_dentry_test(){
 	clear();
 	TEST_HEADER;
 	dentry_t* dentry;
-	const int8_t* fname = "sigtest";
+	const int8_t* fname = "ls";
 	int32_t out = read_dentry_by_name((const uint32_t *) fname, dentry);
 	if(out != 0){
 		return FAIL;
@@ -240,11 +240,11 @@ int read_dentry_test(){
 int read_data_test(){
 	//clear();
 	TEST_HEADER;
-	uint8_t buf[BYTES_PER_BLOCK];
+	uint8_t buf[4 * BYTES_PER_BLOCK];
 	printf("TESTING READ DATA\n");
 	int32_t bytes_read;
-	uint32_t inode_num = 38;
-	bytes_read = read_data(inode_num, 0, buf, 187);
+	uint32_t inode_num = 5;
+	bytes_read = read_data(inode_num, 0, buf, 5000);
 	clear();
 	int i;
 	for (i = 0; i < bytes_read; i++) {
@@ -274,8 +274,10 @@ void launch_tests(){
 	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
 
 	/* Checkpoint 2 tests*/
-	//TEST_OUTPUT("read_dentry_test", read_dentry_test());
-	TEST_OUTPUT("read_data_test", read_data_test());
+	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
+	int32_t fd;
+	uint8_t buf[4 * BYTES_PER_BLOCK];
+	TEST_OUTPUT("read_data_test", read_directory(fd, buf, 1000));
 	
 	
 	
