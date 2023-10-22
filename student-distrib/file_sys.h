@@ -10,6 +10,8 @@
 #define BOOT_BLOCK_RESERVED_BYTES 52
 #define DIR_ENTRIES 63
 #define BYTES_PER_BLOCK 4096
+#define FILE_DESCRIPTOR_MAX 8
+#define FILE_DESCRIPTOR_MIN 2
 
 /* file directory entry structure from slides*/
 typedef struct dentry {
@@ -20,13 +22,13 @@ typedef struct dentry {
 } dentry_t;
 
 /* inode structure from slides*/
-typedef struct  inode {
+typedef struct inode {
     uint32_t length;
     uint32_t data_block_num[ONE_KB-1];
 } inode_t;
 
 /* inode structure from slides*/
-typedef struct  boot_block {
+typedef struct boot_block {
     uint32_t dir_count;
     uint32_t inode_count;
     uint32_t data_count;
@@ -51,7 +53,7 @@ int32_t write_file(int32_t fd, const void* buf, int32_t nbytes);
 int32_t open_file(const uint8_t* filename);
 int32_t close_file(int32_t fd);
 
-int32_t read_directory(int32_t fd, void* buf, int32_t nbytes);
+int32_t read_directory(int32_t fd, void* buf, void* length_buf, int32_t nbytes);
 int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes);
 int32_t open_directory(const uint8_t* filename);
 int32_t close_directory(int32_t fd);
