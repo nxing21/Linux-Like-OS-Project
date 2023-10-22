@@ -204,6 +204,68 @@ int RTC_frequencies_test(){
 	return PASS;
 }
 
+int RTC_frequencies_low_test() {
+	TEST_HEADER;
+	printf("\n");
+	clear();
+	printf(" ");
+	int i, temp;
+
+	temp = 10;
+	RTC_write(0,&temp,4);
+	temp = 1;
+	RTC_write(0,&temp,4);
+
+	for (i = 0; i < 8; i++) {
+		printf("o ");
+		RTC_read(0,0,4);
+	}
+	printf("\n");
+
+	return FAIL;
+}
+
+int RTC_frequencies_high_test() {
+	TEST_HEADER;
+	printf("\n");
+	clear();
+	printf(" ");
+	int i, temp;
+
+	temp = 2;
+	RTC_write(0,&temp,4);
+	temp = 2048;
+	RTC_write(0,&temp,4);
+
+	for (i = 0; i < 8; i++) {
+		printf("o ");
+		RTC_read(0,0,4);
+	}
+	printf("\n");
+
+	return FAIL;
+}
+
+int RTC_open_close_test() {
+	TEST_HEADER;
+	printf("\n");
+	clear();
+	printf(" ");
+	RTC_open("AAAAA");
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		printf("o ");
+		RTC_read(0,0,4);
+	}
+	printf("\n");
+
+	if (RTC_close(0) == 0) {
+		return PASS;
+	}
+	return FAIL;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -221,5 +283,8 @@ void launch_tests(){
 	// TEST_OUTPUT("boundrange_error_test", boundrange_error_test());
 	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
 	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
-	TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
+	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
+	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
+	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
+	TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
 }
