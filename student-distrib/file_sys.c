@@ -57,22 +57,10 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
             break;
         }
     }
-<<<<<<< HEAD
 
     if(found_flag == 1){
         *dentry = found_dentry;
         return 0;
-=======
-    else{
-        for(i = 0; i < DIR_ENTRIES; i++){
-            //strncmp assumes same length
-            const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
-            if( (len == strlen((int8_t *)cur_dentry)) && (strncmp((int8_t *)cur_dentry, (int8_t *)fname, len) == 0)){
-                *dentry = dentries_array[i];
-                return 0;
-            }
-        }
->>>>>>> 4cfc0600aca17efe48da90ee007669fb2291d90c
     }
     printf("didn't find");
     return -1; // not found
