@@ -20,8 +20,8 @@ static inline void assertion_failure(){
 	asm volatile("int $15");
 }
 
-int RTC_read(uint32_t fd, void* buffer, int nbytes);
-int RTC_write(uint32_t fd, void* buffer, int nbytes);
+int RTC_read(int32_t fd, void* buffer, int32_t nbytes);
+int RTC_write(int32_t fd, const void* buffer, int32_t nbytes);
 
 /* Checkpoint 1 tests */
 
@@ -448,8 +448,9 @@ int RTC_frequencies_high_test() {
  */
 int RTC_open_close_test() {
 	TEST_HEADER;
-	RTC_open("AAAAA");
 	int i;
+	uint8_t temp = 0;
+	RTC_open(&temp);
 
 	printf("Should be 2 Hz: ");
 	for (i = 0; i < 8; i++) {
@@ -500,13 +501,13 @@ void launch_tests(){
 	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
 
 	/* Checkpoint 2 tests*/
-	TEST_OUTPUT("read_dentry_test", read_dentry_test());
+	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
 	// test_terminal_read_write();
 	
-	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
+	TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
 	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
 	// TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());

@@ -26,14 +26,14 @@ void set_RTC_frequency(uint32_t rate);
 void RTC_handler();
 
 /* Initialize the RTC frequency to 2 Hz */
-int RTC_open(const char* filename);
+int RTC_open(const uint8_t* filename);
 
 /* Does nothing unless we virtualize */
-int RTC_close(uint32_t fd);
+int RTC_close(int32_t fd);
 
 /* Blocks RTC until next interrupt */
-int RTC_read(uint32_t fd, void* buffer, int nbytes);
+int RTC_read(int32_t fd, void* buffer, int32_t nbytes);
 
 /* Changes the RTC frequency */
-int RTC_write(uint32_t fd, void* buffer, int nbytes);
+int RTC_write(int32_t fd, const void* buffer, int32_t nbytes);
 
