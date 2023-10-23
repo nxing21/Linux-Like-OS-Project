@@ -162,6 +162,8 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the page*/
     init_page();
 
+    clear();
+
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
