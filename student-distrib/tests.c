@@ -316,7 +316,7 @@ int open_read_dir_test(){
 		else if (i % (FILENAME_LEN + 1) == FILENAME_LEN) {
 			printf(", File type: ");
 			putc(buf[i]);
-			printf(", File length: ");
+			printf(", File size: ");
 			printf("%d", length_buf[length_index]);
 			length_index++;
 		}
