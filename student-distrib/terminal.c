@@ -32,10 +32,6 @@ int terminal_read(uint32_t fd, void * user_buf, int count){
             break;
         }
     }
-    if (((uint8_t *)user_buf)[i] != END_OF_LINE){
-        numbytes++;
-        ((uint8_t *)user_buf)[i] = END_OF_LINE;
-    }
     buffer_size = 0;
     return numbytes;
 }

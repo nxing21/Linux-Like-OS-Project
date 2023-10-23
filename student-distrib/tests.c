@@ -467,7 +467,7 @@ int RTC_open_close_test() {
 }
 
 void test_terminal_read_write(){
-	uint8_t buf[4];
+	uint8_t buf[128];
 	// buf[0] = 'H';
 	// buf[1] = 'e';
 	// buf[2] = 'l';
@@ -476,7 +476,7 @@ void test_terminal_read_write(){
 	// buf[5] = ' ';
 	int numbytes;
 	while (1){
-		numbytes = terminal_read(0, buf, 1);
+		numbytes = terminal_read(0, buf, 128);
 		if (numbytes != -1){
 			terminal_write(0, buf, numbytes);
 		}
@@ -505,8 +505,8 @@ void launch_tests(){
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
-	TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
-	// test_terminal_read_write();
+	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
+	test_terminal_read_write();
 	
 	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
