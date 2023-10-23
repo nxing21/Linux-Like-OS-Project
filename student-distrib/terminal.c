@@ -32,6 +32,15 @@ int terminal_read(uint32_t fd, void * user_buf, int count){
             break;
         }
     }
+    // if (i < buffer_size && ((uint8_t *)user_buf)[i] != END_OF_LINE){
+    //     numbytes++;
+    //     ((uint8_t *)user_buf)[i] = END_OF_LINE;
+    // }
+
+    /* clear the terminal buffer */
+    for (i = 0; i < count; i++){
+        buffer[i] = 0x0;
+    }
     buffer_size = 0;
     return numbytes;
 }
@@ -65,12 +74,7 @@ int terminal_write(uint32_t fd ,void* user_buf, unsigned int bytes){
             numbytes++;
         }
         }
-
-    /* clear the buffer. */
-    for (i = 0; i < buffer_size; i++){
-        buffer[i] = 0x0;
-    }
-    buffer_size = 0;
+    clear_writebuffer();
 
     return numbytes;
 
@@ -86,7 +90,8 @@ int terminal_write(uint32_t fd ,void* user_buf, unsigned int bytes){
  */
 int edit_buffer(uint8_t response){
     cli();
-        /* Case where the terminal buffer is full. */
+        /* Case where the terminal buffer is full. */ 
+            /* Checks if the second to last index is the FULL and is the ENTER KEY*/
         if (buffer_size == MAX_BUF_SIZE-2 && response == ENTER_KEY){
             buffer[buffer_size] = END_OF_LINE;
             buffer_size++;
@@ -116,21 +121,19 @@ int edit_buffer(uint8_t response){
 }
 
 /* 
- * clear_buffer
+ * clear_writebuffer
  *   DESCRIPTION: Clears the input buffer and resets the size.
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: Returns 0 on success.
  *   SIDE EFFECTS: Clears the input buffer and reset the size.
  */
-int clear_buffer(){
+int clear_writebuffer(){
     /* clear the buffer, resetes size. */
      int i; 
      for (i = 0; i < MAX_BUF_SIZE; i++){
-         buffer[i] = 0x0;
          write_buffer[i] = 0x0;
     }
-    buffer_size = 0;
     return 0;
 }
 
@@ -148,9 +151,10 @@ int terminal_open(const char* filename){
     /* clear the buffer. */
     for (i = 0; i < buffer_size; i++){
         buffer[i] = 0x0;
+        write_buffer[i] = 0x0;
     }
     buffer_size = 0;
-    return -1;
+    return 0;
 }
 
 /* 
@@ -162,5 +166,5 @@ int terminal_open(const char* filename){
  *   SIDE EFFECTS: None yet.
  */
 int terminal_close(uint32_t fd){
-    return -1;
+    return 0;
 }

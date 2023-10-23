@@ -266,7 +266,8 @@ int read_data_test(){
 int open_read_file_test(){
 	TEST_HEADER;
 	// clear();
-	const char* filename =  "frame1.txt";
+	// const char* filename =  "frame1.txt";
+	const char* filename =  "fish";
 	uint8_t buf[37000]; // arbitrary big number
 	int i;
 		if(open_file((const uint8_t *) filename) == -1){
@@ -466,15 +467,61 @@ int RTC_open_close_test() {
 	return FAIL;
 }
 
+/* test_terminal_open_close()
+ * Inputs: None
+ * Outputs: PASS on correct close(); FAIL on else
+ * Side Effects: None
+ * Coverage: check if open() and close() work
+ */
+int test_terminal_open_close(){
+	uint8_t buf[128];
+	int i;
+	int numbytes;
+
+	if (terminal_open("BRUH") == 0){
+		printf("Terminal open.\n");
+	for (i = 0; i < 4; i++){
+	// while(){
+		numbytes = terminal_read(0, buf, 128);
+		if (numbytes != -1){
+			terminal_write(0, buf, numbytes);
+		}
+	}
+	if (terminal_close(0) == 0){
+		printf("Terminal close.\n");
+		return PASS;
+	}
+	}
+	return FAIL;
+}
+
+/* test_terminal_read_write()
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: Will put the OS in a while loop to test read/write of terminal.
+ * Coverage: check if read/write works;
+ */
 void test_terminal_read_write(){
 	uint8_t buf[128];
-	// buf[0] = 'H';
-	// buf[1] = 'e';
-	// buf[2] = 'l';
-	// buf[3] = 'l';
-	// buf[4] = 'o';
-	// buf[5] = ' ';
+	uint8_t edit_buf[128];
 	int numbytes;
+
+	edit_buf[0] = 'H';
+	edit_buf[1] = 'e';
+	edit_buf[2] = 'l';
+	edit_buf[3] = 'l';
+	edit_buf[4] = 'o';
+	edit_buf[5] = ' ';
+
+	numbytes = terminal_read(0, buf, 128);
+	if (numbytes != -1){
+			terminal_write(0, buf, numbytes);
+	}
+	/* This part tests if anything that is already in the buffer will be editted. USE CTRL-L*/
+	numbytes = terminal_read(0, edit_buf + 6, 128);
+	if (numbytes != -1){
+			terminal_write(0, edit_buf, numbytes+6);
+	}
 	while (1){
 		numbytes = terminal_read(0, buf, 128);
 		if (numbytes != -1){
@@ -506,12 +553,14 @@ void launch_tests(){
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
-	test_terminal_read_write();
+	test_terminal_read_write(); /* Comment this out if you want to separately test read/write of terminal. */
+	// TEST_OUTPUT("test_terminal_read_write", test_terminal_open_close());
 	
 	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
 	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
 	// TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());
 	// TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
+	
 }
 

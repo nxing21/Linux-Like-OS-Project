@@ -134,6 +134,7 @@ void shift_key_handler(uint8_t response){
  *                 
  */
 void ctrl_key_handler(uint8_t response){
+    int i; /* loops through the buffer. */
     if (response == LEFT_CTL_PRESSED){
         ctrl_held = 1;
     }
@@ -145,8 +146,9 @@ void ctrl_key_handler(uint8_t response){
     /* CTRL-L: Performs a clear screen. */
     if (response == 'l' || response == 'L'){
         clear();
-        keyboard_buffer_size = 0;
-        clear_buffer();
+        for (i = 0; i < keyboard_buffer_size; i++){
+            putc(keyboard_buffer[i]);
+        }
     }
 }
 

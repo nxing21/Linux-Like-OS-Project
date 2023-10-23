@@ -20,8 +20,8 @@ int terminal_open(const char* filename);
 /* Does nothing. Returns 0. */
 int terminal_close(uint32_t fd);
 
-/* Clears the terminal buffer. */
-int clear_buffer();
+/* Clears the write buffer. */
+int clear_writebuffer();
 
 /* Deletes a character from the screen and the input buffer. */
 int edit_buffer(uint8_t response);
