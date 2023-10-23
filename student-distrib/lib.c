@@ -22,6 +22,9 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
+    screen_x = 0;
+    screen_y = 0;
+    move_cursor();
 }
 
 /* Standard printf().
@@ -168,16 +171,58 @@ int32_t puts(int8_t* s) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
+    int i, j;
+    uint8_t character;
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
-    } else {
+    //     if (screen_y >= NUM_ROWS){
+    //     for (i = 0; i < NUM_ROWS-1; i++){
+    //         for (j = 0; j < NUM_COLS; j++){
+    //             character = *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1));
+    //             *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
+    //             *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = character;
+    //             *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
+    //         }
+    //     }
+
+    //     for (j = 0; j < NUM_COLS; j++){
+    //         *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
+    //         *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1) + 1) = ATTRIB;
+    //     }
+    //     screen_y = NUM_ROWS-1;
+    //     // screen_x = 0;
+    // }
+
+    } 
+    else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
+        check_size(); // added function
         screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        // screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
+
+    if (screen_y > NUM_ROWS-1){
+        for (i = 0; i < NUM_ROWS-1; i++){
+            for (j = 0; j < NUM_COLS; j++){
+                character = *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1));
+                *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
+                *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = character;
+                *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
+            }
+        }
+
+        i = NUM_ROWS-1;
+        for (j = 0; j < NUM_COLS; j++){
+            *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
+            *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1) + 1) = ATTRIB;
+        }
+        screen_y = NUM_ROWS-1;
+        screen_x = 0;
+    }
+    move_cursor();
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
@@ -473,4 +518,38 @@ void test_interrupts(void) {
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         video_mem[i << 1]++;
     }
+}
+
+/* checks if the x goes out of bounds while typing*/
+void check_size(){
+    if (screen_x >= NUM_COLS){ /* 80 is the max position of the x position of screen*/
+        screen_y++;
+        screen_x = 0;
+    }
+}
+
+/* Erases a character from the screen. */
+void erase_char(){
+    screen_x--;
+    if (screen_x < 0){
+        screen_x = 79;
+        screen_y--;
+    }
+    *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = 0x0;
+    screen_x %= NUM_COLS;
+    screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+
+    move_cursor();
+}
+
+/* Moves the cursor based on typing. */
+void move_cursor(){
+    uint16_t position;
+    position = screen_y * NUM_COLS + screen_x;
+
+    /* Edit ports to move the cursor. */
+    outb(0x0F, 0x3D4);
+    outb((uint8_t)(position & 0xFF), 0x3D5);
+    outb(0x0E,0x3D4);
+    outb((uint8_t)((position >> 8) & 0xFF), 0x3D5);
 }

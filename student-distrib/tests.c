@@ -265,7 +265,6 @@ int read_data_test(){
 int open_read_file_test(){
 	TEST_HEADER;
 	// clear();
-	printf("\n");
 	const char* filename =  "cat";
 	uint8_t buf[10000]; // arbitrary big number
 	int i;
@@ -282,7 +281,7 @@ int open_read_file_test(){
 		if (buf[i] == '\0') {
 			continue;
 		}
-		putc(buf[i]);
+		printf("%c", buf[i]);
 	}
 	printf("\n");
 
