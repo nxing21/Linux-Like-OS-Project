@@ -49,9 +49,6 @@ Oct 18th, 2023:
     - Random characters would appear after the expected character.
     - Fixed it by putting up a buffer limit (1 byte to read)
 
-Oct 18th, 2023:
-    - Backspace didn't delete the first character 
-
 Oct 19th, 2023:
     - Ran into an issue when trying to set the RTC dividing rate.
     - The frequency of my specified rate seemed off.
