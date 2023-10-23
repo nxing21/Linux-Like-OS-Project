@@ -159,7 +159,7 @@ void entry(unsigned long magic, unsigned long addr) {
     init_ps2devices();
 
     /* Init the RTC */
-    // init_RTC();
+    init_RTC();
 
     /* Init the page*/
     init_page();
