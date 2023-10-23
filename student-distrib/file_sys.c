@@ -168,7 +168,6 @@ int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
         return -1;
     }
     else{
-        printf("\n \n");
         offset = file_descriptors[fd].file_pos; //offset based on file position
         file_descriptors[fd].file_pos += nbytes; //updating file position
         bytes_read = read_data(file_descriptors[fd].inode, offset, buffer, nbytes);

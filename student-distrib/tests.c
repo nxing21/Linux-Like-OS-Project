@@ -472,18 +472,18 @@ int RTC_open_close_test() {
 }
 
 void test_terminal_read_write(){
-	uint8_t * buf;
-	buf[0] = 'H';
-	buf[1] = 'e';
-	buf[2] = 'l';
-	buf[3] = 'l';
-	buf[4] = 'o';
-	buf[5] = ' ';
+	uint8_t buf[4];
+	// buf[0] = 'H';
+	// buf[1] = 'e';
+	// buf[2] = 'l';
+	// buf[3] = 'l';
+	// buf[4] = 'o';
+	// buf[5] = ' ';
 	int numbytes;
 	while (1){
-		numbytes = terminal_read(0, buf+6, 128);
+		numbytes = terminal_read(0, buf, 1);
 		if (numbytes != -1){
-			terminal_write(0, buf, numbytes+6);
+			terminal_write(0, buf, numbytes);
 		}
 	}
 }
@@ -509,7 +509,7 @@ void launch_tests(){
 	/* Checkpoint 2 tests*/
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
-	TEST_OUTPUT("open_read_file_test", open_read_file_test());
+	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
 	test_terminal_read_write();
 	

@@ -32,6 +32,10 @@ int terminal_read(uint32_t fd, void * user_buf, int count){
             break;
         }
     }
+    if (((uint8_t *)user_buf)[i] != END_OF_LINE){
+        numbytes++;
+        ((uint8_t *)user_buf)[i] = END_OF_LINE;
+    }
     buffer_size = 0;
     return numbytes;
 }
@@ -50,15 +54,20 @@ int terminal_write(uint32_t fd ,void* user_buf, unsigned int bytes){
     int numbytes = 0; /* Number of bytes written. */
     int i; /* Iterates through the user buffer. */
 
-
+    /* clear the write buffer. */
+    for (i = 0; i < MAX_BUF_SIZE; i++){
+        write_buffer[i] = 0x0;
+    }
     /* Copies the user buffer into a write buffer. */
     for (i = 0; i < bytes; i++){
         write_buffer[i] = ((uint8_t *)user_buf)[i];
     }
 
     for (i = 0; i < bytes; i++){
+        if (write_buffer[i] != NULL){
             putc(write_buffer[i]);
             numbytes++;
+        }
         }
 
     /* clear the buffer. */
@@ -123,6 +132,7 @@ int clear_buffer(){
      int i; 
      for (i = 0; i < MAX_BUF_SIZE; i++){
          buffer[i] = 0x0;
+         write_buffer[i] = 0x0;
     }
     buffer_size = 0;
     return 0;
