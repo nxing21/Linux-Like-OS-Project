@@ -62,6 +62,7 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
 
     if(found_flag == 1) {
         *dentry = found_dentry;
+        dentry->filename[32] = '\0';
         return 0;
     }
     printf("didn't find");
