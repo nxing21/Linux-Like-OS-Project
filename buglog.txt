@@ -59,3 +59,18 @@ Oct 19th, 2023:
     is equal to the maximum frequency shifted right by (rate-1) rather than just shifted
     by (rate).
 Overall, took around 3 hours to resolve.
+
+Oct 20th, 2023:
+    - Ran into issue with file system, where program page faults after trying to access
+    the starting data block address.
+    - Found by adding print statements throughout the read_data function, and seeing
+    where is the last print statement reached.
+    - Fixed by editing one variable that was incorrect (used inode length instead
+    of number of inodes).
+    - Took about 30 minutes to fix.
+
+Oct 21th, 2023
+    - Faced an issue where I could not see 'ELF' printing when trying to read executables.
+    - Fixed this issue after discussing with teammate who worked mostly on terminal, who
+    suggested to use an updated version of the putc function that he wrote.
+    - Overall, took about an hour to realize the issue, and was very quick to solve.
