@@ -19,6 +19,8 @@ int buffer_size = 0;
 int terminal_read(uint32_t fd, void * user_buf, int count){
     int numbytes = 0; /* number of bytes read. */
     int i; /* allows us to iterate through the buffer. */
+    int enterAtEnd; /* checks if there is an enter at the end*/
+    enterAtEnd = 0;
     while (buffer[buffer_size-1] != END_OF_LINE){
     }
 
@@ -29,13 +31,15 @@ int terminal_read(uint32_t fd, void * user_buf, int count){
             ((uint8_t *)user_buf)[i] = buffer[i]; 
         } 
         if (buffer[i] == END_OF_LINE){
+            enterAtEnd = 1;
             break;
         }
     }
-    // if (i < buffer_size && ((uint8_t *)user_buf)[i] != END_OF_LINE){
-    //     numbytes++;
-    //     ((uint8_t *)user_buf)[i] = END_OF_LINE;
-    // }
+    /* Checks if the very last byte is the End of Line. */
+    if (enterAtEnd == 0 && i < buffer_size && ((uint8_t *)user_buf)[i-1] != END_OF_LINE){
+       
+        ((uint8_t *)user_buf)[i-1] = END_OF_LINE;
+    }
 
     /* clear the terminal buffer */
     for (i = 0; i < count; i++){
@@ -68,12 +72,18 @@ int terminal_write(uint32_t fd ,void* user_buf, unsigned int bytes){
         write_buffer[i] = ((uint8_t *)user_buf)[i];
     }
 
+    /* Prints characters from the write buffer to the screen. */
     for (i = 0; i < bytes; i++){
         if (write_buffer[i] != NULL){
             putc(write_buffer[i]);
             numbytes++;
         }
         }
+
+    /* Checks if the last character is EOL.*/
+    if (write_buffer[i-1] != END_OF_LINE){
+        putc('\n');
+    }
     clear_writebuffer();
 
     return numbytes;
