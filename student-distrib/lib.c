@@ -183,27 +183,6 @@ void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
-<<<<<<< HEAD
-    //     if (screen_y >= NUM_ROWS){
-    //     for (i = 0; i < NUM_ROWS-1; i++){
-    //         for (j = 0; j < NUM_COLS; j++){
-    //             character = *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1));
-    //             *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
-    //             *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = character;
-    //             *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
-    //         }
-    //     }
-
-    //     for (j = 0; j < NUM_COLS; j++){
-    //         *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
-    //         *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1) + 1) = ATTRIB;
-    //     }
-    //     screen_y = NUM_ROWS-1;
-    //     // screen_x = 0;
-    // }
-
-=======
->>>>>>> f9e24266a8b4fe9891657e73b10b8ff6b4742537
     } 
     else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
@@ -214,10 +193,7 @@ void putc(uint8_t c) {
         // screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
 
-<<<<<<< HEAD
-=======
     /* Checks if the y position exceeds the window. If so, scroll up and reposition the cursor.*/
->>>>>>> f9e24266a8b4fe9891657e73b10b8ff6b4742537
     if (screen_y > NUM_ROWS-1){
         for (i = 0; i < NUM_ROWS-1; i++){
             for (j = 0; j < NUM_COLS; j++){
@@ -228,10 +204,7 @@ void putc(uint8_t c) {
             }
         }
 
-<<<<<<< HEAD
-=======
         /* Separate case for printing the last row, since there is no row below it. */
->>>>>>> f9e24266a8b4fe9891657e73b10b8ff6b4742537
         i = NUM_ROWS-1;
         for (j = 0; j < NUM_COLS; j++){
             *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
