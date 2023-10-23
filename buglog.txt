@@ -69,8 +69,19 @@ Oct 20th, 2023:
     of number of inodes).
     - Took about 30 minutes to fix.
 
-Oct 21th, 2023
-    - Faced an issue where I could not see 'ELF' printing when trying to read executables.
+Oct 21st, 2023
+    - Program prints random garbage characters on string when trying to read text files
+    like frame0.txt.
+    - Took a long time to debug, added print statements throughout our read_data function.
+    - The issue was solved by using memcpy to copy to our buffer instead of directly
+    editing the buffer (for loop and write to buf[i]).
+    - Most likely was because we were copying the address of what we were actually
+    supposed to put into the buffer.
+    - It took us 2-3 hours to realize the issue.
+
+Oct 22nd, 2023
+    - Faced an issue where I could not see 'ELF' printing when trying to read executables
+    (file system issue).
     - Fixed this issue after discussing with teammate who worked mostly on terminal, who
     suggested to use an updated version of the putc function that he wrote.
     - Overall, took about an hour to realize the issue, and was very quick to solve.
