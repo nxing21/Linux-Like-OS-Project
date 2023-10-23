@@ -553,7 +553,7 @@ void launch_tests(){
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
-	test_terminal_read_write(); /* Comment this out if you want to separately test read/write of terminal. */
+	// test_terminal_read_write(); /* Comment this out if you want to separately test read/write of terminal. */
 	// TEST_OUTPUT("test_terminal_read_write", test_terminal_open_close());
 	
 	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
