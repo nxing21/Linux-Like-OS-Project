@@ -3,6 +3,7 @@
 #include "lib.h"
 #include "file_sys.h"
 #include "rtc.h"
+#include "terminal.h"
 
 #define PASS 1
 #define FAIL 0
@@ -470,6 +471,22 @@ int RTC_open_close_test() {
 	return FAIL;
 }
 
+void test_terminal_read_write(){
+	uint8_t * buf;
+	buf[0] = 'H';
+	buf[1] = 'e';
+	buf[2] = 'l';
+	buf[3] = 'l';
+	buf[4] = 'o';
+	buf[5] = ' ';
+	int numbytes;
+	while (1){
+		numbytes = terminal_read(0, buf+6, 128);
+		if (numbytes != -1){
+			terminal_write(0, buf, numbytes+6);
+		}
+	}
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -494,6 +511,7 @@ void launch_tests(){
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
+	test_terminal_read_write();
 	
 	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
