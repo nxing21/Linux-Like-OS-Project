@@ -79,6 +79,13 @@ Oct 21st, 2023
     supposed to put into the buffer.
     - It took us 2-3 hours to realize the issue.
 
+Oct 21st, 2023
+    - read_file with file descriptor implementation was page faulting
+    - Took a long time to debug, added page fault location functionality to our page fault handler
+    - After seeing where the page fault was occuring in memory, I realized I was accessing a null pointer 
+    - Turns out I was trying to access a dentry pointer that wasn't set
+    - It took us 2 hours of debugging to locate and fix the issue.
+
 Oct 22nd, 2023
     - Faced an issue where I could not see 'ELF' printing when trying to read executables
     (file system issue).
