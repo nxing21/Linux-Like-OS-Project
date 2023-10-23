@@ -31,28 +31,11 @@ void init_RTC(){
     /* Select Register B again */
     outb(NMI_DISABLE_CMD | RTC_REG_B, RTC_REGISTER_SELECT);
 
-    /* Turns on periodic interrupts by setting bit 6 of prev data to 1 */
+    /* Turns on periodic interrupts by setting bit 6 of prev data to 1 (hence 0x40) */
     outb(prev_data | 0x40, RTC_REGISTER_DATA_PORT);
 
-    /* Setting the RTC to the highest interrupt frequency.*/
-    /* Select Register A and disables NMIs*/
-    //outb (NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
-    //prev_data = inb(RTC_REGISTER_DATA_PORT);
-
-    /* Reselects Register A. */
-    //outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
-    
-    /* Sets RTC to the highest rate possible, 3. */
-    //outb((prev_data & 0xF0) | 0x03, RTC_REGISTER_DATA_PORT);
-
-    /* Initializes the variable RTC_frequency to the current frequency */
-    // RTC_frequency = rtc_max_frequency >> (3-1);
-
     /* sets frequency to highest possible frequency */
-    // set_RTC_frequency(rtc_lowest_rate);
-    RTC_frequency = rtc_max_usable_frequency;
-    RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
-    RTC_counter = RTC_max_counter;
+    set_RTC_frequency(rtc_max_usable_frequency);
 
     /* initializes RTC_block */
     RTC_block = 0;
@@ -66,23 +49,17 @@ void init_RTC(){
 
 /* 
  * set_RTC_frequency
- *   DESCRIPTION: Sets the RTC to a virtual frequency. This means that the RTC has to wait for x number of interrupts
- *                to equate to the set virtual frequency.
- *   INPUTS: rate - The rate we want to set the periodic interrupts to.
+ *   DESCRIPTION: Sets the RTC to the specified virtual frequency.
+ *   INPUTS: freq - The frequency we want to set the periodic interrupts to.
  *   OUTPUTS: none
  *   RETURN VALUE: none
- *   SIDE EFFECTS: Sets the RTC to a virtual frequency.
+ *   SIDE EFFECTS: none
  */
-void set_RTC_frequency(uint32_t rate) {
-    if (rate >= rtc_lowest_rate && rate <= rtc_highest_rate) {
-        rate &= 0x0F;
-        cli();
-        outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
-        char temp = inb(RTC_REGISTER_DATA_PORT);
-        outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
-        outb((temp & 0xF0) | rate, RTC_REGISTER_DATA_PORT);
-        NMI_enable();
-        sti();
+void set_RTC_frequency(int freq) {
+    if (freq >= rtc_min_frequency && freq <= rtc_max_usable_frequency) {
+        RTC_frequency = freq;
+        RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
+        RTC_counter = RTC_max_counter;
     }
 }
 
@@ -95,7 +72,7 @@ void set_RTC_frequency(uint32_t rate) {
  *   SIDE EFFECTS: Handles the interrupt from the RTC, and sends and EOI to the PIC.
  */
 void RTC_handler(){
-    uint8_t garbage;
+    uint8_t garbage;   // garbage
 
     /* Function to test RTC */
     // test_interrupts();
@@ -104,6 +81,7 @@ void RTC_handler(){
     outb(RTC_REG_C, RTC_REGISTER_SELECT);
     garbage = inb(RTC_REGISTER_DATA_PORT);
 
+    // Sets RTC_counter for RTC_read
     if (RTC_counter == 0) {
         RTC_block = 0;
         RTC_counter = RTC_max_counter;
@@ -114,32 +92,61 @@ void RTC_handler(){
     send_eoi(RTC_IRQ);
 }
 
-// questions: is open supposed to do the job of init or does it just set freq to 2Hz?
-// all functions should have parameters: open(filename) close(fd) read(fd)
-// check parameter types
-int RTC_open(const char* filename) {
-    RTC_frequency = rtc_min_frequency;
-    RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
-    RTC_counter = RTC_max_counter;
-    // set_RTC_frequency(rtc_highest_rate);
+/* 
+ * RTC_open
+ *   DESCRIPTION: Sets RTC frequency to 2Hz.
+ *   INPUTS: filename -- filename
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS: none
+ */
+int RTC_open(const uint8_t* filename) {
+    // sets RTC frequency to 2Hz
+    set_RTC_frequency(rtc_min_frequency);
     return 0;
 }
 
-// questions: does it literally do nothing?
-int RTC_close(uint32_t fd) {
+/* 
+ * RTC_close
+ *   DESCRIPTION: Returns 0.
+ *   INPUTS: fd -- file descriptor
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS: none
+ */
+int RTC_close(int32_t fd) {
     return 0;
 }
 
-// link: https://linux.die.net/man/2/read
-int RTC_read(uint32_t fd, void* buffer, int nbytes) {
+/* 
+ * RTC_read
+ *   DESCRIPTION: Blocks until the next interrupt (at correct frequency).
+ *   INPUTS: fd -- file descriptor
+             buffer -- pointer to buffer
+             nbytes -- number of bytes
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0
+ *   SIDE EFFECTS: none
+ */
+int RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
     RTC_block = 1;
     while (RTC_block == 1);
     return 0;
 }
 
-int RTC_write(uint32_t fd, void* buffer, int nbytes) {
-    uint8_t i;
-    unsigned int freq;
+/* 
+ * RTC_write
+ *   DESCRIPTION: Sets RTC frequency to specified frequency.
+ *   INPUTS: fd -- file descriptor
+             buffer -- pointer to freq
+             nbytes -- number of bytes
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 on success; -1 on failure
+ *   SIDE EFFECTS: none
+ */
+int RTC_write(int32_t fd, const void* buffer, int32_t nbytes) {
+    uint8_t i;   // looping variable
+    unsigned int freq;   // frequency temp variable
 
     if (nbytes != BYTE_4) {
         return -1;
@@ -149,14 +156,14 @@ int RTC_write(uint32_t fd, void* buffer, int nbytes) {
         return -1;
     }
 
+    // obtains frequency from buffer
     freq = *((unsigned int*)(buffer));
 
+    // loops through all possible rates
     for (i = rtc_lowest_rate; i <= rtc_highest_rate; i++) {
-        if (freq == (rtc_max_frequency >> (i-1))) {
-            RTC_frequency = (rtc_max_frequency >> (i-1));
-            RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
-            RTC_counter = RTC_max_counter;
-            // set_RTC_frequency(i);
+        if (freq == (rtc_max_frequency >> (i-1))) {   // rate to frequency formula: freq = max_freq >> (rate-1)
+            // sets frequency to specified frequency
+            set_RTC_frequency(rtc_max_frequency >> (i-1));   // rate to frequency formula: freq = max_freq >> (rate-1)
             return 0;
         }
     }

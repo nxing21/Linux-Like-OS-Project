@@ -47,12 +47,12 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
     uint16_t port;
     uint8_t value;
-    if (irq_num < 8){
+    if (irq_num < START_SLAVE_PIC){
         port = MASTER_8259_PORT+1;
     }
     else{
         port = SLAVE_8259_PORT+1;
-        irq_num -= 8; 
+        irq_num -= START_SLAVE_PIC; 
     }
 
     value = inb(port) & ~(1 << irq_num);
@@ -71,12 +71,12 @@ void enable_irq(uint32_t irq_num) {
 void disable_irq(uint32_t irq_num) {
     uint16_t port;
     uint8_t value;
-    if (irq_num < 8){
+    if (irq_num < START_SLAVE_PIC){
         port = MASTER_8259_PORT+1;
     }
     else{
         port = SLAVE_8259_PORT+1;
-        irq_num -= 8; 
+        irq_num -= START_SLAVE_PIC; 
     }
 
     value = inb(port) | (1 << irq_num);
@@ -93,14 +93,14 @@ void disable_irq(uint32_t irq_num) {
  *   SIDE EFFECTS: Tells the PIC that a certain IRQ has been serviced.
  */
 void send_eoi(uint32_t irq_num) {
-    if (irq_num > 15){ /* Not a valid IRQ */
+    if (irq_num > MAX_IRQS){ /* Not a valid IRQ */
         return;
     }
-    else if (irq_num < 8){ /* IRQ came from the Master PIC */
+    else if (irq_num < START_SLAVE_PIC){ /* IRQ came from the Master PIC */
         outb(EOI | irq_num, MASTER_8259_PORT);
     }
     else{ /* IRQ came from the Slave, must also unmask IRQ 2 on Master PIC */
-        outb((EOI | irq_num) - 8, SLAVE_8259_PORT);
-        outb(EOI | 2, MASTER_8259_PORT);
+        outb((EOI | irq_num) - START_SLAVE_PIC, SLAVE_8259_PORT);
+        outb(EOI | SLAVE_PIC_IRQ, MASTER_8259_PORT);
     }
 }
