@@ -1,148 +1,92 @@
 /* File for the terminal driver. */
-/* Note: Have something that keeps track of the position of the cursor. Have something that both prints out the data to the screen and prints it to the buffer*/
 #include "lib.h"
 #include "terminal.h"
 
 uint8_t buffer[MAX_BUF_SIZE];
+uint8_t write_buffer[MAX_BUF_SIZE];
 int buffer_size = 0;
 
-// /* Initializes the cursor. */
-// void init_cursor(){
-//     // /* Test to disable the cursor. WORKS. This is stuff with the VGA. */
-//     // outb(0x0A, 0x3D4);
-//     // outb(0x20, 0x3D5);
-//     /* This is the code to put the cursor in a certain position.*/
-//     uint16_t position;
-//     position = 7; /* Follow this formula: position = y_pos * VGA_WIDTH + x*/
-//     /* I think VGA width is 80. */
-//     /* Trying to figure out how to update the cursor. */
-
-//     outb(0x0F, 0x3D4);
-//     outb((uint8_t)(position && 0xFF), 0x3D5);
-//     outb(0x0E,0x3D4);
-//     outb((uint8_t)((position >> 8) && 0xFF), 0x3D5);
-// }
-
-// /* The ioctl for terminal. */
-// int terminal_ioctl(uint8_t code, unsigned long arg, unsigned int bytes){
-//     switch(code){
-//         // case CTL_PRESSED:
-//         //     return terminal_ctrl_cmd(arg);
-//         case TERMINAL_READ:
-//             // return terminal_read();
-//         case TERMINAL_WRITE:
-//             return terminal_write(arg, bytes);
-//         case BACKSPACE_PRESSED:
-//             return terminal_backspace();
-//         default:
-//             return -1;
-//     }
-// }
-
-// /* Max characters a user can type is 127 characters (the 128th space is for \n)*/
-// /* reads from terminal/data */
-// int terminal_write(unsigned long arg, unsigned int bytes){
-//     int success_write = 1;
-//     uint8_t  * character;
-//     character = (unsigned long*)(arg);
-//     int i; /* loop through the string given by line_printed*/
-
-//     for (i = 0; i < bytes; i++){
-//         if (buffer_size < 0){
-//             buffer_size = 0;
-//         }
-//         if (buffer_size == 127){
-//             success_write = 0;
-//         }
-//         else{
-//             buffer[buffer_size] = character[i];
-//             buffer_size++;
-//             putc(character[i]);
-//             // move_cursor();
-//         }
-//     }
-//     return success_write;
-
-// }
-
-/* When backspace on the keyboard is pressed, erase the character from the screen. */
-// int terminal_backspace(){
-//     if (buffer_size >= 0){
-//         erase_char();
-//         // move_cursor();
-//         buffer[buffer_size] = 0x0;
-//         buffer_size--;
-//     }
-//     return 1;
-// }
-
-/* */
-// int terminal_ctrl_cmd(unsigned long arg){
-//     uint8_t * command_letter;
-//     command_letter = (unsigned long*)(arg);
-
-//     switch (*command_letter){
-//         case 'L':
-//             clear();
-//             return 1;
-//         case 'l':
-//             clear();
-//             return 1;
-//         default:
-//             return -1;
-//             break;
-//     }
-// }
-/* splits up the string into fields. */
-
-/* Copies the keyboard buffer into a userspace buffer. */
-/* user_buf is the buffer to copy to. count is the number of bytes the
-userspace wants to read. */
+/* 
+ * terminal_read
+ *   DESCRIPTION: When enter is pressed, copies the terminal buffer into the userspace buffer.
+ *   INPUTS: fd -- The file descriptor.
+ *           user_buf -- The buffer to copy to.
+ *           count -- How many bytes to read.
+ *   OUTPUTS: none
+ *   RETURN VALUE: numbytes -- Number of bytes actually read.
+ *   SIDE EFFECTS: Copies the terminal buffer into the userspace buffer.
+ */
 int terminal_read(uint32_t fd, void * user_buf, int count){
     int numbytes = 0; /* number of bytes read. */
     int i; /* allows us to iterate through the buffer. */
-    if (buffer[buffer_size-1] != END_OF_LINE){
-        return -1;
+    while (buffer[buffer_size-1] != END_OF_LINE){
     }
 
     /* copies the terminal buffer into the userspace buffer. */
     for (i = 0; i < count; i++){
-        if (i < buffer_size && buffer[i] != 0x0){
+        if (i < buffer_size){
             numbytes++;
             ((uint8_t *)user_buf)[i] = buffer[i]; 
         } 
+        if (buffer[i] == END_OF_LINE){
+            break;
+        }
     }
+    buffer_size = 0;
+    return numbytes;
+}
+
+/* 
+ * terminal_write
+ *   DESCRIPTION: Writes data from the userspace buffer into the output buffer.
+ *   INPUTS: fd -- The file descriptor.
+ *           user_buf -- The buffer to copy from.
+ *           count -- How many bytes to write.
+ *   OUTPUTS: none
+ *   RETURN VALUE: numbytes -- Number of bytes actually written.
+ *   SIDE EFFECTS: Copies the userpace buffer into the output buffer, prints the output buffer to the screen.
+ */
+int terminal_write(uint32_t fd ,void* user_buf, unsigned int bytes){
+    int numbytes = 0; /* Number of bytes written. */
+    int i; /* Iterates through the user buffer. */
+
+
+    /* Copies the user buffer into a write buffer. */
+    for (i = 0; i < bytes; i++){
+        write_buffer[i] = ((uint8_t *)user_buf)[i];
+    }
+
+    for (i = 0; i < bytes; i++){
+            putc(write_buffer[i]);
+            numbytes++;
+        }
 
     /* clear the buffer. */
     for (i = 0; i < buffer_size; i++){
         buffer[i] = 0x0;
     }
     buffer_size = 0;
-    return numbytes;
-}
 
-/* Max characters a user can type is 127 characters (the 128th space is for \n)*/
-/* reads from terminal/data */
-int terminal_write(uint32_t fd ,void* user_buf, unsigned int bytes){
-    int numbytes = 0; /* Number of bytes written. */
-    int i; /* Iterates through the user buffer. */
-    uint8_t c;
-    for (i = 0; i < bytes; i++){
-            c = ((uint8_t *)user_buf)[i];
-            putc(((uint8_t *)user_buf)[i]);
-            numbytes++;
-        }
     return numbytes;
 
 }
 
-/* Edits the intermediate buffer between the keyboard and the terminal buffer.*/
+/* 
+ * edit_buffer
+ *   DESCRIPTION: Edits the terminal input buffer.
+ *   INPUTS: response -- Retrieved from the keyboard handler, the character to add to the terminal buffer.
+ *   OUTPUTS: none
+ *   RETURN VALUE: Returns 0 on success.
+ *   SIDE EFFECTS: 
+ */
 int edit_buffer(uint8_t response){
     cli();
+        /* Case where the terminal buffer is full. */
         if (buffer_size == MAX_BUF_SIZE-2 && response == ENTER_KEY){
             buffer[buffer_size] = END_OF_LINE;
             buffer_size++;
         }
+        /* Case to delete from the buffer. */
         else if (response == BACKSPACE_PRESSED){
             if (buffer_size > 0){
                 buffer[buffer_size] = 0x0;
@@ -152,6 +96,7 @@ int edit_buffer(uint8_t response){
                 buffer[buffer_size] = 0x0;
             }
         }
+        /* Add a character to the buffer */
         else{
             if (response == ENTER_KEY){
                 buffer[buffer_size] = END_OF_LINE;
@@ -165,18 +110,32 @@ int edit_buffer(uint8_t response){
     return 0;
 }
 
-/* Clears the terminal buffer. */
+/* 
+ * clear_buffer
+ *   DESCRIPTION: Clears the input buffer and resets the size.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: Returns 0 on success.
+ *   SIDE EFFECTS: Clears the input buffer and reset the size.
+ */
 int clear_buffer(){
-    /* clear the buffer. */
-    int i; 
-    for (i = 0; i < MAX_BUF_SIZE; i++){
-        buffer[i] = 0x0;
+    /* clear the buffer, resetes size. */
+     int i; 
+     for (i = 0; i < MAX_BUF_SIZE; i++){
+         buffer[i] = 0x0;
     }
     buffer_size = 0;
     return 0;
 }
 
-/* Initializes the buffer by clearing the buffer. */
+/* 
+ * terminal_open
+ *   DESCRIPTION: Sets up the terminal.
+ *   INPUTS: filename
+ *   OUTPUTS: none
+ *   RETURN VALUE: Returns 0 on success, -1 on failure.
+ *   SIDE EFFECTS: Initializes the user buffer and clears the buffer_size.
+ */
 int terminal_open(const char* filename){
     int i; /* allows us to iterate through the buffer. */
 
@@ -185,10 +144,17 @@ int terminal_open(const char* filename){
         buffer[i] = 0x0;
     }
     buffer_size = 0;
-    return 0;
+    return -1;
 }
 
-/* Does nothing. Returns 0. */
+/* 
+ * terminal_close
+ *   DESCRIPTION: Closes the terminal.
+ *   INPUTS: fd
+ *   OUTPUTS: none
+ *   RETURN VALUE: Returns 0 on success, -1 on failure.
+ *   SIDE EFFECTS: None yet.
+ */
 int terminal_close(uint32_t fd){
-    return 0;
+    return -1;
 }

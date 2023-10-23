@@ -200,11 +200,17 @@ static inline int sys_call_test(){
 /* Checkpoint 2 tests */
 void test_terminal_read_write(){
 	uint8_t * buf;
+	buf[0] = 'H';
+	buf[1] = 'e';
+	buf[2] = 'l';
+	buf[3] = 'l';
+	buf[4] = 'o';
+	buf[5] = ' ';
 	int numbytes;
 	while (1){
-		numbytes = terminal_read(0, buf, 128);
+		numbytes = terminal_read(0, buf+6, 128);
 		if (numbytes != -1){
-			terminal_write(0, buf, numbytes);
+			terminal_write(0, buf, numbytes+6);
 		}
 	}
 }

@@ -39,9 +39,15 @@
 #define ENTER_PRESESED 0x1C
 #define TAB_PRESSED 0x0F
 
-#define SPACE_ASCII  0x00
-
 #define READ_PS2_OUTPUT 0xD0
+#define MAX_BUFFER_SIZE 128
+#define MAX_BUF_INDEX   127
+#define NEW_LINE_ASCII 0x0A
+#define FORWARD_SLASH_ASCII 0x2F 
+#define QUESTION_MARK_ASCII 0x3F
+#define SINGLE_QUOTE_ASCII 0x27
+#define BACKWARD_SLASH_ASCII 0x5C
+#define SPACE_ASCII 0x20
 
 /* Initializes the PS/2 devices. */
 void init_ps2devices();
@@ -66,6 +72,9 @@ void backspace_handler();
 
 /* Takes care of ENTER key. */
 void enter_key_handler();
+
+/* Takes care of TAB key. */
+void tab_key_handler();
 
 /* Retrieves a character based on scan code. */
 uint8_t default_scan_code_data(uint8_t response);

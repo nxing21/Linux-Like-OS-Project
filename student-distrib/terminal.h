@@ -8,12 +8,6 @@
 #define MAX_BUF_SIZE  128
 #define END_OF_LINE 0x0A
 
-/* Initializes the cursor. */
-void init_cursor();
-
-// /* I/O control for the terminal. */
-// int terminal_ioctl(uint8_t code, unsigned long arg, unsigned int bytes);
-
 /* Prints a string of characters to the screen */
 int terminal_read(uint32_t fd, void * user_buf, int count);
 
