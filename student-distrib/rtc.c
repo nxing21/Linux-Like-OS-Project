@@ -35,9 +35,7 @@ void init_RTC(){
     outb(prev_data | 0x40, RTC_REGISTER_DATA_PORT);
 
     /* sets frequency to highest possible frequency */
-    RTC_frequency = rtc_max_usable_frequency;
-    RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
-    RTC_counter = RTC_max_counter;
+    set_RTC_frequency(rtc_max_usable_frequency);
 
     /* initializes RTC_block */
     RTC_block = 0;
@@ -51,30 +49,17 @@ void init_RTC(){
 
 /* 
  * set_RTC_frequency
- *   DESCRIPTION: Sets the RTC to a specific frequency. (NOT USED WITH VIRTUALIZTAION)
- *   INPUTS: rate - The rate we want to set the periodic interrupts to.
+ *   DESCRIPTION: Sets the RTC to the specified virtual frequency.
+ *   INPUTS: freq - The frequency we want to set the periodic interrupts to.
  *   OUTPUTS: none
  *   RETURN VALUE: none
- *   SIDE EFFECTS: Enables NMIs. Ends critical section.
+ *   SIDE EFFECTS: none
  */
-void set_RTC_frequency(uint32_t rate) {
-    if (rate >= rtc_lowest_rate && rate <= rtc_highest_rate) {
-        rate &= 0x0F;   // bit mask: 0x0F
-
-        cli();
-
-        /* Select Register A and disables NMIs*/
-        outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
-        /* Gets the data from Register B*/
-        char temp = inb(RTC_REGISTER_DATA_PORT);
-        /* Reselects Register A. */
-        outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
-        /* Sets RTC to the given rate */
-        outb((temp & 0xF0) | rate, RTC_REGISTER_DATA_PORT);
-        /* Enables NMIs */
-        NMI_enable();
-
-        sti();
+void set_RTC_frequency(int freq) {
+    if (freq >= rtc_min_frequency && freq <= rtc_max_usable_frequency) {
+        RTC_frequency = freq;
+        RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
+        RTC_counter = RTC_max_counter;
     }
 }
 
@@ -117,9 +102,7 @@ void RTC_handler(){
  */
 int RTC_open(const uint8_t* filename) {
     // sets RTC frequency to 2Hz
-    RTC_frequency = rtc_min_frequency;
-    RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
-    RTC_counter = RTC_max_counter;
+    set_RTC_frequency(rtc_min_frequency);
     return 0;
 }
 
@@ -139,8 +122,8 @@ int RTC_close(int32_t fd) {
  * RTC_read
  *   DESCRIPTION: Blocks until the next interrupt (at correct frequency).
  *   INPUTS: fd -- file descriptor
-             buffer -- void* to buffer
-             nbytes -- num bytes
+             buffer -- pointer to buffer
+             nbytes -- number of bytes
  *   OUTPUTS: none
  *   RETURN VALUE: 0
  *   SIDE EFFECTS: none
@@ -155,8 +138,8 @@ int RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
  * RTC_write
  *   DESCRIPTION: Sets RTC frequency to specified frequency.
  *   INPUTS: fd -- file descriptor
-             buffer -- void* to freq
-             nbytes -- num bytes
+             buffer -- pointer to freq
+             nbytes -- number of bytes
  *   OUTPUTS: none
  *   RETURN VALUE: 0 on success; -1 on failure
  *   SIDE EFFECTS: none
@@ -180,9 +163,7 @@ int RTC_write(int32_t fd, const void* buffer, int32_t nbytes) {
     for (i = rtc_lowest_rate; i <= rtc_highest_rate; i++) {
         if (freq == (rtc_max_frequency >> (i-1))) {   // rate to frequency formula: freq = max_freq >> (rate-1)
             // sets frequency to specified frequency
-            RTC_frequency = (rtc_max_frequency >> (i-1));   // rate to frequency formula: freq = max_freq >> (rate-1)
-            RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
-            RTC_counter = RTC_max_counter;
+            set_RTC_frequency(rtc_max_frequency >> (i-1));   // rate to frequency formula: freq = max_freq >> (rate-1)
             return 0;
         }
     }

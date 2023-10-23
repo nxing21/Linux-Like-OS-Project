@@ -377,7 +377,7 @@ int RTC_frequencies_low_test() {
 	RTC_write(0,&temp,4);
 	temp = 1;
 	RTC_write(0,&temp,4);
-
+	printf("Trying 1 Hz\n");
 	printf("Should be 1024 Hz: ");
 	for (i = 0; i < 8; i++) {
 		printf("o ");
@@ -402,7 +402,7 @@ int RTC_frequencies_high_test() {
 	RTC_write(0,&temp,4);
 	temp = 2048;
 	RTC_write(0,&temp,4);
-
+	printf("Trying 2048 Hz\n");
 	printf("Should be 2 Hz: ");
 	for (i = 0; i < 8; i++) {
 		printf("o ");
@@ -425,9 +425,10 @@ int RTC_frequencies_high_test() {
 
 	temp = 4;
 	RTC_write(0,&temp,4);
+	printf("Should stay at 4 Hz\n");
 
 	for (i = 1; i < 9; i++) {
-		printf("Should be 4 Hz: ");
+		printf("Trying new invalid freq: ");
 		temp = i*100;
 		RTC_write(0,&temp,4);
 		for (k = 0; k < 4; k++) {
@@ -510,7 +511,7 @@ void launch_tests(){
 	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
 	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
-	TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());
+	// TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());
 	// TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
 }
 

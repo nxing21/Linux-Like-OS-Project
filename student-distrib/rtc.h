@@ -19,8 +19,8 @@
 /* Initializes the RTC. */
 void init_RTC();
 
-/* Sets the RTC to a frequency. */
-void set_RTC_frequency(uint32_t rate);
+/* Sets the RTC to a virtual frequency. */
+void set_RTC_frequency(int freq);
 
 /* Handles RTC interrupts */
 void RTC_handler();
