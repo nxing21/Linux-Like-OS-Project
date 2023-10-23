@@ -219,7 +219,7 @@ int read_dentry_test(){
 		return FAIL;
 	}
 	
-	printf("%s %d  lol1 \n", dentry->filename, dentry->inode_num);
+	printf("Filename: %s Inode Number: %d \n", dentry->filename, dentry->inode_num);
 
 
 	// if(read_dentry_by_index (1, dentry) != 0){
@@ -500,13 +500,13 @@ void launch_tests(){
 	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
 
 	/* Checkpoint 2 tests*/
-	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
+	TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
 	// test_terminal_read_write();
 	
-	TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
+	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
 	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
 	// TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());
