@@ -7,6 +7,13 @@
 #define NUM_COLS    80
 #define NUM_ROWS    25
 #define ATTRIB      0x7
+#define CURSOR_LOC_HIGH_REG 0x0E
+#define CURSOR_LOC_LOW_REG 0x0F
+#define GET_8_MSB 8
+#define GET_8_BITS 0xFF
+#define CRTC_ADDR_PORT 0x3D4
+#define CRTC_DATA_PORT 0x3D5
+
 
 static int screen_x;
 static int screen_y;
@@ -22,6 +29,9 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
+    screen_x = 0;
+    screen_y = 0;
+    move_cursor();
 }
 
 /* Standard printf().
@@ -168,16 +178,42 @@ int32_t puts(int8_t* s) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
+    int i, j;
+    uint8_t character;
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
-    } else {
+    } 
+    else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
+        check_size(); // added function
         screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        // screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
+
+    /* Checks if the y position exceeds the window. If so, scroll up and reposition the cursor.*/
+    if (screen_y > NUM_ROWS-1){
+        for (i = 0; i < NUM_ROWS-1; i++){
+            for (j = 0; j < NUM_COLS; j++){
+                character = *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1));
+                *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
+                *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = character;
+                *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
+            }
+        }
+
+        /* Separate case for printing the last row, since there is no row below it. */
+        i = NUM_ROWS-1;
+        for (j = 0; j < NUM_COLS; j++){
+            *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
+            *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1) + 1) = ATTRIB;
+        }
+        screen_y = NUM_ROWS-1;
+        screen_x = 0;
+    }
+    move_cursor();
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
@@ -473,4 +509,49 @@ void test_interrupts(void) {
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         video_mem[i << 1]++;
     }
+}
+
+/*  check_size()
+ * Inputs: None
+ * Return Value: None
+ * Function: Checks the position of x and y to see if its out of bounds. */
+void check_size(){
+    if (screen_x >= NUM_COLS){ 
+        screen_y++;
+        screen_x = 0;
+    }
+}
+
+/*  erase_char()
+ * Inputs: None
+ * Return Value: None
+ * Function: Deletes a character from the screen*/
+void erase_char(){
+    /* Deletes the previous character. */
+    screen_x--;
+    if (screen_x < 0){
+        screen_x = NUM_COLS-1;
+        screen_y--;
+    }
+    *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = 0x0;
+    screen_x %= NUM_COLS;
+    screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+
+    /* Moves the cursor*/
+    move_cursor();
+}
+
+/*  move_cursor()
+ * Inputs: None
+ * Return Value: None
+ * Function: Moves the cursor based on the position of x and y*/
+void move_cursor(){
+    uint16_t position;
+    position = screen_y * NUM_COLS + screen_x;
+
+    /* Edit ports to move the cursor. */
+    outb(CURSOR_LOC_LOW_REG, CRTC_ADDR_PORT);
+    outb((uint8_t)(position & GET_8_BITS), CRTC_DATA_PORT);
+    outb(CURSOR_LOC_HIGH_REG,CRTC_ADDR_PORT);
+    outb((uint8_t)((position >> GET_8_MSB) & GET_8_BITS), CRTC_DATA_PORT);
 }

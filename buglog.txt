@@ -92,3 +92,4 @@ Oct 22nd, 2023
     - Fixed this issue after discussing with teammate who worked mostly on terminal, who
     suggested to use an updated version of the putc function that he wrote.
     - Overall, took about an hour to realize the issue, and was very quick to solve.
+    - Took about 30 minutes to fix.

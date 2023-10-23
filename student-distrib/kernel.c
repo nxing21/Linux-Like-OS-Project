@@ -9,11 +9,14 @@
 #include "debug.h"
 #include "tests.h"
 
-#include "idt.h"
 // MP 3.1: Added headers
 #include "init_devices.h"
 #include "rtc.h"
 #include "page.h"
+// MP 3.2: Added headers
+#include "file_sys.h"
+#include "terminal.h"
+#include "idt.h"
 
 #define RUN_TESTS
 
@@ -58,6 +61,8 @@ void entry(unsigned long magic, unsigned long addr) {
         int mod_count = 0;
         int i;
         module_t* mod = (module_t*)mbi->mods_addr;
+        // initialize file system
+        init_file_sys(mod->mod_start);
         while (mod_count < mbi->mods_count) {
             printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);
             printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
@@ -159,12 +164,15 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the page*/
     init_page();
 
+    clear();
+
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     printf("Enabling Interrupts\n");
     sti();
+    clear();
 
 #ifdef RUN_TESTS
     // /* Run tests */
@@ -174,4 +182,5 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }
+
 
