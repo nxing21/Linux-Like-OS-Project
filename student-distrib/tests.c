@@ -213,7 +213,7 @@ int read_dentry_test(){
 	clear();
 	TEST_HEADER;
 	dentry_t* dentry;
-	const uint8_t* fname = "verylargetextwithverylongname.tx";
+	const char* fname = "verylargetextwithverylongname.tx";
 	int32_t out = read_dentry_by_name((const uint8_t *) fname, dentry);
 	if(out != 0){
 		return FAIL;
@@ -241,11 +241,9 @@ int read_dentry_test(){
  * Coverage: check if read data works
  */
 int read_data_test(){
-	// clear();
-	TEST_HEADER;
+		TEST_HEADER;
 	uint8_t buf[BYTES_PER_BLOCK*4];
-	printf("TESTING READ DATA\n");
-	int32_t bytes_read;
+		int32_t bytes_read;
 	uint32_t inode_num = 38;
 	bytes_read = read_data(inode_num, 0, buf, 187);
 	clear();
@@ -268,18 +266,15 @@ int read_data_test(){
 int open_read_file_test(){
 	TEST_HEADER;
 	// clear();
-	const char* filename =  "cat";
-	uint8_t buf[10000]; // arbitrary big number
+	const char* filename =  "frame1.txt";
+	uint8_t buf[37000]; // arbitrary big number
 	int i;
-	for (i = 0; i < 10000; i++) {
-		buf[i] = 0x00;
-	}
-	if(open_file((const uint8_t *) filename) == -1){
+		if(open_file((const uint8_t *) filename) == -1){
 		printf("failed at open");
 		return FAIL;
 	}
 
-	int bytes_read = read_file(3, buf, 10000); // arbitrary big number
+	int bytes_read = read_file(3, buf, 37000); // arbitrary big number
 	for (i = 0; i < bytes_read; i++) {
 		if (buf[i] == '\0') {
 			continue;
@@ -321,7 +316,7 @@ int open_read_dir_test(){
 		else if (i % (FILENAME_LEN + 1) == FILENAME_LEN) {
 			printf(", File type: ");
 			putc(buf[i]);
-			printf(", File length: ");
+			printf(", File size: ");
 			printf("%d", length_buf[length_index]);
 			length_index++;
 		}
@@ -510,8 +505,8 @@ void launch_tests(){
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
-	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
-	test_terminal_read_write();
+	TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
+	// test_terminal_read_write();
 	
 	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());

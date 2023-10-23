@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+// macros to help with file system calculations
 #define MAX_FILES 62
 #define FILENAME_LEN 32 /* 32 bytes/characters */
 #define ONE_KB 1024
@@ -43,6 +44,7 @@ typedef struct  file_descriptor {
     int32_t flags; /* among other things, marking this file descriptor as “in-use.” */
 } fd_t;
 
+// function declarations
 void init_file_sys(uint32_t starting_addr);
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
