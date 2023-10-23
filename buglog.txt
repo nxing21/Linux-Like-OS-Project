@@ -51,3 +51,11 @@ Oct 18th, 2023:
 
 Oct 18th, 2023:
     - Backspace didn't delete the first character 
+
+Oct 19th, 2023:
+    - Ran into an issue when trying to set the RTC dividing rate.
+    - The frequency of my specified rate seemed off.
+    - Fixed it by reading through documentation and figuring out that the corresponding
+    is equal to the maximum frequency shifted right by (rate-1) rather than just shifted
+    by (rate).
+Overall, took around 3 hours to resolve.
