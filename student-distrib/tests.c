@@ -338,20 +338,27 @@ int open_read_dir_test(){
  */
 int RTC_frequencies_test(){
 	TEST_HEADER;
-	printf("\n");
-	clear();
-	printf(" ");
 	int i, k, temp;
 
 	for (i = 0; i <= 9; i++) {
 		temp = 2 << i;
+
+		if (temp >= 1000) {
+			printf("%d Hz: ", temp);
+		} else if (temp >= 100) {
+			printf(" %d Hz: ", temp);
+		} else if (temp >= 10) {
+			printf("  %d Hz: ", temp);
+		} else {
+			printf("   %d Hz: ", temp);
+		}
+
 		RTC_write(0,&temp,4);
 		for (k = 0; k < 8; k++) {
 			printf("o ");
 			RTC_read(0, 0, 4);
 		}
 		printf("\n");
-		printf(" ");
 	}
 	return PASS;
 }
@@ -364,16 +371,14 @@ int RTC_frequencies_test(){
  */
 int RTC_frequencies_low_test() {
 	TEST_HEADER;
-	printf("\n");
-	clear();
-	printf(" ");
 	int i, temp;
 
-	temp = 10;
+	temp = 1024;
 	RTC_write(0,&temp,4);
 	temp = 1;
 	RTC_write(0,&temp,4);
 
+	printf("Should be 1024 Hz: ");
 	for (i = 0; i < 8; i++) {
 		printf("o ");
 		RTC_read(0,0,4);
@@ -391,9 +396,6 @@ int RTC_frequencies_low_test() {
  */
 int RTC_frequencies_high_test() {
 	TEST_HEADER;
-	printf("\n");
-	clear();
-	printf(" ");
 	int i, temp;
 
 	temp = 2;
@@ -401,6 +403,7 @@ int RTC_frequencies_high_test() {
 	temp = 2048;
 	RTC_write(0,&temp,4);
 
+	printf("Should be 2 Hz: ");
 	for (i = 0; i < 8; i++) {
 		printf("o ");
 		RTC_read(0,0,4);
@@ -418,15 +421,13 @@ int RTC_frequencies_high_test() {
  */
  int RTC_frequencies_invalid_test() {
 	TEST_HEADER;
-	printf("\n");
-	clear();
-	printf(" ");
 	int i, k, temp;
 
 	temp = 4;
 	RTC_write(0,&temp,4);
 
 	for (i = 1; i < 5; i++) {
+		printf("Should be 4 Hz: ");
 		temp = i*200;
 		RTC_write(0,&temp,4);
 		for (k = 0; k < 4; k++) {
@@ -434,7 +435,6 @@ int RTC_frequencies_high_test() {
 			RTC_read(0,0,4);
 		}
 		printf("\n");
-		printf(" ");
 	}
 
 	return PASS;
@@ -448,12 +448,10 @@ int RTC_frequencies_high_test() {
  */
 int RTC_open_close_test() {
 	TEST_HEADER;
-	printf("\n");
-	clear();
-	printf(" ");
 	RTC_open("AAAAA");
 	int i;
 
+	printf("Should be 2 Hz: ");
 	for (i = 0; i < 8; i++) {
 		printf("o ");
 		RTC_read(0,0,4);
@@ -506,9 +504,9 @@ void launch_tests(){
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
-	test_terminal_read_write();
+	// test_terminal_read_write();
 	
-	// TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
+	TEST_OUTPUT("RTC_frequencies_test", RTC_frequencies_test());
 	// TEST_OUTPUT("RTC_frequencies_low_test", RTC_frequencies_low_test());
 	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
 	// TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());
