@@ -135,14 +135,14 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
 
 int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
     int offset;
-    int i;
+    // int i;
     int32_t bytes_read;
     uint8_t * buffer = (uint8_t*) buf;
     if(fd >= FILE_DESCRIPTOR_MAX || fd < 0){
         return -1;
     }
     else{
-        printf("\n \n");
+        // printf("\n \n");
         offset = file_descriptors[fd].file_pos; //the order of me doing this seems wrong
         file_descriptors[fd].file_pos += nbytes;
         bytes_read = read_data(file_descriptors[fd].inode, offset, buffer, nbytes);

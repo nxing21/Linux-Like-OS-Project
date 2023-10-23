@@ -206,7 +206,7 @@ static inline int sys_call_test(){
  * Coverage: check if read dentry funcs works
  */
 int read_dentry_test(){
-	clear();
+	// clear();
 	TEST_HEADER;
 	dentry_t* dentry;
 	const int8_t* fname = "frame0.txt";
@@ -245,7 +245,7 @@ int read_data_test(){
 	int32_t bytes_read;
 	uint32_t inode_num = 38;
 	bytes_read = read_data(inode_num, 0, buf, 187);
-	clear();
+	// clear();
 	int i;
 	for (i = 0; i < bytes_read; i++) {
 		printf("%c", buf[i]);
@@ -264,23 +264,27 @@ int read_data_test(){
  */
 int open_read_file_test(){
 	TEST_HEADER;
-	clear();
-	const char* filename =  "frame0.txt";
-	uint8_t buf[BYTES_PER_BLOCK*10]; // arbitrary big number
+	// clear();
+	printf("\n");
+	const char* filename =  "cat";
+	uint8_t buf[10000]; // arbitrary big number
+	int i;
+	for (i = 0; i < 10000; i++) {
+		buf[i] = 0x00;
+	}
 	if(open_file((const uint8_t *) filename) == -1){
 		printf("failed at open");
 		return FAIL;
 	}
 
-	// if(read_file(3, buf, 20000) != 0){
-	// 	return FAIL;
-	// }
-
-	int bytes_read = read_file(3, buf, 20000); // arbitrary big number
-	int i;
+	int bytes_read = read_file(3, buf, 10000); // arbitrary big number
 	for (i = 0; i < bytes_read; i++) {
+		if (buf[i] == '\0') {
+			continue;
+		}
 		putc(buf[i]);
 	}
+	printf("\n");
 
 	return PASS; /*should always reach here unless test failed*/ 
 }
@@ -293,7 +297,7 @@ int open_read_file_test(){
  */
 int open_read_dir_test(){
 	TEST_HEADER;
-	clear();
+	// clear();
 	const char* filename =  ".";
 	uint8_t buf[BYTES_PER_BLOCK*4];
 	uint32_t length_buf[BYTES_PER_BLOCK];

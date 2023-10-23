@@ -19,6 +19,8 @@
 
 #define RUN_TESTS
 
+unsigned int fs;
+
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
 #define CHECK_FLAG(flags, bit)   ((flags) & (1 << (bit)))
@@ -60,8 +62,8 @@ void entry(unsigned long magic, unsigned long addr) {
         int mod_count = 0;
         int i;
         module_t* mod = (module_t*)mbi->mods_addr;
-        init_file_sys(mod->mod_start);
         while (mod_count < mbi->mods_count) {
+            fs = mod->mod_start;
             printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);
             printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
             printf("First few bytes of module:\n");
@@ -161,6 +163,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the page*/
     init_page();
+
+    clear();
+    init_file_sys(fs);
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
