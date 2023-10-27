@@ -1,5 +1,4 @@
-#define ASM     1
-
+#define ASM 1
 
 .text
 /* INTR_LINK(name, func)
