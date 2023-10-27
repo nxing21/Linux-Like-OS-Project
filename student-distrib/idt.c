@@ -61,7 +61,7 @@ void build_idt() {
     SET_IDT_ENTRY(idt[SIMD_FP_ERROR], simd_fp_error);
 
     // Sets system call vector (x80) with corresponding function pointer
-    SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], system_call);
+    SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], system_call_linkage);
 
     // Sets each interrupt with corresponding function pointer
     SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler_linkage);
@@ -217,7 +217,7 @@ void general_protection() {
  */
 void page_fault() {
     
-    int location = page_fault_location();
+    uint32_t location = page_fault_location();
     printf("Page-Fault Exception: %x \n", location);
     while(1){};
 }
