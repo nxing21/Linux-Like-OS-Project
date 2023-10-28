@@ -63,11 +63,7 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
             }
         }
     }
-    
-
-
     return -1; // not found
-    
 }
 
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
