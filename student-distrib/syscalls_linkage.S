@@ -26,6 +26,7 @@ system_call_linkage:
     popl %ebx
     popl %ecx
     popl %edx
+    jmp finished
 
 invalid_number:
     movl $-1, %eax
