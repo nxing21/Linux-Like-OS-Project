@@ -1,0 +1,43 @@
+#define ASM     1
+
+.data
+    NUM_SYS_CALLS = 10
+
+.text
+
+.globl system_call_linkage
+system_call_linkage:
+    # Save registers
+    pushl %ebp
+    pushl %edi
+    pushl %esi
+
+    # Check if valid
+    cmpl    $0, %eax
+    jle invalid_number
+    cmpl    NUM_SYS_CALLS, %eax
+    jg invalid_number
+    
+    # Push arguments
+    pushl %edx
+    pushl %ecx
+    pushl %ebx
+    call *sys_call_table(0, %eax, 4) # Call the corresponding system call (4 bytes per function pointer)
+    popl %ebx
+    popl %ecx
+    popl %edx
+    jmp finished
+
+invalid_number:
+    movl $-1, %eax
+finished:
+    # Restore registers
+    popl %esi
+    popl %edi
+    popl %ebp
+    iret
+
+# Jump table
+sys_call_table:
+    .long foo, system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap, system_set_handler, system_sigreturn
+
