@@ -11,6 +11,10 @@
 #define BOOT_BLOCK_RESERVED_BYTES 52
 #define DIR_ENTRIES 63
 #define BYTES_PER_BLOCK 4096
+#define FILE_DESCRIPTOR_MAX 8
+#define FILE_DESCRIPTOR_MIN 2
+
+
 
 
 /* file directory entry structure from slides*/

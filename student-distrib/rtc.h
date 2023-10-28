@@ -1,3 +1,7 @@
+#ifndef _RTC_H_
+#define _RTC_H_
+
+
 #define RTC_REGISTER_SELECT 0x70 /* Selects a register in the RTC space */
 #define RTC_REGISTER_DATA_PORT 0x71 /* Port that allows read/write to registers*/
 
@@ -26,14 +30,16 @@ void set_RTC_frequency(int freq);
 void RTC_handler();
 
 /* Initialize the RTC frequency to 2 Hz */
-int RTC_open(const uint8_t* filename);
+int32_t RTC_open(const uint8_t* filename);
 
 /* Does nothing unless we virtualize */
-int RTC_close(int32_t fd);
+int32_t RTC_close(int32_t fd);
 
 /* Blocks RTC until next interrupt */
-int RTC_read(int32_t fd, void* buffer, int32_t nbytes);
+int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes);
 
 /* Changes the RTC frequency */
-int RTC_write(int32_t fd, const void* buffer, int32_t nbytes);
+int32_t RTC_write(int32_t fd, const void* buffer, int32_t nbytes);
 
+
+#endif
