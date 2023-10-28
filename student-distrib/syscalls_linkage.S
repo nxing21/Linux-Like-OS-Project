@@ -15,7 +15,7 @@ system_call_linkage:
     # Check if valid
     cmpl    $0, %eax
     jle invalid_number
-    cmpl    NUM_SYS_CALLS, %eax
+    cmpl    $NUM_SYS_CALLS, %eax
     jg invalid_number
     
     # Push arguments
@@ -39,5 +39,5 @@ finished:
 
 # Jump table
 sys_call_table:
-    .long foo, system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap, system_set_handler, system_sigreturn
+    .long 0, system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap, system_set_handler, system_sigreturn
 
