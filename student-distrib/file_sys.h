@@ -11,8 +11,7 @@
 #define BOOT_BLOCK_RESERVED_BYTES 52
 #define DIR_ENTRIES 63
 #define BYTES_PER_BLOCK 4096
-#define FILE_DESCRIPTOR_MAX 8
-#define FILE_DESCRIPTOR_MIN 2
+
 
 /* file directory entry structure from slides*/
 typedef struct dentry {
@@ -36,13 +35,6 @@ typedef struct boot_block {
     uint8_t reserved[BOOT_BLOCK_RESERVED_BYTES];
     dentry_t direntries[DIR_ENTRIES];
 } boot_block_t;
-
-typedef struct  file_descriptor {
-    int32_t *file_op_table_ptr; /* The file operations jump table associated with the correct file type */
-    int32_t inode; /*The inode number for this file. This is only valid for data files, and should be 0 for directories and the RTC device file.*/
-    int32_t file_pos; /* keeps track of where the user is currently reading from in the file. Every read system call should update this member.*/
-    int32_t flags; /* among other things, marking this file descriptor as “in-use.” */
-} fd_t;
 
 // function declarations
 void init_file_sys(uint32_t starting_addr);

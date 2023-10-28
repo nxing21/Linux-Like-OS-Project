@@ -8,9 +8,7 @@ uint32_t data_blocks;
 // global dentry variable
 dentry_t *dentry;
 
-// file descriptor global variables
-fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
-uint8_t fds_in_use;
+
 
 /* void init_file_sys(uint32_t starting_addr)
  * Inputs: uint32_t starting_addr = starting address of file system
@@ -149,18 +147,18 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
  * Function: reads nbytes starting from file position offset in the file using fd index and returning the number of bytes read and placed in the buffer.
  */
 int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
-    int offset;
-    int32_t bytes_read;
-    uint8_t * buffer = (uint8_t*) buf;
-    if(fd >= FILE_DESCRIPTOR_MAX || fd < 0) { //check if valid fd index
-        return -1;
-    }
-    else{
-        offset = file_descriptors[fd].file_pos; //offset based on file position
-        file_descriptors[fd].file_pos += nbytes; //updating file position
-        bytes_read = read_data(file_descriptors[fd].inode, offset, buffer, nbytes); // call read data to fill our buffer
-        return bytes_read;
-    }  
+    // int offset;
+    // int32_t bytes_read;
+    // uint8_t * buffer = (uint8_t*) buf;
+    // if(fd >= FILE_DESCRIPTOR_MAX || fd < 0) { //check if valid fd index
+    //     return -1;
+    // }
+    // else{
+    //     offset = file_descriptors[fd].file_pos; //offset based on file position
+    //     file_descriptors[fd].file_pos += nbytes; //updating file position
+    //     bytes_read = read_data(file_descriptors[fd].inode, offset, buffer, nbytes); // call read data to fill our buffer
+    //     return bytes_read;
+    // }  
 }
 
 /* int32_t write_file(int32_t fd, const void* buf, int32_t nbytes)
@@ -181,17 +179,17 @@ int32_t write_file(int32_t fd, const void* buf, int32_t nbytes) {
  * Function: checks if valid name and updates file descriptors accordingly
  */
 int32_t open_file(const uint8_t* filename) {
-    dentry_t temp_dentry;
+    // dentry_t temp_dentry;
     
-    if((read_dentry_by_name(filename, &temp_dentry) != -1) && fds_in_use < FILE_DESCRIPTOR_MAX) { //check valid name and fds not full
-        file_descriptors[fds_in_use+1].flags = 1; //marking as in use
-        file_descriptors[fds_in_use+1].inode = temp_dentry.inode_num; //setting to correct inode
-        fds_in_use++; // updating file descriptors in use
-        return 0;
-    }
-    else{
-        return -1;
-    }
+    // if((read_dentry_by_name(filename, &temp_dentry) != -1) && fds_in_use < FILE_DESCRIPTOR_MAX) { //check valid name and fds not full
+    //     file_descriptors[fds_in_use+1].flags = 1; //marking as in use
+    //     file_descriptors[fds_in_use+1].inode = temp_dentry.inode_num; //setting to correct inode
+    //     fds_in_use++; // updating file descriptors in use
+    //     return 0;
+    // }
+    // else{
+    //     return -1;
+    // }
 }
 
 /* int32_t close_file(int32_t fd) 
@@ -200,17 +198,17 @@ int32_t open_file(const uint8_t* filename) {
  * Function: checks if valid index and updates file descriptors accordingly
  */
 int32_t close_file(int32_t fd) {
-    if(fd >= 0 && fd < FILE_DESCRIPTOR_MAX) { //check if valid fd index
-        file_descriptors[fd].flags = -1; //marking as not in use
-        file_descriptors[fd].inode = -1; //marking as not pointing to any inode
-        file_descriptors[fd].file_pos = 0; //file position reset to 0 
-        file_descriptors[fd].file_op_table_ptr = NULL; //not set up yet so set to NULL
-        fds_in_use--; //updating file descriptors in use
-        return 0;
-    }
-    else{
-        return -1;
-    }
+    // if(fd >= 0 && fd < FILE_DESCRIPTOR_MAX) { //check if valid fd index
+    //     file_descriptors[fd].flags = -1; //marking as not in use
+    //     file_descriptors[fd].inode = -1; //marking as not pointing to any inode
+    //     file_descriptors[fd].file_pos = 0; //file position reset to 0 
+    //     file_descriptors[fd].file_op_table_ptr = NULL; //not set up yet so set to NULL
+    //     fds_in_use--; //updating file descriptors in use
+    //     return 0;
+    // }
+    // else{
+    //     return -1;
+    // }
 }
 
 /* int32_t read_directory(int32_t fd, void* buf, void* length_buf, int32_t nbytes)
@@ -222,40 +220,40 @@ int32_t close_file(int32_t fd) {
  * Function: reads directory information
  */
 int32_t read_directory(int32_t fd, void* buf, void* length_buf, int32_t nbytes) {
-    // loop counters
-    uint32_t i;
-    uint32_t j;
-    // we have two buffers, one for file name and file type, other for file length
-    uint8_t * buffer = (uint8_t*) buf;
-    uint32_t * length_buffer = (uint32_t *) length_buf;
-    // counters so we know what index to put in buffer
-    uint32_t num_read = 0;
-    uint32_t num_length_read = 0;
-    if(fd >= FILE_DESCRIPTOR_MAX || fd < 0) { //check valid fd index
-        return -1;
-    }
-    else{
-        file_descriptors[fd].file_pos += nbytes; // updating file position
+    // // loop counters
+    // uint32_t i;
+    // uint32_t j;
+    // // we have two buffers, one for file name and file type, other for file length
+    // uint8_t * buffer = (uint8_t*) buf;
+    // uint32_t * length_buffer = (uint32_t *) length_buf;
+    // // counters so we know what index to put in buffer
+    // uint32_t num_read = 0;
+    // uint32_t num_length_read = 0;
+    // if(fd >= FILE_DESCRIPTOR_MAX || fd < 0) { //check valid fd index
+    //     return -1;
+    // }
+    // else{
+    //     file_descriptors[fd].file_pos += nbytes; // updating file position
 
-        for (i = 0; i < boot_block->dir_count; i++) { // iterate through all files
-            dentry_t dentry = boot_block->direntries[i];
-            // get dentry of current file (index i)
-            read_dentry_by_index(i, &dentry);
-            for (j = 0; j < FILENAME_LEN; j++) {
-                buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer
-                num_read++;
-            }
-            buffer[num_read] = dentry.filetype + '0'; //changing num to char equivalent
-            num_read++;
+    //     for (i = 0; i < boot_block->dir_count; i++) { // iterate through all files
+    //         dentry_t dentry = boot_block->direntries[i];
+    //         // get dentry of current file (index i)
+    //         read_dentry_by_index(i, &dentry);
+    //         for (j = 0; j < FILENAME_LEN; j++) {
+    //             buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer
+    //             num_read++;
+    //         }
+    //         buffer[num_read] = dentry.filetype + '0'; //changing num to char equivalent
+    //         num_read++;
 
-            uint32_t inode_number = dentry.inode_num;
-            inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_number * BYTES_PER_BLOCK); // get current inode
-            // add length of file into the length buffer
-            length_buffer[num_length_read] = cur_inode->length;
-            num_length_read++;
-        }
-        return num_read;
-    }
+    //         uint32_t inode_number = dentry.inode_num;
+    //         inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_number * BYTES_PER_BLOCK); // get current inode
+    //         // add length of file into the length buffer
+    //         length_buffer[num_length_read] = cur_inode->length;
+    //         num_length_read++;
+    //     }
+    //     return num_read;
+    // }
 }
 
 /* int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes)
@@ -276,15 +274,15 @@ int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes) {
  * Function: checks if valid name and updates file descriptors accordlingly
  */
 int32_t open_directory(const uint8_t* filename) {
-    if(read_dentry_by_name(filename, dentry) != -1 && fds_in_use < FILE_DESCRIPTOR_MAX ) { //check valid name and fds not full
-        file_descriptors[fds_in_use+1].flags = 1; //marking as in use
-        file_descriptors[fds_in_use+1].inode = dentry->inode_num; //setting to correct inode
-        fds_in_use++; //updating file descriptors in use
-        return 0;
-    }
-    else {
-        return -1;
-    }
+    // if(read_dentry_by_name(filename, dentry) != -1 && fds_in_use < FILE_DESCRIPTOR_MAX ) { //check valid name and fds not full
+    //     file_descriptors[fds_in_use+1].flags = 1; //marking as in use
+    //     file_descriptors[fds_in_use+1].inode = dentry->inode_num; //setting to correct inode
+    //     fds_in_use++; //updating file descriptors in use
+    //     return 0;
+    // }
+    // else {
+    //     return -1;
+    // }
 }
 
 
@@ -296,17 +294,17 @@ int32_t open_directory(const uint8_t* filename) {
  * Function: checks if valid index and updates file descriptors accordingly
  */
 int32_t close_directory(int32_t fd) {
-    if(fd >= 0 && fd < FILE_DESCRIPTOR_MAX) { //check valid fd index
-        file_descriptors[fd].flags = -1; //marking as not in use
-        file_descriptors[fd].inode = -1; //marking as not pointing to a valid inode
-        file_descriptors[fd].file_pos = 0; //resetting file position
-        file_descriptors[fd].file_op_table_ptr = NULL; //not set up yet so set to NULL
-        fds_in_use--; //updating file descriptors in use
-        return 0;
-    }
-    else {
-        return -1;
-    }
+    // if(fd >= 0 && fd < FILE_DESCRIPTOR_MAX) { //check valid fd index
+    //     file_descriptors[fd].flags = -1; //marking as not in use
+    //     file_descriptors[fd].inode = -1; //marking as not pointing to a valid inode
+    //     file_descriptors[fd].file_pos = 0; //resetting file position
+    //     file_descriptors[fd].file_op_table_ptr = NULL; //not set up yet so set to NULL
+    //     fds_in_use--; //updating file descriptors in use
+    //     return 0;
+    // }
+    // else {
+    //     return -1;
+    // }
 }
 
 
