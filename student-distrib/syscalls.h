@@ -9,7 +9,7 @@
 int32_t system_execute(const uint8_t* command);
 int32_t system_halt(uint8_t status);
 
-
+fd_t *curr_fds;
 
 typedef struct  file_descriptor {
     fops_t *file_op_table_ptr; /* The file operations jump table associated with the correct file type */

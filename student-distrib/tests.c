@@ -20,8 +20,8 @@ static inline void assertion_failure(){
 	asm volatile("int $15");
 }
 
-int RTC_read(int32_t fd, void* buffer, int32_t nbytes);
-int RTC_write(int32_t fd, const void* buffer, int32_t nbytes);
+int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes);
+int32_t RTC_write(int32_t fd, const void* buffer, int32_t nbytes);
 
 /* Checkpoint 1 tests */
 

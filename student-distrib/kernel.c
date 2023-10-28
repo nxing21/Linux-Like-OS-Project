@@ -15,13 +15,10 @@
 #include "page.h"
 // MP 3.2: Added headers
 #include "file_sys.h"
-<<<<<<< HEAD
 #include "terminal.h"
 #include "idt.h"
-=======
 // MP 3.3: Added headers
 #include "syscalls.h"
->>>>>>> 5e03a45c1513ddaa7de76c93e728769a0dfa73a7
 
 #define RUN_TESTS
 
