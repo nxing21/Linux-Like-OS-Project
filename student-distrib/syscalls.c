@@ -2,6 +2,7 @@
 #include "rtc.h"
 #include "syscalls.h"
 #include "lib.h"
+#include "page.h"
 
 uint8_t cur_processes[NUM_PROCESSES] = {0,0}; // we only have two processes for checkpoint 3
 
@@ -47,8 +48,7 @@ int32_t system_execute(const uint8_t* command) {
         return -1;
     }
 
-    // Create PCB
-    // First find free PCB location
+    // Find free PID location
     for (i = 0; i <= NUM_PROCESSES; i++) {
         if (i == NUM_PROCESSES) {
             return -1; // no available space for new process
@@ -59,6 +59,14 @@ int32_t system_execute(const uint8_t* command) {
         }
     }
 
+    // Set up paging and flush TLB
+    process_page(pid);
+    flushTLB();
+
+    // User-level program loader
+    read_data(dentry->inode_num, 0, (uint8_t *) VIRTUAL_ADDR, FOUR_MB);
+
+    // Create PCB
     pcb_t *pcb = (pcb_t *) (EIGHT_MB - pid * EIGHT_KB);
 
     // Context switch
@@ -155,4 +163,17 @@ int32_t system_close (int32_t fd){
     else{
         return -1;
     }
+}
+
+void process_page(int process_num) {
+    // write parameter checks
+
+    // process page
+    int index = 2 + process_num;   // only true if process number is zero indexed; offset by 2 bc first two 4MBs are already taken
+
+    unsigned int addr = (EIGHT_MB + process_num * FOUR_MB);
+
+    // set page directory entry
+    page_directory[index].mb.present = 1;
+    page_directory[index].mb.base_addr = addr >> shift_12;
 }

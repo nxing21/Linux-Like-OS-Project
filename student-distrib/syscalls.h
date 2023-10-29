@@ -15,8 +15,10 @@
 #define F   0x46
 #define F_INDEX     3
 #define EIGHT_MB    0x800000
+#define FOUR_MB     0x400000
 #define EIGHT_KB    0x2000
 #define NUM_PROCESSES   2
+#define VIRTUAL_ADDR    0x08048000
 
 int32_t system_execute(const uint8_t* command);
 int32_t system_halt(uint8_t status);

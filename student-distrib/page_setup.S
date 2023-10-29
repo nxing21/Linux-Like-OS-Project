@@ -6,6 +6,7 @@
 
 .global loadPageDirectory   # loads page directory
 .global enablePaging   # enables paging
+.global flushTLB   # flushes TLBs
 
 
 # int loadPageDirectory(page_directory*)
@@ -49,6 +50,7 @@ enablePaging:
         leave
         ret
 
+
 # int flushTLB(void)
 # Tasks:
 #	(1) flush TLBs
@@ -58,4 +60,15 @@ enablePaging:
 flushTLB:
         movl    %cr3, %eax
         movl    %eax, %cr3
+
+# int flushTLB(void)
+# Tasks:
+#	(1) flush TLBs
+# Inputs	: none
+# Outputs	: int - ignore
+.align 4
+flushTLB:
+        movl    %cr3, %eax
+        movl    %eax, %cr3
+
 
