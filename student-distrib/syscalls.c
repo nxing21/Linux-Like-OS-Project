@@ -2,6 +2,7 @@
 #include "rtc.h"
 #include "syscalls.h"
 #include "lib.h"
+#include "page.h"
 
 int32_t system_execute(const uint8_t* command) {
     uint8_t filename[FILENAME_LEN + 1];
@@ -32,13 +33,12 @@ int32_t system_execute(const uint8_t* command) {
     // Set up paging
 
     // Flush TLB
-    asm volatile ();
+    flushTLB();
 }
 
 int32_t system_halt(uint8_t status) {
 
 }
-
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && curr_fds[fd].flags != -1) { 
@@ -60,6 +60,7 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
     }
 
 }
+
 int32_t system_open (const uint8_t* filename){
     dentry_t temp_dentry;
     uint32_t file_type;
@@ -111,6 +112,7 @@ int32_t system_open (const uint8_t* filename){
         return -1;
     }
 }
+
 int32_t system_close (int32_t fd){
     //check if fd is valid index and if fd is in use
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && curr_fds[fd].flags != -1) { 
@@ -120,4 +122,17 @@ int32_t system_close (int32_t fd){
     else{
         return -1;
     }
+}
+
+
+
+void process_page(unsigned int addr, int process_num) {
+    // write parameter checks
+
+    // process page
+    int index = 2 + process_num;   // only true if process number is zero indexed; offset by 2 bc first two 4MBs are already taken
+
+    // set page directory entry
+    page_directory[index].mb.present = 1;
+    page_directory[index].mb.base_addr = addr >> shift_22;
 }

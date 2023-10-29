@@ -15,6 +15,8 @@
 extern void loadPageDirectory(unsigned int*);
 /* enables paging */
 extern void enablePaging();
+/* flushes TLBs */
+extern void flushTLB();
 /* initializes paging */
 extern void init_page();
 
