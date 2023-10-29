@@ -1,6 +1,5 @@
 #define ASM     1
 
-
 .text
 /* INTR_LINK(name, func)
  * Inputs: name, func

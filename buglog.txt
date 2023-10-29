@@ -43,14 +43,13 @@ Oct 16th, 2023:
     - The CAPS & Shift case would act the same as no special keys activated.
     - Fixed this issue by changing some of the if logic behind implementing CAPS lock
     and Shift. 
+    - Took about 10 minutes to solve.
 
 Oct 18th, 2023:
     - Ran into an issue when trying to use terminal driver to print characters
     - Random characters would appear after the expected character.
     - Fixed it by putting up a buffer limit (1 byte to read)
-
-Oct 18th, 2023:
-    - Backspace didn't delete the first character 
+    - Took about 15 minutes to solve.
 
 Oct 19th, 2023:
     - Ran into an issue when trying to set the RTC dividing rate.

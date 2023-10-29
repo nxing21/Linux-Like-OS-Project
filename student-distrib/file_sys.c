@@ -1,3 +1,4 @@
+#include "syscalls.h"
 #include "file_sys.h"
 #include "lib.h"
 
@@ -8,9 +9,7 @@ uint32_t data_blocks;
 // global dentry variable
 dentry_t *dentry;
 
-// file descriptor global variables
-fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
-uint8_t fds_in_use;
+
 
 /* void init_file_sys(uint32_t starting_addr)
  * Inputs: uint32_t starting_addr = starting address of file system
@@ -22,17 +21,6 @@ void init_file_sys(uint32_t starting_addr) {
     boot_block= (boot_block_t *) starting_addr;
     inode = (inode_t *)(starting_addr + BYTES_PER_BLOCK); // starting inode address
     data_blocks = (starting_addr + BYTES_PER_BLOCK + boot_block->inode_count * BYTES_PER_BLOCK); // starting data blocks address
-
-
-    // file_descriptors[0] = stdin; /*keyboard input*/
-    // file_descriptors[1] = stdout; /*terminal output*/
-    for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++) {
-        file_descriptors[i].file_op_table_ptr = NULL; // unkown type so set to NULL
-        file_descriptors[i].inode = -1; // -1 because it's not set
-        file_descriptors[i].file_pos = 0; //default to 0
-        file_descriptors[i].flags = -1; // -1 means not in use
-    }
-    fds_in_use = FILE_DESCRIPTOR_MIN; //easy way to keep track of how many fd slots if any are open
 }
 
 /* int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry)
@@ -62,7 +50,7 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
 
     if(found_flag == 1) {
         *dentry = found_dentry;
-        dentry->filename[32] = '\0';
+        dentry->filename[FILENAME_LEN] = '\0';
         return 0;
     }
     printf("didn't find");
@@ -156,9 +144,9 @@ int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
         return -1;
     }
     else{
-        offset = file_descriptors[fd].file_pos; //offset based on file position
-        file_descriptors[fd].file_pos += nbytes; //updating file position
-        bytes_read = read_data(file_descriptors[fd].inode, offset, buffer, nbytes); // call read data to fill our buffer
+        offset = curr_fds[fd].file_pos; //offset based on file position
+        curr_fds[fd].file_pos += nbytes; //updating file position
+        bytes_read = read_data(curr_fds[fd].inode, offset, buffer, nbytes); // call read data to fill our buffer
         return bytes_read;
     }  
 }
@@ -181,17 +169,9 @@ int32_t write_file(int32_t fd, const void* buf, int32_t nbytes) {
  * Function: checks if valid name and updates file descriptors accordingly
  */
 int32_t open_file(const uint8_t* filename) {
-    dentry_t temp_dentry;
+    // dentry_t temp_dentry;
     
-    if((read_dentry_by_name(filename, &temp_dentry) != -1) && fds_in_use < FILE_DESCRIPTOR_MAX) { //check valid name and fds not full
-        file_descriptors[fds_in_use+1].flags = 1; //marking as in use
-        file_descriptors[fds_in_use+1].inode = temp_dentry.inode_num; //setting to correct inode
-        fds_in_use++; // updating file descriptors in use
-        return 0;
-    }
-    else{
-        return -1;
-    }
+    return 0;
 }
 
 /* int32_t close_file(int32_t fd) 
@@ -200,17 +180,10 @@ int32_t open_file(const uint8_t* filename) {
  * Function: checks if valid index and updates file descriptors accordingly
  */
 int32_t close_file(int32_t fd) {
-    if(fd >= 0 && fd < FILE_DESCRIPTOR_MAX) { //check if valid fd index
-        file_descriptors[fd].flags = -1; //marking as not in use
-        file_descriptors[fd].inode = -1; //marking as not pointing to any inode
-        file_descriptors[fd].file_pos = 0; //file position reset to 0 
-        file_descriptors[fd].file_op_table_ptr = NULL; //not set up yet so set to NULL
-        fds_in_use--; //updating file descriptors in use
-        return 0;
-    }
-    else{
-        return -1;
-    }
+    curr_fds[fd].flags = -1; //marking as not in use
+    curr_fds[fd].inode = -1; //marking as not pointing to any inode
+    curr_fds[fd].file_pos = 0; //file position reset to 0 
+    return 0;
 }
 
 /* int32_t read_directory(int32_t fd, void* buf, void* length_buf, int32_t nbytes)
@@ -231,31 +204,27 @@ int32_t read_directory(int32_t fd, void* buf, void* length_buf, int32_t nbytes) 
     // counters so we know what index to put in buffer
     uint32_t num_read = 0;
     uint32_t num_length_read = 0;
-    if(fd >= FILE_DESCRIPTOR_MAX || fd < 0) { //check valid fd index
-        return -1;
-    }
-    else{
-        file_descriptors[fd].file_pos += nbytes; // updating file position
 
-        for (i = 0; i < boot_block->dir_count; i++) { // iterate through all files
-            dentry_t dentry = boot_block->direntries[i];
-            // get dentry of current file (index i)
-            read_dentry_by_index(i, &dentry);
-            for (j = 0; j < FILENAME_LEN; j++) {
-                buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer
-                num_read++;
-            }
-            buffer[num_read] = dentry.filetype + '0'; //changing num to char equivalent
+    curr_fds[fd].file_pos += nbytes; // updating file position
+
+    for (i = 0; i < boot_block->dir_count; i++) { // iterate through all files
+        dentry_t dentry = boot_block->direntries[i];
+        // get dentry of current file (index i)
+        read_dentry_by_index(i, &dentry);
+        for (j = 0; j < FILENAME_LEN; j++) {
+            buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer
             num_read++;
-
-            uint32_t inode_number = dentry.inode_num;
-            inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_number * BYTES_PER_BLOCK); // get current inode
-            // add length of file into the length buffer
-            length_buffer[num_length_read] = cur_inode->length;
-            num_length_read++;
         }
-        return num_read;
+        buffer[num_read] = dentry.filetype + '0'; //changing num to char equivalent
+        num_read++;
+
+        uint32_t inode_number = dentry.inode_num;
+        inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_number * BYTES_PER_BLOCK); // get current inode
+        // add length of file into the length buffer
+        length_buffer[num_length_read] = cur_inode->length;
+        num_length_read++;
     }
+    return num_read;
 }
 
 /* int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes)
@@ -276,15 +245,7 @@ int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes) {
  * Function: checks if valid name and updates file descriptors accordlingly
  */
 int32_t open_directory(const uint8_t* filename) {
-    if(read_dentry_by_name(filename, dentry) != -1 && fds_in_use < FILE_DESCRIPTOR_MAX ) { //check valid name and fds not full
-        file_descriptors[fds_in_use+1].flags = 1; //marking as in use
-        file_descriptors[fds_in_use+1].inode = dentry->inode_num; //setting to correct inode
-        fds_in_use++; //updating file descriptors in use
-        return 0;
-    }
-    else {
-        return -1;
-    }
+    return 0;
 }
 
 
@@ -296,17 +257,10 @@ int32_t open_directory(const uint8_t* filename) {
  * Function: checks if valid index and updates file descriptors accordingly
  */
 int32_t close_directory(int32_t fd) {
-    if(fd >= 0 && fd < FILE_DESCRIPTOR_MAX) { //check valid fd index
-        file_descriptors[fd].flags = -1; //marking as not in use
-        file_descriptors[fd].inode = -1; //marking as not pointing to a valid inode
-        file_descriptors[fd].file_pos = 0; //resetting file position
-        file_descriptors[fd].file_op_table_ptr = NULL; //not set up yet so set to NULL
-        fds_in_use--; //updating file descriptors in use
-        return 0;
-    }
-    else {
-        return -1;
-    }
+    curr_fds[fd].flags = -1; //marking as not in use
+    curr_fds[fd].inode = -1; //marking as not pointing to any inode
+    curr_fds[fd].file_pos = 0; //file position reset to 0 
+    return 0;
 }
 
 

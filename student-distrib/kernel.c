@@ -17,8 +17,12 @@
 #include "file_sys.h"
 #include "terminal.h"
 #include "idt.h"
+// MP 3.3: Added headers
+#include "syscalls.h"
 
 #define RUN_TESTS
+
+unsigned int fs;
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -61,9 +65,8 @@ void entry(unsigned long magic, unsigned long addr) {
         int mod_count = 0;
         int i;
         module_t* mod = (module_t*)mbi->mods_addr;
-        // initialize file system
-        init_file_sys(mod->mod_start);
         while (mod_count < mbi->mods_count) {
+            fs = mod->mod_start;
             printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);
             printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
             printf("First few bytes of module:\n");
@@ -165,6 +168,7 @@ void entry(unsigned long magic, unsigned long addr) {
     init_page();
 
     clear();
+    init_file_sys(fs);
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
@@ -179,6 +183,7 @@ void entry(unsigned long magic, unsigned long addr) {
     launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
+    system_execute("shell");
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }

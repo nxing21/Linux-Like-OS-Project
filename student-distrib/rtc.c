@@ -100,7 +100,7 @@ void RTC_handler(){
  *   RETURN VALUE: 0
  *   SIDE EFFECTS: none
  */
-int RTC_open(const uint8_t* filename) {
+int32_t RTC_open(const uint8_t* filename) {
     // sets RTC frequency to 2Hz
     set_RTC_frequency(rtc_min_frequency);
     return 0;
@@ -114,7 +114,7 @@ int RTC_open(const uint8_t* filename) {
  *   RETURN VALUE: 0
  *   SIDE EFFECTS: none
  */
-int RTC_close(int32_t fd) {
+int32_t RTC_close(int32_t fd) {
     return 0;
 }
 
@@ -128,7 +128,7 @@ int RTC_close(int32_t fd) {
  *   RETURN VALUE: 0
  *   SIDE EFFECTS: none
  */
-int RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
+int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
     RTC_block = 1;
     while (RTC_block == 1);
     return 0;
@@ -144,7 +144,7 @@ int RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
  *   RETURN VALUE: 0 on success; -1 on failure
  *   SIDE EFFECTS: none
  */
-int RTC_write(int32_t fd, const void* buffer, int32_t nbytes) {
+int32_t RTC_write(int32_t fd, const void* buffer, int32_t nbytes) {
     uint8_t i;   // looping variable
     unsigned int freq;   // frequency temp variable
 

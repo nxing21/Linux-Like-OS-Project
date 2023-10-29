@@ -20,8 +20,8 @@ static inline void assertion_failure(){
 	asm volatile("int $15");
 }
 
-int RTC_read(int32_t fd, void* buffer, int32_t nbytes);
-int RTC_write(int32_t fd, const void* buffer, int32_t nbytes);
+int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes);
+int32_t RTC_write(int32_t fd, const void* buffer, int32_t nbytes);
 
 /* Checkpoint 1 tests */
 
@@ -210,7 +210,7 @@ static inline int sys_call_test(){
  * Coverage: check if read dentry funcs works
  */
 int read_dentry_test(){
-	clear();
+	// clear();
 	TEST_HEADER;
 	dentry_t* dentry;
 	const char* fname = "verylargetextwithverylongname.tx";
@@ -246,7 +246,7 @@ int read_data_test(){
 		int32_t bytes_read;
 	uint32_t inode_num = 38;
 	bytes_read = read_data(inode_num, 0, buf, 187);
-	clear();
+	// clear();
 	int i;
 	for (i = 0; i < bytes_read; i++) {
 		putc(buf[i]);
@@ -266,22 +266,25 @@ int read_data_test(){
 int open_read_file_test(){
 	TEST_HEADER;
 	// clear();
-	// const char* filename =  "frame1.txt";
-	const char* filename =  "fish";
-	uint8_t buf[37000]; // arbitrary big number
+	const char* filename =  "cat";
+	uint8_t buf[10000]; // arbitrary big number
 	int i;
-		if(open_file((const uint8_t *) filename) == -1){
+	for (i = 0; i < 10000; i++) {
+		buf[i] = 0x00;
+	}
+	if(open_file((const uint8_t *) filename) == -1){
 		printf("failed at open");
 		return FAIL;
 	}
 
-	int bytes_read = read_file(3, buf, 37000); // arbitrary big number
+	int bytes_read = read_file(3, buf, 10000); // arbitrary big number
 	for (i = 0; i < bytes_read; i++) {
 		if (buf[i] == '\0') {
 			continue;
 		}
 		printf("%c", buf[i]);
 	}
+	printf("\n");
 
 	printf("\n");
 
