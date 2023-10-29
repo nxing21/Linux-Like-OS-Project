@@ -4,14 +4,26 @@
 #include "lib.h"
 #include "page.h"
 
+uint8_t cur_processes[NUM_PROCESSES] = {0,0}; // we only have two processes for checkpoint 3
+
 int32_t system_execute(const uint8_t* command) {
+    int8_t elf_check[ELF_LENGTH];
     uint8_t filename[FILENAME_LEN + 1];
+    int8_t buf[ELF_LENGTH];
+    uint32_t pid;
+    
     if (command == NULL) {
         return -1;
     }
-    filename[FILENAME_LEN] = '\0';
     int i; // loop counter
+    
+    filename[FILENAME_LEN] = '\0';
+    elf_check[DEL_INDEX] = DEL;
+    elf_check[E_INDEX] = E;
+    elf_check[L_INDEX] = L;
+    elf_check[F_INDEX] = F;
 
+    i = 0;
     // get the name of the executable
     while (command[i] != '\0') {
         if (command[i] == ' ') {
@@ -30,14 +42,44 @@ int32_t system_execute(const uint8_t* command) {
         return -1;
     }
 
-    // Set up paging
+    // Check ELF magic constant
+    read_data(dentry->inode_num, 0, (uint8_t *) buf, ELF_LENGTH);
+    if (strncmp(elf_check, buf, ELF_LENGTH) != 0) {
+        return -1;
+    }
 
-    // Flush TLB
+    // Find free PID location
+    for (i = 0; i <= NUM_PROCESSES; i++) {
+        if (i == NUM_PROCESSES) {
+            return -1; // no available space for new process
+        }
+        else if (cur_processes[i] == 0) {
+            cur_processes[i] = 1;
+            pid = i;
+        }
+    }
+
+    // Set up paging and flush TLB
+    process_page(pid);
     flushTLB();
+
+    // User-level program loader
+    read_data(dentry->inode_num, 0, (uint8_t *) VIRTUAL_ADDR, FOUR_MB);
+
+    // Create PCB
+    pcb_t *pcb = (pcb_t *) (EIGHT_MB - pid * EIGHT_KB);
+
+    // Context switch
+    // Push IRET context to stack
+
+    // IRET
+    asm volatile("IRET");
+
+    return 0;
 }
 
 int32_t system_halt(uint8_t status) {
-
+ return 0;
 }
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
@@ -58,7 +100,6 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
     else{
         return -1;
     }
-
 }
 
 int32_t system_open (const uint8_t* filename){
@@ -81,25 +122,29 @@ int32_t system_open (const uint8_t* filename){
 
         switch (file_type)
         {
+            
             case 0: /* RTC */
-                curr_fds[index].file_op_table_ptr->open = &RTC_open;
-                curr_fds[index].file_op_table_ptr->close = &RTC_close;
-                curr_fds[index].file_op_table_ptr->read = &RTC_read;
-                curr_fds[index].file_op_table_ptr->write = &RTC_write;
+                dir_ops_table.open = &RTC_open;
+                dir_ops_table.close = &RTC_close;
+                dir_ops_table.write = &RTC_write;
+                dir_ops_table.read = &RTC_read;
+                curr_fds[index].file_op_table_ptr = &dir_ops_table;
                 break;
 
             case 1: /* directory */
-                curr_fds[index].file_op_table_ptr->open = &open_directory;
-                curr_fds[index].file_op_table_ptr->close = &close_directory;
-                curr_fds[index].file_op_table_ptr->read = &read_directory;
-                curr_fds[index].file_op_table_ptr->write = &write_directory;
+                dir_ops_table.open = &open_directory;
+                dir_ops_table.close = &close_directory;
+                dir_ops_table.read = &read_directory;
+                dir_ops_table.write = &write_directory;
+                curr_fds[index].file_op_table_ptr = &dir_ops_table;
                 break;
 
             case 2: /* file */
-                curr_fds[index].file_op_table_ptr->open = &open_file;
-                curr_fds[index].file_op_table_ptr->close = &close_file;
-                curr_fds[index].file_op_table_ptr->read = &read_file;
-                curr_fds[index].file_op_table_ptr->write = &write_file;
+                dir_ops_table.open = &open_file;
+                dir_ops_table.close = &close_file;
+                dir_ops_table.read = &read_file;
+                dir_ops_table.write = &write_file;
+                curr_fds[index].file_op_table_ptr = &dir_ops_table;
                 break;
             
             default:
@@ -109,6 +154,7 @@ int32_t system_open (const uint8_t* filename){
         return curr_fds[index].file_op_table_ptr->open(filename);
     }
     else{
+        printf("open fd not found");
         return -1;
     }
 }
@@ -124,15 +170,15 @@ int32_t system_close (int32_t fd){
     }
 }
 
-
-
-void process_page(unsigned int addr, int process_num) {
+void process_page(int process_num) {
     // write parameter checks
 
     // process page
     int index = 2 + process_num;   // only true if process number is zero indexed; offset by 2 bc first two 4MBs are already taken
 
+    unsigned int addr = (EIGHT_MB + process_num * FOUR_MB);
+
     // set page directory entry
     page_directory[index].mb.present = 1;
-    page_directory[index].mb.base_addr = addr >> shift_22;
+    page_directory[index].mb.base_addr = addr >> shift_12;
 }

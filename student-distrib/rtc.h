@@ -43,4 +43,3 @@ int32_t RTC_write(int32_t fd, const void* buffer, int32_t nbytes);
 
 
 #endif
-

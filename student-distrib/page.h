@@ -10,6 +10,8 @@
 #define VIDEO_ADDR      0xB8000     // from lib.c
 #define KERNEL_ADDR     0x400000    // from documentation (Appendix C)
 
+#define shift_12    12
+#define shift_22    22
 
 /* loads page directory */
 extern void loadPageDirectory(unsigned int*);

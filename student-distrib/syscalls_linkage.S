@@ -39,5 +39,5 @@ finished:
 
 # Jump table
 sys_call_table:
-    .long 0, system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap, system_set_handler, system_sigreturn
+    .long 0, system_halt, system_execute, system_read, system_write, system_open, system_close
 

@@ -1,8 +1,5 @@
 #include "page.h"
 
-#define shift_12    12
-#define shift_22    22
-
 
 /*
  * init_page
@@ -76,4 +73,5 @@ void init_page() {
     loadPageDirectory((unsigned int*)page_directory);
     enablePaging();
 }
+
 

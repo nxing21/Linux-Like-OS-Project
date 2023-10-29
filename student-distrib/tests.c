@@ -4,6 +4,7 @@
 #include "file_sys.h"
 #include "rtc.h"
 #include "terminal.h"
+#include "syscalls.h"
 
 #define PASS 1
 #define FAIL 0
@@ -213,7 +214,7 @@ int read_dentry_test(){
 	// clear();
 	TEST_HEADER;
 	dentry_t* dentry;
-	const char* fname = "verylargetextwithverylongname.tx";
+	const char* fname = "shell";
 	int32_t out = read_dentry_by_name((const uint8_t *) fname, dentry);
 	if(out != 0){
 		return FAIL;
@@ -533,6 +534,45 @@ void test_terminal_read_write(){
 	}
 }
 /* Checkpoint 3 tests */
+
+
+/* sys_open_read_file_test
+ * Inputs: None
+ * Outputs: PASS on pass
+ * Side Effects: None
+ * Coverage: check if sys open file works
+ */
+int sys_open_read_file_test(){
+	TEST_HEADER;
+	// clear();
+	curr_fds[2].file_pos = 0;
+	curr_fds[2].flags = -1;
+	curr_fds[2].inode = 0;
+	const char* filename =  "shell";
+	uint8_t buf[10000]; // arbitrary big number
+	int i;
+	for (i = 0; i < 10000; i++) {
+		buf[i] = 0x00;
+	}
+	if(system_open((const uint8_t *) filename) == -1){
+		printf("failed at open");
+		return FAIL;
+	}
+
+	int bytes_read = read_file(2, buf, 10000); // arbitrary big number
+	for (i = 0; i < bytes_read; i++) {
+		if (buf[i] == '\0') {
+			continue;
+		}
+		printf("%c", buf[i]);
+	}
+	printf("\n");
+
+	printf("\n");
+
+	return PASS; /*should always reach here unless test failed*/ 
+
+}
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
@@ -552,7 +592,7 @@ void launch_tests(){
 	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
 
 	/* Checkpoint 2 tests*/
-	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
+	TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
@@ -564,6 +604,8 @@ void launch_tests(){
 	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
 	// TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());
 	// TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
+	// TEST_OUTPUT("sys_open_read_file_test", sys_open_read_file_test());
+	
 	
 }
 

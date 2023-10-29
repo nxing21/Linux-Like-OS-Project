@@ -3,6 +3,7 @@
 #include "rtc.h"
 #include "lib.h"
 #include "nmi.h"
+#include "syscalls.h"
 
 #define RTC_IRQ         8
 #define BYTE_4          4
@@ -115,6 +116,9 @@ int32_t RTC_open(const uint8_t* filename) {
  *   SIDE EFFECTS: none
  */
 int32_t RTC_close(int32_t fd) {
+    curr_fds[fd].flags = -1; //marking as not in use
+    curr_fds[fd].inode = -1; //marking as not pointing to any inode
+    curr_fds[fd].file_pos = 0; //file position reset to 0 
     return 0;
 }
 
@@ -129,6 +133,7 @@ int32_t RTC_close(int32_t fd) {
  *   SIDE EFFECTS: none
  */
 int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
+    curr_fds[fd].file_pos += nbytes; // updating file position
     RTC_block = 1;
     while (RTC_block == 1);
     return 0;
@@ -155,7 +160,7 @@ int32_t RTC_write(int32_t fd, const void* buffer, int32_t nbytes) {
     if (buffer == NULL) {
         return -1;
     }
-
+    curr_fds[fd].file_pos += nbytes; // updating file position
     // obtains frequency from buffer
     freq = *((unsigned int*)(buffer));
 
