@@ -49,3 +49,13 @@ enablePaging:
         leave
         ret
 
+# int flushTLB(void)
+# Tasks:
+#	(1) flush TLBs
+# Inputs	: none
+# Outputs	: int - ignore
+.align 4
+flushTLB:
+        movl    %cr3, %eax
+        movl    %eax, %cr3
+

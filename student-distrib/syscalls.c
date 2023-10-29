@@ -41,13 +41,11 @@ int32_t system_execute(const uint8_t* command) {
         return -1;
     }
 
-    // Check if valid executable
-    read_data(dentry->inode_num, 0, buf, ELF_LENGTH);
+    // Check ELF magic constant
+    read_data(dentry->inode_num, 0, buf, 1000000);
     if (strncmp(elf_check, buf, ELF_LENGTH) != 0) {
         return -1;
     }
-
-    // Set up paging
 
     // Create PCB
     // First find free PCB location
@@ -62,6 +60,14 @@ int32_t system_execute(const uint8_t* command) {
     }
 
     pcb_t *pcb = (pcb_t *) (EIGHT_MB - pid * EIGHT_KB);
+
+    // Context switch
+    // Push IRET context to stack
+
+    // IRET
+    asm volatile("IRET");
+
+    return 0;
 }
 
 int32_t system_halt(uint8_t status) {
