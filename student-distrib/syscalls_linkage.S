@@ -22,7 +22,7 @@ system_call_linkage:
     pushl %edx
     pushl %ecx
     pushl %ebx
-    call *sys_call_table(0, %eax, 4) # Call the corresponding system call (4 bytes per function pointer)
+    call *sys_call_table(, %eax, 4) # Call the corresponding system call (4 bytes per function pointer)
     popl %ebx
     popl %ecx
     popl %edx

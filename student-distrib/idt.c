@@ -1,4 +1,5 @@
 #include "idt.h"
+#include "syscalls_linkage.h"
 
 /* idt_init()
  * Inputs: none
