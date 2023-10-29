@@ -5,7 +5,7 @@
 #include "page.h"
 #include "x86_desc.h"
 
-uint8_t cur_processes[NUM_PROCESSES] = {0,0}; // we only have two processes for checkpoint 3
+uint8_t cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // we only have two processes for checkpoint 3
 
 int32_t system_execute(const uint8_t* command) {
     int8_t elf_check[ELF_LENGTH];
@@ -70,8 +70,19 @@ int32_t system_execute(const uint8_t* command) {
     // Create PCB
     pcb_t *pcb = (pcb_t *) (EIGHT_MB - pid * EIGHT_KB);
     // Initialize PCB (?)
-    pcb->esp0 = tss.esp0;
-    pcb->ss0 = tss.ss0;
+    // pcb->file_descriptors[0] = NULL;
+    // pcb->file_descriptors[1] = NULL;
+
+    for(i = 2; i < 8; i++){
+        pcb->file_descriptors[i].inode = 0;
+        pcb->file_descriptors[i].file_pos = 0;
+        pcb->file_descriptors[i].flags = -1;
+    }
+
+    curr_fds = pcb->file_descriptors;
+
+    pcb->tss.esp0 = tss.esp0;
+    pcb->tss.ss0 = tss.ss0;
 
     // Context switch
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB;

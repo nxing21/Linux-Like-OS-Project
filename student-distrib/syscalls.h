@@ -2,6 +2,7 @@
 #define _SYS_CALLS_
 
 #include "types.h"
+#include "x86_desc.h"
 
 #define FILE_DESCRIPTOR_MAX 8
 #define FILE_DESCRIPTOR_MIN 2
@@ -17,7 +18,7 @@
 #define EIGHT_MB    0x800000
 #define FOUR_MB     0x400000
 #define EIGHT_KB    0x2000
-#define NUM_PROCESSES   2
+#define NUM_PROCESSES   6
 #define VIRTUAL_ADDR    0x08048000
 
 int32_t system_execute(const uint8_t* command);
@@ -47,15 +48,14 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t system_open (const uint8_t* filename);
 int32_t system_close (int32_t fd);
 
-// fd_t *curr_fds; <- actual implementation
-fd_t curr_fds[8]; //just for testing
+fd_t *curr_fds; // <- actual implementation
+// fd_t curr_fds[8]; //just for testing
 
 fops_t dir_ops_table;
 
 typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
-    uint32_t esp0;
-    uint32_t ss0;
+    tss_t tss;
 } pcb_t;
 
 
