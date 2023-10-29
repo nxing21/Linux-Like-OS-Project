@@ -11,7 +11,7 @@ int32_t system_execute(const uint8_t* command) {
     uint8_t filename[FILENAME_LEN + 1];
     int8_t buf[ELF_LENGTH];
     uint32_t pid;
-
+    
     if (command == NULL) {
         return -1;
     }
