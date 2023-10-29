@@ -19,6 +19,7 @@
 #define EIGHT_KB    0x2000
 #define NUM_PROCESSES   2
 #define VIRTUAL_ADDR    0x08048000
+#define USER_ADDR_INDEX 32
 
 int32_t system_execute(const uint8_t* command);
 int32_t system_halt(uint8_t status);
