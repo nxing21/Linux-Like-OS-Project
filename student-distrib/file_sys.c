@@ -17,7 +17,6 @@ dentry_t *dentry;
  * Function: Initializes the file system 
  */
 void init_file_sys(uint32_t starting_addr) {
-    int i;
     boot_block= (boot_block_t *) starting_addr;
     inode = (inode_t *)(starting_addr + BYTES_PER_BLOCK); // starting inode address
     data_blocks = (starting_addr + BYTES_PER_BLOCK + boot_block->inode_count * BYTES_PER_BLOCK); // starting data blocks address
@@ -50,6 +49,7 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
 
     if(found_flag == 1) {
         *dentry = found_dentry;
+        // dentry->filename[32] = '\0';
         return 0;
     }
     printf("didn't find");

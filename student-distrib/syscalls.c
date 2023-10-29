@@ -79,7 +79,7 @@ int32_t system_execute(const uint8_t* command) {
 }
 
 int32_t system_halt(uint8_t status) {
-
+ return 0;
 }
 
 
@@ -101,8 +101,8 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
     else{
         return -1;
     }
-
 }
+
 int32_t system_open (const uint8_t* filename){
     dentry_t temp_dentry;
     uint32_t file_type;
@@ -123,25 +123,29 @@ int32_t system_open (const uint8_t* filename){
 
         switch (file_type)
         {
+            
             case 0: /* RTC */
-                curr_fds[index].file_op_table_ptr->open = &RTC_open;
-                curr_fds[index].file_op_table_ptr->close = &RTC_close;
-                curr_fds[index].file_op_table_ptr->read = &RTC_read;
-                curr_fds[index].file_op_table_ptr->write = &RTC_write;
+                dir_ops_table.open = &RTC_open;
+                dir_ops_table.close = &RTC_close;
+                dir_ops_table.write = &RTC_write;
+                dir_ops_table.read = &RTC_read;
+                curr_fds[index].file_op_table_ptr = &dir_ops_table;
                 break;
 
             case 1: /* directory */
-                curr_fds[index].file_op_table_ptr->open = &open_directory;
-                curr_fds[index].file_op_table_ptr->close = &close_directory;
-                curr_fds[index].file_op_table_ptr->read = &read_directory;
-                curr_fds[index].file_op_table_ptr->write = &write_directory;
+                dir_ops_table.open = &open_directory;
+                dir_ops_table.close = &close_directory;
+                dir_ops_table.read = &read_directory;
+                dir_ops_table.write = &write_directory;
+                curr_fds[index].file_op_table_ptr = &dir_ops_table;
                 break;
 
             case 2: /* file */
-                curr_fds[index].file_op_table_ptr->open = &open_file;
-                curr_fds[index].file_op_table_ptr->close = &close_file;
-                curr_fds[index].file_op_table_ptr->read = &read_file;
-                curr_fds[index].file_op_table_ptr->write = &write_file;
+                dir_ops_table.open = &open_file;
+                dir_ops_table.close = &close_file;
+                dir_ops_table.read = &read_file;
+                dir_ops_table.write = &write_file;
+                curr_fds[index].file_op_table_ptr = &dir_ops_table;
                 break;
             
             default:
@@ -151,6 +155,7 @@ int32_t system_open (const uint8_t* filename){
         return curr_fds[index].file_op_table_ptr->open(filename);
     }
     else{
+        printf("open fd not found");
         return -1;
     }
 }
