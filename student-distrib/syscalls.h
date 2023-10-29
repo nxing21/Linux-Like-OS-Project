@@ -54,6 +54,8 @@ fops_t dir_ops_table;
 
 typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
+    uint32_t esp0;
+    uint32_t ss0;
 } pcb_t;
 
 

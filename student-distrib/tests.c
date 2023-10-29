@@ -213,14 +213,14 @@ static inline int sys_call_test(){
 int read_dentry_test(){
 	// clear();
 	TEST_HEADER;
-	dentry_t* dentry;
+	dentry_t dentry;
 	const char* fname = "shell";
-	int32_t out = read_dentry_by_name((const uint8_t *) fname, dentry);
+	int32_t out = read_dentry_by_name((const uint8_t *) fname, &dentry);
 	if(out != 0){
 		return FAIL;
 	}
 	
-	printf("Filename: %s Inode Number: %d \n", dentry->filename, dentry->inode_num);
+	printf("Filename: %s Inode Number: %d \n", dentry.filename, dentry.inode_num);
 
 
 	// if(read_dentry_by_index (1, dentry) != 0){

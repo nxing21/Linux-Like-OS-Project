@@ -3,6 +3,7 @@
 #include "syscalls.h"
 #include "lib.h"
 #include "page.h"
+#include "x86_desc.h"
 
 uint8_t cur_processes[NUM_PROCESSES] = {0,0}; // we only have two processes for checkpoint 3
 
@@ -36,14 +37,14 @@ int32_t system_execute(const uint8_t* command) {
     }
     filename[i] = '\0';
 
-    dentry_t* dentry;
+    dentry_t dentry;
     // check the validity of the filename
-    if (read_dentry_by_name(filename, dentry) == -1) {
+    if (read_dentry_by_name(filename, &dentry) == -1) {
         return -1;
     }
 
     // Check ELF magic constant
-    read_data(dentry->inode_num, 0, (uint8_t *) buf, ELF_LENGTH);
+    read_data(dentry.inode_num, 0, (uint8_t *) buf, ELF_LENGTH);
     if (strncmp(elf_check, buf, ELF_LENGTH) != 0) {
         return -1;
     }
@@ -64,14 +65,19 @@ int32_t system_execute(const uint8_t* command) {
     flushTLB();
 
     // User-level program loader
-    read_data(dentry->inode_num, 0, (uint8_t *) VIRTUAL_ADDR, FOUR_MB);
+    read_data(dentry.inode_num, 0, (uint8_t *) VIRTUAL_ADDR, FOUR_MB);
 
     // Create PCB
     pcb_t *pcb = (pcb_t *) (EIGHT_MB - pid * EIGHT_KB);
+    // Initialize PCB (?)
+    pcb->esp0 = tss.esp0;
+    pcb->ss0 = tss.ss0;
 
     // Context switch
+    tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
+    tss.ss0 = KERNEL_DS;
     // Push IRET context to stack
-
+    
     // IRET
     asm volatile("IRET");
 
@@ -176,9 +182,9 @@ void process_page(int process_num) {
     // process page
     int index = 2 + process_num;   // only true if process number is zero indexed; offset by 2 bc first two 4MBs are already taken
 
-    unsigned int addr = (EIGHT_MB + process_num * FOUR_MB);
+    // unsigned int addr = (EIGHT_MB + process_num * FOUR_MB);
 
     // set page directory entry
     page_directory[index].mb.present = 1;
-    page_directory[index].mb.base_addr = addr >> shift_12;
+    page_directory[index].mb.base_addr = VIRTUAL_ADDR >> shift_22;
 }
