@@ -4,13 +4,22 @@
 #include "lib.h"
 
 int32_t system_execute(const uint8_t* command) {
+    uint8_t elf_check[ELF_LENGTH];
     uint8_t filename[FILENAME_LEN + 1];
+    uint8_t buf[ELF_LENGTH];
+
     if (command == NULL) {
         return -1;
     }
-    filename[FILENAME_LEN] = '\0';
     int i; // loop counter
+    
+    filename[FILENAME_LEN] = '\0';
+    elf_check[DEL_INDEX] = DEL;
+    elf_check[E_INDEX] = E;
+    elf_check[L_INDEX] = L;
+    elf_check[F_INDEX] = F;
 
+    i = 0;
     // get the name of the executable
     while (command[i] != '\0') {
         if (command[i] == ' ') {
@@ -29,10 +38,23 @@ int32_t system_execute(const uint8_t* command) {
         return -1;
     }
 
+    // Check if valid executable
+    read_data(dentry->inode_num, 0, buf, ELF_LENGTH);
+    if (strncmp(elf_check, buf, ELF_LENGTH) != 0) {
+        return -1;
+    }
+
     // Set up paging
+
+    // Create PCB
+    // First find free PCB location
+
 
     // Flush TLB
     asm volatile ();
+
+    // Create PCB
+    
 }
 
 int32_t system_halt(uint8_t status) {
