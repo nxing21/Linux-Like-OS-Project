@@ -545,7 +545,10 @@ void test_terminal_read_write(){
 int sys_open_read_file_test(){
 	TEST_HEADER;
 	// clear();
-	const char* filename =  "cat";
+	curr_fds[2].file_pos = 0;
+	curr_fds[2].flags = -1;
+	curr_fds[2].inode = 0;
+	const char* filename =  "frame0.txt";
 	uint8_t buf[10000]; // arbitrary big number
 	int i;
 	for (i = 0; i < 10000; i++) {
@@ -556,16 +559,16 @@ int sys_open_read_file_test(){
 		return FAIL;
 	}
 
-	// int bytes_read = read_file(3, buf, 10000); // arbitrary big number
-	// for (i = 0; i < bytes_read; i++) {
-	// 	if (buf[i] == '\0') {
-	// 		continue;
-	// 	}
-	// 	printf("%c", buf[i]);
-	// }
-	// printf("\n");
+	int bytes_read = read_file(2, buf, 10000); // arbitrary big number
+	for (i = 0; i < bytes_read; i++) {
+		if (buf[i] == '\0') {
+			continue;
+		}
+		printf("%c", buf[i]);
+	}
+	printf("\n");
 
-	// printf("\n");
+	printf("\n");
 
 	return PASS; /*should always reach here unless test failed*/ 
 

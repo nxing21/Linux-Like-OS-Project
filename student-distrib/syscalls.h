@@ -27,8 +27,10 @@ typedef struct  file_descriptor {
     int32_t flags; /* among other things, marking this file descriptor as “in-use.” */
 } fd_t;
 
-fd_t *curr_fds;
+// fd_t *curr_fds; <- actual implementation
+fd_t curr_fds[8]; //just for testing
 
+fops_t dir_ops_table;
 
 
 typedef struct proccess_control_block {
