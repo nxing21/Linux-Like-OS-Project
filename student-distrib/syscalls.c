@@ -3,10 +3,13 @@
 #include "syscalls.h"
 #include "lib.h"
 
+uint8_t cur_processes[NUM_PROCESSES] = {0,0}; // we only have two processes for checkpoint 3
+
 int32_t system_execute(const uint8_t* command) {
     uint8_t elf_check[ELF_LENGTH];
     uint8_t filename[FILENAME_LEN + 1];
     uint8_t buf[ELF_LENGTH];
+    uint32_t pid;
 
     if (command == NULL) {
         return -1;
@@ -48,13 +51,17 @@ int32_t system_execute(const uint8_t* command) {
 
     // Create PCB
     // First find free PCB location
+    for (i = 0; i <= NUM_PROCESSES; i++) {
+        if (i == NUM_PROCESSES) {
+            return -1; // no available space for new process
+        }
+        else if (cur_processes[i] == 0) {
+            cur_processes[i] = 1;
+            pid = i;
+        }
+    }
 
-
-    // Flush TLB
-    asm volatile ();
-
-    // Create PCB
-    
+    pcb_t *pcb = (pcb_t *) (EIGHT_MB - pid * EIGHT_KB);
 }
 
 int32_t system_halt(uint8_t status) {

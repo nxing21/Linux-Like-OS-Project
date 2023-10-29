@@ -16,6 +16,7 @@
 #define F_INDEX     3
 #define EIGHT_MB    0x800000
 #define EIGHT_KB    0x2000
+#define NUM_PROCESSES   2
 
 int32_t system_execute(const uint8_t* command);
 int32_t system_halt(uint8_t status);
@@ -36,7 +37,7 @@ typedef struct file_op_table {
     int32_t (*write)(int32_t fd, const void* buf, int32_t nbytes);
 } fops_t;
 
-typedef struct proccess_control_block {
+typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
     int32_t available;
 } pcb_t;
