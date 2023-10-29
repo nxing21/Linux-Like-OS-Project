@@ -170,15 +170,15 @@ int32_t system_close (int32_t fd){
     }
 }
 
-void process_page(int process_num) {
-    // write parameter checks
+void process_page(int process_id) {
+    // parameter checks
+    if (process_id >= 0) {
+        // process page
+        int index = 2 + process_id;   // offset by 2 bc first two 4MBs are already taken
 
-    // process page
-    int index = 2 + process_num;   // only true if process number is zero indexed; offset by 2 bc first two 4MBs are already taken
-
-    unsigned int addr = (EIGHT_MB + process_num * FOUR_MB);
-
-    // set page directory entry
-    page_directory[index].mb.present = 1;
-    page_directory[index].mb.base_addr = addr >> shift_12;
+        // set page directory entry
+        page_directory[index].mb.present = 1;
+        page_directory[index].mb.base_addr = VIRTUAL_ADDR >> shift_22;
+    }
 }
+
