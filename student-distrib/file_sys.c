@@ -193,7 +193,7 @@ int32_t close_file(int32_t fd) {
  * Return Value:  number of bytes read
  * Function: reads directory information
  */
-int32_t read_directory(int32_t fd, void* buf, void* length_buf, int32_t nbytes) {
+int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
     // loop counters
     uint32_t i;
     uint32_t j;
