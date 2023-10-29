@@ -7,9 +7,9 @@
 uint8_t cur_processes[NUM_PROCESSES] = {0,0}; // we only have two processes for checkpoint 3
 
 int32_t system_execute(const uint8_t* command) {
-    uint8_t elf_check[ELF_LENGTH];
+    int8_t elf_check[ELF_LENGTH];
     uint8_t filename[FILENAME_LEN + 1];
-    uint8_t buf[ELF_LENGTH];
+    int8_t buf[ELF_LENGTH];
     uint32_t pid;
 
     if (command == NULL) {
@@ -43,7 +43,7 @@ int32_t system_execute(const uint8_t* command) {
     }
 
     // Check ELF magic constant
-    read_data(dentry->inode_num, 0, buf, 1000000);
+    read_data(dentry->inode_num, 0, (uint8_t *) buf, ELF_LENGTH);
     if (strncmp(elf_check, buf, ELF_LENGTH) != 0) {
         return -1;
     }

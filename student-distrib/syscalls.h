@@ -27,6 +27,8 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t system_open (const uint8_t* filename);
 int32_t system_close (int32_t fd);
 
+void process_page(int process_num);
+
 typedef struct  file_op_table {
     int32_t (*open)(const uint8_t* filename);
     int32_t (*close)(int32_t fd);
@@ -50,14 +52,7 @@ fd_t curr_fds[8]; //just for testing
 
 fops_t dir_ops_table;
 
-typedef struct file_op_table {
-    int32_t (*open)(const uint8_t* filename);
-    int32_t (*close)(int32_t fd);
-    int32_t (*read)(int32_t fd, void* buf, int32_t nbytes);
-    int32_t (*write)(int32_t fd, const void* buf, int32_t nbytes);
-} fops_t;
-
-typedef struct proccess_control_block {
+typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
 } pcb_t;
 
