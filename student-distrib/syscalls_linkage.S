@@ -22,7 +22,7 @@ system_call_linkage:
     pushl %edx
     pushl %ecx
     pushl %ebx
-    call *sys_call_table(0, %eax, 4) # Call the corresponding system call (4 bytes per function pointer)
+    call *sys_call_table(, %eax, 4) # Call the corresponding system call (4 bytes per function pointer)
     popl %ebx
     popl %ecx
     popl %edx
@@ -39,5 +39,5 @@ finished:
 
 # Jump table
 sys_call_table:
-    .long foo, system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap, system_set_handler, system_sigreturn
+    .long 0, system_halt, system_execute, system_read, system_write, system_open, system_close
 

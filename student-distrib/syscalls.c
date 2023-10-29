@@ -31,8 +31,8 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
     else{
         return -1;
     }
-
 }
+
 int32_t system_open (const uint8_t* filename){
     dentry_t temp_dentry;
     uint32_t file_type;
