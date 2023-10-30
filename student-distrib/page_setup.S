@@ -60,7 +60,6 @@ enablePaging:
 flushTLB:
         movl    %cr3, %eax
         movl    %eax, %cr3
+        
         ret
-
-
 

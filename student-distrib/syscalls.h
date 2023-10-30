@@ -20,6 +20,7 @@
 #define EIGHT_KB    0x2000
 #define NUM_PROCESSES   6
 #define VIRTUAL_ADDR    0x08048000
+#define USER_ADDR_INDEX 32
 
 int32_t system_execute(const uint8_t* command);
 int32_t system_halt(uint8_t status);
@@ -57,6 +58,8 @@ typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
     tss_t tss;
 } pcb_t;
+
+fd_t* curr_fds;
 
 
 
