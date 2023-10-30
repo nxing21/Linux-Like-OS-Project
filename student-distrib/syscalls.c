@@ -10,7 +10,7 @@ uint8_t cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // we only have two proces
 int32_t system_execute(const uint8_t* command) {
     int8_t elf_check[ELF_LENGTH];
     uint8_t filename[FILENAME_LEN + 1];
-    int8_t buf[ELF_LENGTH];
+    int8_t buf[EIP_CHECK];
     uint32_t pid;
     
     if (command == NULL) {
@@ -57,6 +57,7 @@ int32_t system_execute(const uint8_t* command) {
         else if (cur_processes[i] == 0) {
             cur_processes[i] = 1;
             pid = i;
+            break;
         }
     }
 
@@ -87,25 +88,47 @@ int32_t system_execute(const uint8_t* command) {
     // Context switch
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
-    uint32_t eip = 0x0;
-    for (i = 0; i < 4; i++) {
-        eip |= (buf[24 + i] << (8 * i));
-    }
+    uint32_t eip;
+    read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
+    // for (i = 0; i < 4; i++) {
+    //     // eip |= (buf[24+i] << (8 * i));
+    // }
     // Push IRET context to stack
-    asm volatile (  "movw %%ax, %%ds;"
-                    "pushl %%eax;"
-                    "pushl %%ebx;"
-                    "pushfl;"
-                    "pushl %%ecx;"
-                    "pushl %%edx;"
-                    "iret;"
-                    :
-                    : "a" (USER_DS), "b" (USER_ESP), "c" (USER_CS), "d" (eip)
-                    : "memory"
-    );
+    // asm volatile ("                 \n\
+    //             movw %%ax, %%ds     \n\
+    //             pushl %%eax         \n\
+    //             pushl %%ebx         \n\
+    //             pushfl              \n\
+    //             pushl %%ecx         \n\
+    //             pushl %%edx         \n\
+    //             iret                \n\
+    //             "
+    //             :
+    //             : "a" (USER_DS), "b" (USER_ESP), "c" (USER_CS), "d" (eip)
+    //             : "memory"
+    // );
+
+    // https://wiki.osdev.org/Getting_to_Ring_3
     
     // IRET
-    // asm volatile("IRET");
+    asm volatile("                      \n\
+                movw $0x2B, %%ax        \n\
+                movw %%ax, %%ds         \n\
+                pushl %%eax             \n\
+                pushl %%ebx             \n\
+                pushfl                  \n\
+                popl %%eax              \n\
+                orl $0x200, %%eax       \n\
+                pushl %%eax             \n\
+                pushl %%ecx             \n\
+                pushl %%edx             \n\
+                "
+                :
+                : "a" (USER_DS), "b" (USER_ESP), "c" (USER_CS), "d" (eip)
+                : "memory"
+                );
+
+    asm volatile("IRET");
 
     return 0;
 }
@@ -209,6 +232,7 @@ void process_page(int process_id) {
         // index will never change (virtual mem), base_addr will change (phys mem)
         page_directory[USER_ADDR_INDEX].mb.present = 1;
         page_directory[USER_ADDR_INDEX].mb.base_addr = (EIGHT_MB + FOUR_MB*process_id) >> shift_22;
+        // page_directory[USER_ADDR_INDEX].mb.base_addr = (EIGHT_MB + FOUR_MB*(process_id+1)) >> shift_22;
     }
 }
 
