@@ -88,9 +88,18 @@ int32_t system_execute(const uint8_t* command) {
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
     tss.ss0 = KERNEL_DS;
     // Push IRET context to stack
+    asm volatile ("                 \n\
+            pushl $0x2B             \n\
+            pushl 
+            pushfl                  \n\
+            pushl $0x23             \n\
+            pushl
+            iret
+            
+    );
     
     // IRET
-    asm volatile("IRET");
+    // asm volatile("IRET");
 
     return 0;
 }
