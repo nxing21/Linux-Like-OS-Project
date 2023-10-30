@@ -21,6 +21,8 @@
 #define NUM_PROCESSES   6
 #define VIRTUAL_ADDR    0x08048000
 #define USER_ADDR_INDEX 32
+#define USER_ESP        0x083FFFFC
+#define EIP_CHECK       27
 
 int32_t system_execute(const uint8_t* command);
 int32_t system_halt(uint8_t status);
@@ -56,7 +58,10 @@ fops_t dir_ops_table;
 
 typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
-    tss_t tss;
+    uint32_t parent_pid;
+    uint32_t terminal_id;
+    uint32_t kernel_stack;
+    uint32_t user_stack;
 } pcb_t;
 
 fd_t* curr_fds;

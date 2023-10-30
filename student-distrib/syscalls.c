@@ -44,7 +44,7 @@ int32_t system_execute(const uint8_t* command) {
     }
 
     // Check ELF magic constant
-    read_data(dentry.inode_num, 0, (uint8_t *) buf, ELF_LENGTH);
+    read_data(dentry.inode_num, 0, (uint8_t *) buf, EIP_CHECK);
     if (strncmp(elf_check, buf, ELF_LENGTH) != 0) {
         return -1;
     }
@@ -68,7 +68,7 @@ int32_t system_execute(const uint8_t* command) {
     read_data(dentry.inode_num, 0, (uint8_t *) VIRTUAL_ADDR, FOUR_MB);
 
     // Create PCB
-    pcb_t *pcb = (pcb_t *) (EIGHT_MB - pid * EIGHT_KB);
+    pcb_t *pcb = (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
     // Initialize PCB (?)
     // pcb->file_descriptors[0] = NULL;
     // pcb->file_descriptors[1] = NULL;
@@ -81,21 +81,24 @@ int32_t system_execute(const uint8_t* command) {
 
     curr_fds = pcb->file_descriptors;
 
-    pcb->tss.esp0 = tss.esp0;
-    pcb->tss.ss0 = tss.ss0;
+    // pcb->tss.esp0 = tss.esp0;
+    // pcb->tss.ss0 = tss.ss0;
 
     // Context switch
-    tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
+    tss.esp0 = EIGHT_MB - pid * EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
+    uint32_t eip = 0x0;
+    for (i = 0; i < 4; i++) {
+        eip |= (buf[24 + i] << (8 * i));
+    }
     // Push IRET context to stack
-    asm volatile ("                 \n\
-            pushl $0x2B             \n\
-            pushl 
-            pushfl                  \n\
-            pushl $0x23             \n\
-            pushl
-            iret
-            
+    asm volatile (  "pushl %0;"
+                    "pushl %1;"
+                    "pushfl;"
+                    "pushl %2"
+                    "pushl %3"
+                    "iret;"
+                    : "a" (USER_DS), "b" (USER_ESP), "c" (USER_CS), "d" (eip)
     );
     
     // IRET
