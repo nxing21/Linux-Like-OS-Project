@@ -112,6 +112,7 @@ int32_t system_execute(const uint8_t* command) {
     
     // IRET
     asm volatile("                      \n\
+                cli                     \n\
                 movw $0x2B, %%ax        \n\
                 movw %%ax, %%ds         \n\
                 pushl %%eax             \n\
