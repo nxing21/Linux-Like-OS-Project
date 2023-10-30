@@ -22,7 +22,7 @@
 #define VIRTUAL_ADDR    0x08048000
 #define USER_ADDR_INDEX 32
 #define USER_ESP        0x083FFFFC
-#define EIP_CHECK       27
+#define EIP_CHECK       28
 
 int32_t system_execute(const uint8_t* command);
 int32_t system_halt(uint8_t status);
