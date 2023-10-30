@@ -101,7 +101,7 @@ int32_t system_execute(const uint8_t* command) {
                     "iret;"
                     :
                     : "a" (USER_DS), "b" (USER_ESP), "c" (USER_CS), "d" (eip)
-                    
+                    : "memory"
     );
     
     // IRET
