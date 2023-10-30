@@ -92,11 +92,12 @@ int32_t system_execute(const uint8_t* command) {
         eip |= (buf[24 + i] << (8 * i));
     }
     // Push IRET context to stack
-    asm volatile (  "pushl %0;"
-                    "pushl %1;"
+    asm volatile (  "movl %%ax, %%ds;"
+                    "pushl %%eax;"
+                    "pushl %%ebx;"
                     "pushfl;"
-                    "pushl %2;"
-                    "pushl %3;"
+                    "pushl %%ecx;"
+                    "pushl %%edx;"
                     "iret;"
                     :
                     : "a" (USER_DS), "b" (USER_ESP), "c" (USER_CS), "d" (eip)
