@@ -68,13 +68,13 @@ int32_t system_execute(const uint8_t* command) {
     read_data(dentry.inode_num, 0, (uint8_t *) VIRTUAL_ADDR, FOUR_MB);
 
     // Create PCB
-    pcb_t *pcb = (pcb_t *) (EIGHT_MB - pid * EIGHT_KB);
+    pcb_t *pcb = (pcb_t *) (EIGHT_MB - (pid+1)*EIGHT_KB);
     // Initialize PCB (?)
     pcb->esp0 = tss.esp0;
     pcb->ss0 = tss.ss0;
 
     // Context switch
-    tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
+    tss.esp0 = EIGHT_MB - (pid*EIGHT_KB) - 4;   // -4 to get to bottom of next stack
     tss.ss0 = KERNEL_DS;
     // Push IRET context to stack
     
