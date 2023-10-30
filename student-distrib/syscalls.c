@@ -95,10 +95,12 @@ int32_t system_execute(const uint8_t* command) {
     asm volatile (  "pushl %0;"
                     "pushl %1;"
                     "pushfl;"
-                    "pushl %2"
-                    "pushl %3"
+                    "pushl %2;"
+                    "pushl %3;"
                     "iret;"
+                    :
                     : "a" (USER_DS), "b" (USER_ESP), "c" (USER_CS), "d" (eip)
+                    
     );
     
     // IRET
