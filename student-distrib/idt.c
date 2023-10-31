@@ -34,7 +34,14 @@ void build_idt() {
         idt[i].size = 1;
         idt[i].reserved0 = 0;
         idt[i].dpl = 0;
-        idt[i].present = 1;
+        idt[i].present = 0;
+        if (i <= NUM_EXCEPTIONS && i != 15) {
+            idt[i].present = 1;
+        }
+        if (i == SYSTEM_CALL_VECTOR) {
+            idt[i].present = 1;
+            idt[i].dpl = 3;
+        }
     }
 
     /* 
@@ -64,11 +71,13 @@ void build_idt() {
     // Sets system call vector (x80) with corresponding function pointer
     SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], system_call_linkage);
 
+    idt[RTC].reserved3 = 0; // Need to change to interrupt gate. See ISA manual page 156.
+    idt[RTC].present = 1;
+    idt[KEYBOARD].reserved3 = 0; // Need to change to interrupt gate. See ISA manual page 156.
+    idt[KEYBOARD].present = 1;
     // Sets each interrupt with corresponding function pointer
     SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler_linkage);
-    idt[KEYBOARD].reserved3 = 0; // Need to change to interrupt gate. See ISA manual page 156.
     SET_IDT_ENTRY(idt[RTC], rtc_handler_linkage);
-    idt[RTC].reserved3 = 0; // Need to change to interrupt gate. See ISA manual page 156.
 }
 
 /* divide_error()

@@ -235,6 +235,7 @@ void process_page(int process_id) {
         // index will never change (virtual mem), base_addr will change (phys mem)
         page_directory[USER_ADDR_INDEX].mb.present = 1;
         page_directory[USER_ADDR_INDEX].mb.base_addr = (EIGHT_MB + FOUR_MB*process_id) >> shift_22;
+        page_directory[USER_ADDR_INDEX].mb.user_supervisor = 1;
         // page_directory[USER_ADDR_INDEX].mb.base_addr = (EIGHT_MB + FOUR_MB*(process_id+1)) >> shift_22;
     }
 }

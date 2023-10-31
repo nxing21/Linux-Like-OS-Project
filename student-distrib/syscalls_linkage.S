@@ -1,7 +1,7 @@
 #define ASM     1
 
 .data
-    NUM_SYS_CALLS = 10
+    NUM_SYS_CALLS = 6
 
 .text
 

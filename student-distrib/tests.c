@@ -637,7 +637,7 @@ void launch_tests(){
 	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
 
 	/* Checkpoint 2 tests*/
-	TEST_OUTPUT("read_dentry_test", read_dentry_test());
+	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
@@ -650,7 +650,7 @@ void launch_tests(){
 	// TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());
 	// TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
 	// TEST_OUTPUT("sys_open_read_file_test", sys_open_read_file_test());
-	TEST_OUTPUT("sys_open_read_dir_test", sys_open_read_dir_test());
+	// TEST_OUTPUT("sys_open_read_dir_test", sys_open_read_dir_test());
 	
 	
 	

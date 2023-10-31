@@ -5,6 +5,8 @@
 #include "x86_desc.h"
 #include "lib.h"
 
+#define NUM_EXCEPTIONS  20
+
 /* Interrupts and corresponding vector number. */
 #define KEYBOARD   0x21
 #define RTC        0x28
