@@ -9,8 +9,6 @@ uint32_t data_blocks;
 // global dentry variable
 dentry_t *dentry;
 
-
-
 /* void init_file_sys(uint32_t starting_addr)
  * Inputs: uint32_t starting_addr = starting address of file system
  * Return Value: none

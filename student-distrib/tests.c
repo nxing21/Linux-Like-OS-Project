@@ -634,7 +634,7 @@ void launch_tests(){
 	// TEST_OUTPUT("boundrange_error_test", boundrange_error_test());
 	// TEST_OUTPUT("page_videomem_test", page_videomem_test());
 	// TEST_OUTPUT("page_fault_too_small_test", page_fault_too_small_test());
-	TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
+	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
 
 	/* Checkpoint 2 tests*/
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());

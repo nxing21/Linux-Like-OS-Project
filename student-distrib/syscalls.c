@@ -80,7 +80,7 @@ int32_t system_execute(const uint8_t* command) {
         pcb->file_descriptors[i].flags = -1;
     }
 
-    curr_fds = pcb->file_descriptors;
+    // curr_fds = pcb->file_descriptors;
 
     // pcb->tss.esp0 = tss.esp0;
     // pcb->tss.ss0 = tss.ss0;
@@ -90,12 +90,12 @@ int32_t system_execute(const uint8_t* command) {
     tss.ss0 = KERNEL_DS;
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
-    
 
     // https://wiki.osdev.org/Getting_to_Ring_3
     
     // IRET
-    asm volatile("cli                        \n\
+    asm volatile("                           \n\
+                cli                          \n\
                 movw $0x2B, %%ax             \n\
                 movw %%ax, %%ds              \n\
                 pushl %0                     \n\
@@ -218,6 +218,7 @@ void process_page(int process_id) {
         page_directory[USER_ADDR_INDEX].mb.present = 1;
         page_directory[USER_ADDR_INDEX].mb.base_addr = (EIGHT_MB + FOUR_MB*process_id) >> shift_22;
         page_directory[USER_ADDR_INDEX].mb.user_supervisor = 1;
+        page_directory[USER_ADDR_INDEX].mb.global = 1;
         // page_directory[USER_ADDR_INDEX].mb.base_addr = (EIGHT_MB + FOUR_MB*(process_id+1)) >> shift_22;
     }
 }

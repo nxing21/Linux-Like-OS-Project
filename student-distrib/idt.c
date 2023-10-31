@@ -272,13 +272,13 @@ void simd_fp_error() {
     while(1){};
 }
 
-/* system_call()
- * Inputs: none
- * Return Value: none
- * Function: Prints system call message and sends to infinite loop.
- *           Will be changed in later checkpoints.
- */
-void system_call() {
-    printf("System Call");
-    while(1){};
-}
+// /* system_call()
+//  * Inputs: none
+//  * Return Value: none
+//  * Function: Prints system call message and sends to infinite loop.
+//  *           Will be changed in later checkpoints.
+//  */
+// void system_call() {
+//     printf("System Call");
+//     while(1){};
+// }

@@ -64,7 +64,7 @@ void machine_check();
 void simd_fp_error();
 
 /* Function for system calls. Will be changed in future checkpoints. */
-void system_call();
+// void system_call();
 
 extern uint32_t page_fault_location();
 
