@@ -90,23 +90,7 @@ int32_t system_execute(const uint8_t* command) {
     tss.ss0 = KERNEL_DS;
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
-    // for (i = 0; i < 4; i++) {
-    //     // eip |= (buf[24+i] << (8 * i));
-    // }
-    // Push IRET context to stack
-    // asm volatile ("                 \n\
-    //             movw %%ax, %%ds     \n\
-    //             pushl %%eax         \n\
-    //             pushl %%ebx         \n\
-    //             pushfl              \n\
-    //             pushl %%ecx         \n\
-    //             pushl %%edx         \n\
-    //             iret                \n\
-    //             "
-    //             :
-    //             : "a" (USER_DS), "b" (USER_ESP), "c" (USER_CS), "d" (eip)
-    //             : "memory"
-    // );
+    
 
     // https://wiki.osdev.org/Getting_to_Ring_3
     
@@ -129,6 +113,7 @@ int32_t system_execute(const uint8_t* command) {
                 );
 
     asm volatile("iret");
+
 
     return 0;
 }
