@@ -35,12 +35,12 @@ void build_idt() {
         idt[i].reserved0 = 0;
         idt[i].dpl = 0;
         idt[i].present = 0;
-        if (i <= NUM_EXCEPTIONS && i != 15) {
+        if (i <= NUM_EXCEPTIONS && i != SKIP) {
             idt[i].present = 1;
         }
         if (i == SYSTEM_CALL_VECTOR) {
             idt[i].present = 1;
-            idt[i].dpl = 3;
+            idt[i].dpl = 3; // set privilege level for syscalls to 3 (11 in binary)
         }
     }
 

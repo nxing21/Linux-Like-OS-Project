@@ -30,6 +30,7 @@
 #define STACK_FAULT     12
 #define GENERAL_PROTECTION      13
 #define PAGE_FAULT      14
+#define SKIP            15
 #define x87_FP_ERROR    16
 #define ALIGNMENT_CHECK 17
 #define MACHINE_CHECK   18

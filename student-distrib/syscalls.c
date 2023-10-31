@@ -111,18 +111,17 @@ int32_t system_execute(const uint8_t* command) {
     // https://wiki.osdev.org/Getting_to_Ring_3
     
     // IRET
-    asm volatile("                      \n\
-                cli                     \n\
-                movw $0x2B, %%ax        \n\
-                movw %%ax, %%ds         \n\
-                pushl %%eax             \n\
-                pushl %%ebx             \n\
-                pushfl                  \n\
-                popl %%eax              \n\
-                orl $0x200, %%eax       \n\
-                pushl %%eax             \n\
-                pushl %%ecx             \n\
-                pushl %%edx             \n\
+    asm volatile("cli                        \n\
+                movw $0x2B, %%ax             \n\
+                movw %%ax, %%ds              \n\
+                pushl %0                     \n\
+                pushl %1                     \n\
+                pushfl                       \n\
+                popl %%ebx                   \n\
+                orl $0x200, %%ebx            \n\
+                pushl %%ebx                  \n\
+                pushl %2                     \n\
+                pushl %3                     \n\
                 "
                 :
                 : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (eip)
