@@ -86,7 +86,7 @@ int32_t system_execute(const uint8_t* command) {
     // pcb->tss.ss0 = tss.ss0;
 
     // Context switch
-    tss.esp0 = EIGHT_MB - pid * EIGHT_KB - 4;
+    tss.esp0 = EIGHT_MB - (pid) * EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
@@ -111,24 +111,27 @@ int32_t system_execute(const uint8_t* command) {
     // https://wiki.osdev.org/Getting_to_Ring_3
     
     // IRET
-    asm volatile("                      \n\
-                movw $0x2B, %%ax        \n\
-                movw %%ax, %%ds         \n\
-                pushl %%eax             \n\
-                pushl %%ebx             \n\
-                pushfl                  \n\
-                popl %%eax              \n\
-                orl $0x200, %%eax       \n\
-                pushl %%eax             \n\
-                pushl %%ecx             \n\
-                pushl %%edx             \n\
+    asm volatile("cli                        \n\
+                movw $0x2B, %%ax             \n\
+                movw %%ax, %%ds              \n\
+                movw %%ax, %%es              \n\
+                movw %%ax, %%fs              \n\
+                movw %%ax, %%gs              \n\
+                pushl %0                     \n\
+                pushl %1                     \n\
+                pushfl                       \n\
+                popl %%ebx                   \n\
+                orl $0x200, %%ebx            \n\
+                pushl %%ebx                  \n\
+                pushl %2                     \n\
+                pushl %3                     \n\
                 "
                 :
-                : "a" (USER_DS), "b" (USER_ESP), "c" (USER_CS), "d" (eip)
-                : "memory"
+                : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (eip)
+                : "eax", "ebx"
                 );
 
-    asm volatile("IRET");
+    asm volatile("iret");
 
     return 0;
 }
