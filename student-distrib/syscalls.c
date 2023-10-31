@@ -69,16 +69,16 @@ int32_t system_execute(const uint8_t* command) {
     read_data(dentry.inode_num, 0, (uint8_t *) VIRTUAL_ADDR, FOUR_MB);
 
     // Create PCB
-    pcb_t *pcb = (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
+    // pcb_t *pcb = (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
     // Initialize PCB (?)
     // pcb->file_descriptors[0] = NULL;
     // pcb->file_descriptors[1] = NULL;
 
-    for(i = 2; i < 8; i++){
-        pcb->file_descriptors[i].inode = 0;
-        pcb->file_descriptors[i].file_pos = 0;
-        pcb->file_descriptors[i].flags = -1;
-    }
+    // for(i = 2; i < 8; i++){
+    //     pcb->file_descriptors[i].inode = 0;
+    //     pcb->file_descriptors[i].file_pos = 0;
+    //     pcb->file_descriptors[i].flags = -1;
+    // }
 
     // curr_fds = pcb->file_descriptors;
 
@@ -108,7 +108,7 @@ int32_t system_execute(const uint8_t* command) {
                 pushl %3                     \n\
                 "
                 :
-                : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (eip)
+                : "r" (KERNEL_DS), "r" (USER_ESP), "r" (KERNEL_CS), "r" (eip)
                 : "eax", "ebx"
                 );
 

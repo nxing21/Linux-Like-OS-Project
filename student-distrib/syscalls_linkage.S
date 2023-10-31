@@ -9,7 +9,7 @@
 .align 4
 system_call_linkage:
     # Save registers
-    pushf
+    pushfl
     pushl %ebp
     pushl %edi
     pushl %esi
@@ -37,7 +37,7 @@ finished:
     popl %esi
     popl %edi
     popl %ebp
-    popf
+    popfl
     iret
 
 # Jump table
