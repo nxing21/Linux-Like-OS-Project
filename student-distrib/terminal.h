@@ -9,10 +9,10 @@
 #define END_OF_LINE 0x0A
 
 /* Prints a string of characters to the screen */
-int terminal_read(uint32_t fd, void * user_buf, int count);
+int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);
 
 /* Writes data from a buffer to the screen.  */
-int terminal_write(uint32_t fd ,void* user_buf, unsigned int bytes);
+int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes);
 
 /* Initializes the buffer by clearing the buffer. */
 int terminal_open(const char* filename);

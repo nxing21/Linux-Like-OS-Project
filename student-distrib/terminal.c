@@ -16,7 +16,7 @@ int buffer_size = 0;
  *   RETURN VALUE: numbytes -- Number of bytes actually read.
  *   SIDE EFFECTS: Copies the terminal buffer into the userspace buffer.
  */
-int terminal_read(uint32_t fd, void * user_buf, int count){
+int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     int numbytes = 0; /* number of bytes read. */
     int i; /* allows us to iterate through the buffer. */
     int enterAtEnd; /* checks if there is an enter at the end*/
@@ -25,10 +25,10 @@ int terminal_read(uint32_t fd, void * user_buf, int count){
     }
 
     /* copies the terminal buffer into the userspace buffer. */
-    for (i = 0; i < count; i++){
+    for (i = 0; i < nbytes; i++){
         if (i < buffer_size){
             numbytes++;
-            ((uint8_t *)user_buf)[i] = buffer[i]; 
+            ((uint8_t *)buf)[i] = buffer[i]; 
         } 
         if (buffer[i] == END_OF_LINE){
             enterAtEnd = 1;
@@ -36,13 +36,13 @@ int terminal_read(uint32_t fd, void * user_buf, int count){
         }
     }
     /* Checks if the very last byte is the End of Line. */
-    if (enterAtEnd == 0 && i < buffer_size && ((uint8_t *)user_buf)[i-1] != END_OF_LINE){
+    if (enterAtEnd == 0 && i < buffer_size && ((uint8_t *)buf)[i-1] != END_OF_LINE){
        
-        ((uint8_t *)user_buf)[i-1] = END_OF_LINE;
+        ((uint8_t *)buf)[i-1] = END_OF_LINE;
     }
 
     /* clear the terminal buffer */
-    for (i = 0; i < count; i++){
+    for (i = 0; i < nbytes; i++){
         buffer[i] = 0x0;
     }
     buffer_size = 0;
@@ -59,7 +59,7 @@ int terminal_read(uint32_t fd, void * user_buf, int count){
  *   RETURN VALUE: numbytes -- Number of bytes actually written.
  *   SIDE EFFECTS: Copies the userpace buffer into the output buffer, prints the output buffer to the screen.
  */
-int terminal_write(uint32_t fd ,void* user_buf, unsigned int bytes){
+int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes){
     int numbytes = 0; /* Number of bytes written. */
     int i; /* Iterates through the user buffer. */
 
@@ -68,12 +68,12 @@ int terminal_write(uint32_t fd ,void* user_buf, unsigned int bytes){
         write_buffer[i] = 0x0;
     }
     /* Copies the user buffer into a write buffer. */
-    for (i = 0; i < bytes; i++){
-        write_buffer[i] = ((uint8_t *)user_buf)[i];
+    for (i = 0; i < nbytes; i++){
+        write_buffer[i] = ((uint8_t *)buf)[i];
     }
 
     /* Prints characters from the write buffer to the screen. */
-    for (i = 0; i < bytes; i++){
+    for (i = 0; i < nbytes; i++){
         if (write_buffer[i] != NULL){
             putc(write_buffer[i]);
             numbytes++;

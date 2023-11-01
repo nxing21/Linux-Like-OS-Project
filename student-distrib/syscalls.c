@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "page.h"
 #include "x86_desc.h"
+#include "terminal.h"
 
 uint8_t cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // we only have two processes for checkpoint 3
 
@@ -69,18 +70,42 @@ int32_t system_execute(const uint8_t* command) {
     read_data(dentry.inode_num, 0, (uint8_t *) VIRTUAL_ADDR, FOUR_MB);
 
     // Create PCB
-    // pcb_t *pcb = (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
+    pcb_t *pcb = (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
     // Initialize PCB (?)
-    // pcb->file_descriptors[0] = NULL;
-    // pcb->file_descriptors[1] = NULL;
 
-    // for(i = 2; i < 8; i++){
-    //     pcb->file_descriptors[i].inode = 0;
-    //     pcb->file_descriptors[i].file_pos = 0;
-    //     pcb->file_descriptors[i].flags = -1;
-    // }
+    fops_t term_write_ops;
+    term_write_ops.open = NULL;
+    term_write_ops.close = NULL;
+    term_write_ops.write = &terminal_write;
+    term_write_ops.read = NULL;
 
-    // curr_fds = pcb->file_descriptors;
+    fops_t term_read_ops;
+    term_read_ops.open = NULL;
+    term_read_ops.close = NULL;
+    term_read_ops.write = NULL;
+    term_read_ops.read = &terminal_read;
+
+
+
+
+    pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
+    pcb->file_descriptors[0].inode = 0;
+    pcb->file_descriptors[0].file_pos = 0;
+    pcb->file_descriptors[0].flags = 1;
+
+
+    pcb->file_descriptors[1].file_op_table_ptr = &term_write_ops;
+    pcb->file_descriptors[1].inode = 0;
+    pcb->file_descriptors[1].file_pos = 0;
+    pcb->file_descriptors[1].flags = 1;
+
+    for(i = 2; i < 8; i++){
+        pcb->file_descriptors[i].inode = 0;
+        pcb->file_descriptors[i].file_pos = 0;
+        pcb->file_descriptors[i].flags = -1;
+    }
+
+    curr_fds = pcb->file_descriptors;
 
     // pcb->tss.esp0 = tss.esp0;
     // pcb->tss.ss0 = tss.ss0;
@@ -108,7 +133,7 @@ int32_t system_execute(const uint8_t* command) {
                 pushl %3                     \n\
                 "
                 :
-                : "r" (KERNEL_DS), "r" (USER_ESP), "r" (KERNEL_CS), "r" (eip)
+                : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (eip)
                 : "eax", "ebx"
                 );
 
