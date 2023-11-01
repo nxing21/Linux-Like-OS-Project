@@ -169,6 +169,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
     clear();
     init_file_sys(fs);
+    init_fops_table();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your

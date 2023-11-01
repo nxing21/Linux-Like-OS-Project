@@ -8,6 +8,18 @@
 
 uint8_t cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // we only have two processes for checkpoint 3
 
+void init_fops_table() {
+    term_write_ops.open = NULL;
+    term_write_ops.close = NULL;
+    term_write_ops.write = &terminal_write;
+    term_write_ops.read = NULL;
+
+    term_read_ops.open = NULL;
+    term_read_ops.close = NULL;
+    term_read_ops.write = NULL;
+    term_read_ops.read = &terminal_read;   
+}
+
 int32_t system_execute(const uint8_t* command) {
     int8_t elf_check[ELF_LENGTH];
     uint8_t filename[FILENAME_LEN + 1];
@@ -72,21 +84,6 @@ int32_t system_execute(const uint8_t* command) {
     pcb_t *pcb = (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
     // Initialize PCB (?)
 
-    fops_t term_write_ops;
-    term_write_ops.open = NULL;
-    term_write_ops.close = NULL;
-    term_write_ops.write = &terminal_write;
-    term_write_ops.read = NULL;
-
-    fops_t term_read_ops;
-    term_read_ops.open = NULL;
-    term_read_ops.close = NULL;
-    term_read_ops.write = NULL;
-    term_read_ops.read = &terminal_read;
-
-
-
-
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
     pcb->file_descriptors[0].inode = 0;
     pcb->file_descriptors[0].file_pos = 0;
@@ -149,6 +146,7 @@ int32_t system_halt(uint8_t status) {
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && curr_fds[fd].flags != -1) { 
         return curr_fds[fd].file_op_table_ptr->read(fd, buf, nbytes);
+        // return terminal_read(fd, buf, nbytes);
     }
     else{
         return -1;
@@ -158,6 +156,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && curr_fds[fd].flags != -1) { 
         return curr_fds[fd].file_op_table_ptr->write(fd, buf, nbytes);
+        // return terminal_write(fd, buf, nbytes);
     }
     else{
         return -1;

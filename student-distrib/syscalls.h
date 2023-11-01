@@ -32,6 +32,7 @@ int32_t system_open (const uint8_t* filename);
 int32_t system_close (int32_t fd);
 
 void process_page(int process_num);
+void init_fops_table();
 
 typedef struct file_op_table {
     int32_t (*open)(const uint8_t* filename);
@@ -62,7 +63,8 @@ typedef struct process_control_block {
 } pcb_t;
 
 fd_t* curr_fds;
-
+fops_t term_write_ops;
+fops_t term_read_ops;
 
 
 #endif
