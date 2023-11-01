@@ -21,7 +21,7 @@ volatile int RTC_block, RTC_counter;
  *   RETURN VALUE: none
  *   SIDE EFFECTS: Allows for the RTC to send periodic interrupts.
  */
-void init_RTC(){
+void init_RTC() {
     uint8_t prev_data;
     /*Selects Register B and disables NMIs */
     outb(NMI_DISABLE_CMD | RTC_REG_B, RTC_REGISTER_SELECT);
@@ -72,7 +72,7 @@ void set_RTC_frequency(int freq) {
  *   RETURN VALUE: none
  *   SIDE EFFECTS: Handles the interrupt from the RTC, and sends and EOI to the PIC.
  */
-void RTC_handler(){
+void RTC_handler() {
     uint8_t garbage;   // garbage
 
     /* Function to test RTC */

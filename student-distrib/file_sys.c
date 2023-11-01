@@ -30,15 +30,20 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
     dentry_t * dentries_array = boot_block->direntries;
     int i;
     int found_flag = 0;
-    int len = strlen((int8_t *)fname);
     dentry_t found_dentry;
-    if(len > FILENAME_LEN) {
-        return -1;
-    }
+    int len;
+
     for(i = 0; i < DIR_ENTRIES; i++) {
+        len = strlen((int8_t *)fname);
+        if(len > FILENAME_LEN) {
+            return -1;
+        }
         //strncmp assumes same length
         const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
-        if(strncmp((int8_t *)cur_dentry, (int8_t *)fname, strlen((int8_t *) cur_dentry)) == 0) {
+        if (strlen((int8_t *) cur_dentry) > len) {
+            len = strlen((int8_t *) cur_dentry);
+        }
+        if(strncmp((int8_t *)cur_dentry, (int8_t *)fname, len) == 0) {
             found_flag = 1;
             found_dentry = dentries_array[i];
             break;

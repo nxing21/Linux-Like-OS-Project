@@ -95,7 +95,7 @@ int32_t system_execute(const uint8_t* command) {
     pcb->file_descriptors[1].file_pos = 0;
     pcb->file_descriptors[1].flags = 1;
 
-    for(i = 2; i < 8; i++){
+    for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){
         pcb->file_descriptors[i].inode = 0;
         pcb->file_descriptors[i].file_pos = 0;
         pcb->file_descriptors[i].flags = -1;
@@ -135,7 +135,6 @@ int32_t system_execute(const uint8_t* command) {
 
     asm volatile("iret");
 
-
     return 0;
 }
 
@@ -168,7 +167,7 @@ int32_t system_open (const uint8_t* filename){
     uint32_t file_type;
     int i;
     int index = -1;
-    for(i = 2; i < 8; i++){
+    for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){
         if(curr_fds[i].flags == -1){
             index = i;
             break;
@@ -183,7 +182,6 @@ int32_t system_open (const uint8_t* filename){
 
         switch (file_type)
         {
-            
             case 0: /* RTC */
                 dir_ops_table.open = &RTC_open;
                 dir_ops_table.close = &RTC_close;
