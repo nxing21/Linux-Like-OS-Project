@@ -81,9 +81,9 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes){
         }
 
     /* Checks if the last character is EOL.*/
-    if (write_buffer[i-1] != END_OF_LINE){
-        putc('\n');
-    }
+    // if (write_buffer[i-1] != END_OF_LINE){
+    //     putc('\n');
+    // }
     clear_writebuffer();
 
     return numbytes;

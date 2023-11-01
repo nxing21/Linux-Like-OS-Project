@@ -583,9 +583,9 @@ int sys_open_read_file_test(){
 int sys_open_read_dir_test(){
 	TEST_HEADER;
 	// clear();
-	curr_fds[2].file_pos = 0;
-	curr_fds[2].flags = -1;
-	curr_fds[2].inode = 0;
+	// curr_fds[2].file_pos = 0;
+	// curr_fds[2].flags = -1;
+	// curr_fds[2].inode = 0;
 	const char* filename =  ".";
 	uint8_t buf[BYTES_PER_BLOCK*4];
 	if(system_open((const uint8_t *) filename) == -1){
@@ -640,7 +640,7 @@ void launch_tests(){
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
-	// TEST_OUTPUT("open_read_dir_test", open_read_dir_test());
+	TEST_OUTPUT("open_read_dir_test", sys_open_read_dir_test());
 	// test_terminal_read_write(); /* Comment this out if you want to separately test read/write of terminal. */
 	// TEST_OUTPUT("test_terminal_read_write", test_terminal_open_close());
 	

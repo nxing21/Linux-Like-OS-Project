@@ -11,7 +11,7 @@ uint8_t cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // we only have two proces
 int32_t system_execute(const uint8_t* command) {
     int8_t elf_check[ELF_LENGTH];
     uint8_t filename[FILENAME_LEN + 1];
-    int8_t buf[EIP_CHECK];
+    int8_t buf[ELF_LENGTH];
     uint32_t pid;
     
     if (command == NULL) {
@@ -19,7 +19,6 @@ int32_t system_execute(const uint8_t* command) {
     }
     int i; // loop counter
     
-    filename[FILENAME_LEN] = '\0';
     elf_check[DEL_INDEX] = DEL;
     elf_check[E_INDEX] = E;
     elf_check[L_INDEX] = L;
@@ -27,7 +26,7 @@ int32_t system_execute(const uint8_t* command) {
 
     i = 0;
     // get the name of the executable
-    while (command[i] != '\0') {
+    while (command[i] != '\0' && i < FILENAME_LEN) {
         if (command[i] == ' ') {
             break;
         }
@@ -45,7 +44,7 @@ int32_t system_execute(const uint8_t* command) {
     }
 
     // Check ELF magic constant
-    read_data(dentry.inode_num, 0, (uint8_t *) buf, EIP_CHECK);
+    read_data(dentry.inode_num, 0, (uint8_t *) buf, ELF_LENGTH);
     if (strncmp(elf_check, buf, ELF_LENGTH) != 0) {
         return -1;
     }
@@ -111,7 +110,7 @@ int32_t system_execute(const uint8_t* command) {
     // pcb->tss.ss0 = tss.ss0;
 
     // Context switch
-    tss.esp0 = EIGHT_MB - (pid) * EIGHT_KB - 4;
+    tss.esp0 = EIGHT_MB - pid * EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
@@ -144,13 +143,12 @@ int32_t system_execute(const uint8_t* command) {
 }
 
 int32_t system_halt(uint8_t status) {
- return 0;
+    return 0;
 }
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && curr_fds[fd].flags != -1) { 
         return curr_fds[fd].file_op_table_ptr->read(fd, buf, nbytes);
-
     }
     else{
         return -1;
@@ -160,7 +158,6 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && curr_fds[fd].flags != -1) { 
         return curr_fds[fd].file_op_table_ptr->write(fd, buf, nbytes);
-
     }
     else{
         return -1;
@@ -219,7 +216,7 @@ int32_t system_open (const uint8_t* filename){
         return curr_fds[index].file_op_table_ptr->open(filename);
     }
     else{
-        printf("open fd not found");
+        // printf("open fd not found");
         return -1;
     }
 }

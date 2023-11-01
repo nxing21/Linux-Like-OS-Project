@@ -33,7 +33,7 @@ int32_t system_close (int32_t fd);
 
 void process_page(int process_num);
 
-typedef struct  file_op_table {
+typedef struct file_op_table {
     int32_t (*open)(const uint8_t* filename);
     int32_t (*close)(int32_t fd);
     int32_t (*read)(int32_t fd, void* buf, int32_t nbytes);

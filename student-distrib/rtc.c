@@ -133,7 +133,7 @@ int32_t RTC_close(int32_t fd) {
  *   SIDE EFFECTS: none
  */
 int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
-    curr_fds[fd].file_pos += nbytes; // updating file position
+    
     RTC_block = 1;
     while (RTC_block == 1);
     return 0;
@@ -160,7 +160,7 @@ int32_t RTC_write(int32_t fd, const void* buffer, int32_t nbytes) {
     if (buffer == NULL) {
         return -1;
     }
-    curr_fds[fd].file_pos += nbytes; // updating file position
+    
     // obtains frequency from buffer
     freq = *((unsigned int*)(buffer));
 
