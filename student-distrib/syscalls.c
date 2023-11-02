@@ -143,31 +143,32 @@ int32_t system_execute(const uint8_t* command) {
 // bit mask cur esp to get pcb
 // from pcb get parent pid
 int32_t system_halt(uint8_t status) {
-    int i;
-
-    // if currently running shell
-    if (curr_pid == 0) {
-        return -1;
-    }
-
-    pcb_t* pcb = get_pcb(curr_pid);
-    parent_pid = pcb->parent_pid;
-    pcb_t* parent_pcb = get_pcb(parent_pid);
-
-    tss = parent_pcb->tss;
-
-    // change esp to parent esp; same for ebp
-    
-    // Tear down paging and flush TLB
-    delete_page(curr_pid);
-    flushTLB();
-
-    // Close all file operations
-    for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
-        system_close(i);
-    }
-
     return 0;
+    // int i;
+
+    // // if currently running shell
+    // if (curr_pid == 0) {
+    //     return -1;
+    // }
+
+    // pcb_t* pcb = get_pcb(curr_pid);
+    // parent_pid = pcb->parent_pid;
+    // pcb_t* parent_pcb = get_pcb(parent_pid);
+
+    // tss = parent_pcb->tss;
+
+    // // change esp to parent esp; same for ebp
+    
+    // // Tear down paging and flush TLB
+    // delete_page(curr_pid);
+    // flushTLB();
+
+    // // Close all file operations
+    // for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
+    //     system_close(i);
+    // }
+
+    // return 0;
 }
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){

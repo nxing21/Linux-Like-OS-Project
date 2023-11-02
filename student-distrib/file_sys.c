@@ -241,7 +241,6 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
         return -1;
     }
     else{
-        printf("\n \n");
         offset = pcb->file_descriptors[fd].file_pos; //the order of me doing this seems wrong
         pcb->file_descriptors[fd].file_pos += nbytes;
         read_data(pcb->file_descriptors[fd].inode, offset, buffer, nbytes);
