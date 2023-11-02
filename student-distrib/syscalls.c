@@ -73,6 +73,7 @@ int32_t system_execute(const uint8_t* command) {
         }
     }
     curr_pid = pid;
+
     // Set up paging and flush TLB
     process_page(pid);
     flushTLB();
@@ -139,12 +140,30 @@ int32_t system_execute(const uint8_t* command) {
     return 0;
 }
 
+// bit mask cur esp to get pcb
+// from pcb get parent pid
 int32_t system_halt(uint8_t status) {
     int i;
-    
-    delete_page(curr_pid);
 
-    for(i = 0; i < FILE_DESCRIPTOR_MAX; i++){
+    // if currently running shell
+    if (curr_pid == 0) {
+        return -1;
+    }
+
+    pcb_t* pcb = get_pcb(curr_pid);
+    parent_pid = pcb->parent_pid;
+    pcb_t* parent_pcb = get_pcb(parent_pid);
+
+    tss = parent_pcb->tss;
+
+    // change esp to parent esp; same for ebp
+    
+    // Tear down paging and flush TLB
+    delete_page(curr_pid);
+    flushTLB();
+
+    // Close all file operations
+    for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
         system_close(i);
     }
 
@@ -267,8 +286,6 @@ void delete_page(int process_id) {
         // page_directory[USER_ADDR_INDEX].mb.base_addr = (EIGHT_MB + FOUR_MB*(process_id+1)) >> shift_22;
     }
 }
-
-
 
 pcb_t* get_pcb(uint32_t pid){
     return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
