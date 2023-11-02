@@ -112,6 +112,8 @@ int32_t system_execute(const uint8_t* command) {
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
     pcb->tss = tss;
+    // pcb->ebp = something;
+    // pcb->esp = something;
 
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
@@ -166,6 +168,15 @@ int32_t system_halt(uint8_t status) {
     // Restore paging and flush TLB
     process_page(parent_pcb->pid);
     flushTLB();
+
+
+    pcb->file_descriptors[0].flags = -1; //marking as not in use
+    pcb->file_descriptors[0].inode = -1; //marking as not pointing to any inode
+    pcb->file_descriptors[0].file_pos = 0; //file position reset to 0 
+
+    pcb->file_descriptors[1].flags = -1; //marking as not in use
+    pcb->file_descriptors[1].inode = -1; //marking as not pointing to any inode
+    pcb->file_descriptors[1].file_pos = 0; //file position reset to 0 
 
     // Close all file operations
     for (i = 2; i < FILE_DESCRIPTOR_MAX; i++) {
