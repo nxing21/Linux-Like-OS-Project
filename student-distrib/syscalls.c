@@ -83,6 +83,7 @@ int32_t system_execute(const uint8_t* command) {
     // Create PCB
     pcb_t *pcb = (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
     // Initialize PCB (?)
+    pcb->pid = pid;
 
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
     pcb->file_descriptors[0].inode = 0;
@@ -139,6 +140,10 @@ int32_t system_execute(const uint8_t* command) {
 }
 
 int32_t system_halt(uint8_t status) {
+    // bit mask cur esp to find pcb
+    // use pcb to get parent pid
+    // do shit from there
+
     return 0;
 }
 
