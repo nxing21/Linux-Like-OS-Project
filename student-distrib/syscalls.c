@@ -111,6 +111,8 @@ int32_t system_execute(const uint8_t* command) {
     // Context switch
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
+    pcb->tss = tss;
+
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
 
@@ -152,7 +154,7 @@ int32_t system_halt(uint8_t status) {
 
     // Get parent PCB
     pcb_t* pcb = get_pcb(curr_pid);
-    parent_pid = pcb->parent_pid;
+    uint32_t parent_pid = pcb->parent_pid;
     pcb_t* parent_pcb = get_pcb(parent_pid);
 
     // Update cur_processes
@@ -166,7 +168,7 @@ int32_t system_halt(uint8_t status) {
     flushTLB();
 
     // Close all file operations
-    for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
+    for (i = 2; i < FILE_DESCRIPTOR_MAX; i++) {
         system_close(i);
     }
 
@@ -177,11 +179,11 @@ int32_t system_halt(uint8_t status) {
                 movl %2, %%eax               \n\
                 "
                 :
-                : "r" (parent_pcb->ebp), "r" (parent_pcb->esp), "r" (status)
-                :
+                : "r" (parent_pcb->ebp), "r" (parent_pcb->esp), "r" ((uint32_t) status)
+                : "memory"
                 );
 
-    return 0;
+    return status;
 }
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
@@ -302,3 +304,4 @@ void process_page(int process_id) {
 pcb_t* get_pcb(uint32_t pid){
     return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
 }
+
