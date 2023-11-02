@@ -34,7 +34,7 @@ int32_t system_open (const uint8_t* filename);
 int32_t system_close (int32_t fd);
 
 void process_page(int process_num);
-void delete_page(int process_id);
+// void delete_page(int process_id);
 void init_fops_table();
 
 typedef struct file_op_table {
