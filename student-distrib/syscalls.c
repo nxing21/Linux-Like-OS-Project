@@ -139,6 +139,14 @@ int32_t system_execute(const uint8_t* command) {
 }
 
 int32_t system_halt(uint8_t status) {
+    int i;
+    
+    delete_page(curr_pid);
+
+    for(i = 0; i < FILE_DESCRIPTOR_MAX; i++){
+        system_close(i);
+    }
+
     return 0;
 }
 
@@ -235,7 +243,7 @@ int32_t system_close (int32_t fd){
 
 void process_page(int process_id) {
     // parameter checks
-    if (process_id >= 0) {
+    if (process_id >= 0 && process_id < NUM_PROCESSES) {
         // set page directory entry
         // index will never change (virtual mem), base_addr will change (phys mem)
         page_directory[USER_ADDR_INDEX].mb.present = 1;
@@ -245,6 +253,21 @@ void process_page(int process_id) {
         // page_directory[USER_ADDR_INDEX].mb.base_addr = (EIGHT_MB + FOUR_MB*(process_id+1)) >> shift_22;
     }
 }
+
+void delete_page(int process_id) {
+    // parameter checks
+    if (process_id >= 0 && process_id < NUM_PROCESSES) {
+        // set page directory entry
+        // index will never change (virtual mem), base_addr will change (phys mem)
+        page_directory[USER_ADDR_INDEX].mb.present = 0;
+        page_directory[USER_ADDR_INDEX].mb.base_addr = 0;
+        page_directory[USER_ADDR_INDEX].mb.user_supervisor = 0;
+        page_directory[USER_ADDR_INDEX].mb.global = 0;
+        // page_directory[USER_ADDR_INDEX].mb.base_addr = (EIGHT_MB + FOUR_MB*(process_id+1)) >> shift_22;
+    }
+}
+
+
 
 pcb_t* get_pcb(uint32_t pid){
     return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);

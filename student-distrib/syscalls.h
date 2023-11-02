@@ -34,6 +34,7 @@ int32_t system_open (const uint8_t* filename);
 int32_t system_close (int32_t fd);
 
 void process_page(int process_num);
+void delete_page(int process_id);
 void init_fops_table();
 
 typedef struct file_op_table {
@@ -58,9 +59,14 @@ fops_t dir_ops_table;
 
 typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
+        // pcb_t * parent_pid;
     uint32_t terminal_id;
-    uint32_t kernel_stack;
-    uint32_t user_stack;
+    uint32_t pid;
+    uint32_t parent_pid;
+    uint32_t esp;
+    uint32_t ebp;
+    tss_t tss;
+
 } pcb_t;
 
 pcb_t* get_pcb(uint32_t pid);
