@@ -196,39 +196,79 @@ int32_t close_file(int32_t fd) {
  * Return Value:  number of bytes read
  * Function: reads directory information
  */
+// int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
+//     // loop counters
+//     uint32_t i;
+//     uint32_t j;
+//     // we have two buffers, one for file name and file type, other for file length
+//     uint8_t * buffer = (uint8_t*) buf;
+//     uint32_t * length_buffer = (uint32_t *) length_buf;
+//     // counters so we know what index to put in buffer
+//     uint32_t num_read = 0;
+//     uint32_t num_length_read = 0;
+//     pcb_t *pcb = get_pcb(curr_pid);
+
+//     pcb->file_descriptors[fd].file_pos += nbytes; // updating file position
+
+//     for (i = 0; i < boot_block->dir_count; i++) { // iterate through all files
+//         dentry_t dentry = boot_block->direntries[i];
+//         // get dentry of current file (index i)
+//         read_dentry_by_index(i, &dentry);
+//         for (j = 0; j < FILENAME_LEN; j++) {
+//             buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer
+//             num_read++;
+//         }
+//         buffer[num_read] = dentry.filetype + '0'; //changing num to char equivalent
+//         num_read++;
+
+//         uint32_t inode_number = dentry.inode_num;
+//         inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_number * BYTES_PER_BLOCK); // get current inode
+//         // add length of file into the length buffer
+//         length_buffer[num_length_read] = cur_inode->length;
+//         num_length_read++;
+//     }
+//     return num_read;
+// }
+
 int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
-    // loop counters
+    int offset;
     uint32_t i;
     uint32_t j;
-    // we have two buffers, one for file name and file type, other for file length
     uint8_t * buffer = (uint8_t*) buf;
-    uint32_t * length_buffer = (uint32_t *) length_buf;
-    // counters so we know what index to put in buffer
-    uint32_t num_read = 0;
-    uint32_t num_length_read = 0;
     pcb_t *pcb = get_pcb(curr_pid);
 
-    pcb->file_descriptors[fd].file_pos += nbytes; // updating file position
-
-    for (i = 0; i < boot_block->dir_count; i++) { // iterate through all files
-        dentry_t dentry = boot_block->direntries[i];
-        // get dentry of current file (index i)
-        read_dentry_by_index(i, &dentry);
-        for (j = 0; j < FILENAME_LEN; j++) {
-            buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer
-            num_read++;
-        }
-        buffer[num_read] = dentry.filetype + '0'; //changing num to char equivalent
-        num_read++;
-
-        uint32_t inode_number = dentry.inode_num;
-        inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_number * BYTES_PER_BLOCK); // get current inode
-        // add length of file into the length buffer
-        length_buffer[num_length_read] = cur_inode->length;
-        num_length_read++;
+    if(fd > 7 || fd < 0){
+        return -1;
     }
-    return num_read;
+    else{
+        printf("\n \n");
+        offset = pcb->file_descriptors[fd].file_pos; //the order of me doing this seems wrong
+        pcb->file_descriptors[fd].file_pos += nbytes;
+        read_data(pcb->file_descriptors[fd].inode, offset, buffer, nbytes);
+
+        for (i = 0; i < boot_block->dir_count; i++) {
+            printf("File Name: ");
+            dentry_t dentry = boot_block->direntries[i];
+            read_dentry_by_index(i, &dentry);
+            for (j = 0; j < FILENAME_LEN; j++) {
+                putc(dentry.filename[j]);
+            }
+            printf(", File Type: %d, File Size: ", dentry.filetype);
+
+            uint32_t inode_number = dentry.inode_num;
+            inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_number * BYTES_PER_BLOCK); // get current inode
+            printf("%d", cur_inode->length);
+            printf("\n");
+        }
+
+
+
+
+
+        return 0;
+    }
 }
+
 
 /* int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes)
  * Inputs:  int32_t fd: file descriptor array index   
