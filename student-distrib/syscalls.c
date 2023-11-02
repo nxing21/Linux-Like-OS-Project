@@ -171,6 +171,15 @@ int32_t system_halt(uint8_t status) {
     }
 
     // assembly to load old esp, ebp and load 
+    asm volatile("                           \n\
+                movl %0, %%ebp               \n\
+                movl %1, %%esp               \n\
+                movl %2, %%eax               \n\
+                "
+                :
+                : "r" (parent_pcb->ebp), "r" (parent_pcb->esp), "r" (status)
+                :
+                );
 
     return 0;
 }
