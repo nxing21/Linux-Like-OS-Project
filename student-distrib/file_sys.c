@@ -142,13 +142,15 @@ int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
     int offset;
     int32_t bytes_read;
     uint8_t * buffer = (uint8_t*) buf;
+    pcb_t *pcb = get_pcb(curr_pid);
+
     if(fd >= FILE_DESCRIPTOR_MAX || fd < 0) { //check if valid fd index
         return -1;
     }
     else{
-        offset = curr_fds[fd].file_pos; //offset based on file position
-        curr_fds[fd].file_pos += nbytes; //updating file position
-        bytes_read = read_data(curr_fds[fd].inode, offset, buffer, nbytes); // call read data to fill our buffer
+        offset = pcb->file_descriptors[fd].file_pos; //offset based on file position
+        pcb->file_descriptors[fd].file_pos += nbytes; //updating file position
+        bytes_read = read_data(pcb->file_descriptors[fd].inode, offset, buffer, nbytes); // call read data to fill our buffer
         return bytes_read;
     }  
 }
@@ -182,9 +184,7 @@ int32_t open_file(const uint8_t* filename) {
  * Function: checks if valid index and updates file descriptors accordingly
  */
 int32_t close_file(int32_t fd) {
-    curr_fds[fd].flags = -1; //marking as not in use
-    curr_fds[fd].inode = -1; //marking as not pointing to any inode
-    curr_fds[fd].file_pos = 0; //file position reset to 0 
+    
     return 0;
 }
 
@@ -206,8 +206,9 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
     // counters so we know what index to put in buffer
     uint32_t num_read = 0;
     uint32_t num_length_read = 0;
+    pcb_t *pcb = get_pcb(curr_pid);
 
-    curr_fds[fd].file_pos += nbytes; // updating file position
+    pcb->file_descriptors[fd].file_pos += nbytes; // updating file position
 
     for (i = 0; i < boot_block->dir_count; i++) { // iterate through all files
         dentry_t dentry = boot_block->direntries[i];
@@ -259,9 +260,9 @@ int32_t open_directory(const uint8_t* filename) {
  * Function: checks if valid index and updates file descriptors accordingly
  */
 int32_t close_directory(int32_t fd) {
-    curr_fds[fd].flags = -1; //marking as not in use
-    curr_fds[fd].inode = -1; //marking as not pointing to any inode
-    curr_fds[fd].file_pos = 0; //file position reset to 0 
+    // curr_fds[fd].flags = -1; //marking as not in use
+    // curr_fds[fd].inode = -1; //marking as not pointing to any inode
+    // curr_fds[fd].file_pos = 0; //file position reset to 0 
     return 0;
 }
 
