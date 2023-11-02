@@ -24,6 +24,8 @@
 #define USER_ESP        0x083FFFFC
 #define EIP_CHECK       28
 
+uint32_t curr_pid;
+
 int32_t system_execute(const uint8_t* command);
 int32_t system_halt(uint8_t status);
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes);
@@ -56,15 +58,17 @@ fops_t dir_ops_table;
 
 typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
-    // pcb_t * parent_pid;
     uint32_t terminal_id;
     uint32_t kernel_stack;
     uint32_t user_stack;
 } pcb_t;
 
-fd_t* curr_fds;
+pcb_t* get_pcb(uint32_t pid);
+
+
 fops_t term_write_ops;
 fops_t term_read_ops;
+
 
 
 #endif

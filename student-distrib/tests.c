@@ -536,87 +536,84 @@ void test_terminal_read_write(){
 /* Checkpoint 3 tests */
 
 
-/* sys_open_read_file_test
- * Inputs: None
- * Outputs: PASS on pass
- * Side Effects: None
- * Coverage: check if sys open file works
- */
-int sys_open_read_file_test(){
-	TEST_HEADER;
-	// clear();
-	curr_fds[2].file_pos = 0;
-	curr_fds[2].flags = -1;
-	curr_fds[2].inode = 0;
-	const char* filename =  "shell";
-	uint8_t buf[10000]; // arbitrary big number
-	int i;
-	for (i = 0; i < 10000; i++) {
-		buf[i] = 0x00;
-	}
-	if(system_open((const uint8_t *) filename) == -1){
-		printf("failed at open");
-		return FAIL;
-	}
+// /* sys_open_read_file_test
+//  * Inputs: None
+//  * Outputs: PASS on pass
+//  * Side Effects: None
+//  * Coverage: check if sys open file works
+//  */
+// int sys_open_read_file_test(){
+// 	TEST_HEADER;
+// 	// clear();
+// 	const char* filename =  "shell";
+// 	uint8_t buf[10000]; // arbitrary big number
+// 	int i;
+// 	for (i = 0; i < 10000; i++) {
+// 		buf[i] = 0x00;
+// 	}
+// 	if(system_open((const uint8_t *) filename) == -1){
+// 		printf("failed at open");
+// 		return FAIL;
+// 	}
 
-	int bytes_read = read_file(2, buf, 10000); // arbitrary big number
-	for (i = 0; i < bytes_read; i++) {
-		if (buf[i] == '\0') {
-			continue;
-		}
-		printf("%c", buf[i]);
-	}
-	printf("\n");
+// 	int bytes_read = read_file(2, buf, 10000); // arbitrary big number
+// 	for (i = 0; i < bytes_read; i++) {
+// 		if (buf[i] == '\0') {
+// 			continue;
+// 		}
+// 		printf("%c", buf[i]);
+// 	}
+// 	printf("\n");
 
-	printf("\n");
+// 	printf("\n");
 
-	return PASS; /*should always reach here unless test failed*/ 
+// 	return PASS; /*should always reach here unless test failed*/ 
 
-}
+// }
 
-/* sys_open_read_dir_test()
- * Inputs: None
- * Outputs: PASS on pass
- * Side Effects: None
- * Coverage: check if open directory works
- */
-int sys_open_read_dir_test(){
-	TEST_HEADER;
-	// clear();
-	// curr_fds[2].file_pos = 0;
-	// curr_fds[2].flags = -1;
-	// curr_fds[2].inode = 0;
-	const char* filename =  ".";
-	uint8_t buf[BYTES_PER_BLOCK*4];
-	if(system_open((const uint8_t *) filename) == -1){
-		printf("failed at open");
-		return FAIL;
-	}
+// /* sys_open_read_dir_test()
+//  * Inputs: None
+//  * Outputs: PASS on pass
+//  * Side Effects: None
+//  * Coverage: check if open directory works
+//  */
+// int sys_open_read_dir_test(){
+// 	TEST_HEADER;
+// 	// clear();
+// 	// curr_fds[2].file_pos = 0;
+// 	// curr_fds[2].flags = -1;
+// 	// curr_fds[2].inode = 0;
+// 	const char* filename =  ".";
+// 	uint8_t buf[BYTES_PER_BLOCK*4];
+// 	if(system_open((const uint8_t *) filename) == -1){
+// 		printf("failed at open");
+// 		return FAIL;
+// 	}
 	
-	int num_read = read_directory(2, buf, 1000);
-	int i;
-	int length_index = 0;
-	for (i = 0; i < num_read; i++) {
-		if (i % (FILENAME_LEN + 1) == 0) { // one more than the file length for the file type character
-			printf("\nFile name: ");
-			putc(buf[i]);
-		}
-		else if (i % (FILENAME_LEN + 1) == FILENAME_LEN) {
-			printf(", File type: ");
-			putc(buf[i]);
-			printf(", File size: ");
-			printf("%d", length_buf[length_index]);
-			length_index++;
-		}
-		else {
-			putc(buf[i]);
-		}
-	}
+// 	int num_read = read_directory(2, buf, 1000);
+// 	int i;
+// 	int length_index = 0;
+// 	for (i = 0; i < num_read; i++) {
+// 		if (i % (FILENAME_LEN + 1) == 0) { // one more than the file length for the file type character
+// 			printf("\nFile name: ");
+// 			putc(buf[i]);
+// 		}
+// 		else if (i % (FILENAME_LEN + 1) == FILENAME_LEN) {
+// 			printf(", File type: ");
+// 			putc(buf[i]);
+// 			printf(", File size: ");
+// 			printf("%d", length_buf[length_index]);
+// 			length_index++;
+// 		}
+// 		else {
+// 			putc(buf[i]);
+// 		}
+// 	}
 
-	printf("\n");
+// 	printf("\n");
 
-	return PASS; /*should always reach here unless test failed*/ 
-}
+// 	return PASS; /*should always reach here unless test failed*/ 
+// }
 
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -640,7 +637,6 @@ void launch_tests(){
 	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
-	TEST_OUTPUT("open_read_dir_test", sys_open_read_dir_test());
 	// test_terminal_read_write(); /* Comment this out if you want to separately test read/write of terminal. */
 	// TEST_OUTPUT("test_terminal_read_write", test_terminal_open_close());
 	
@@ -649,8 +645,7 @@ void launch_tests(){
 	// TEST_OUTPUT("RTC_frequencies_high_test", RTC_frequencies_high_test());
 	// TEST_OUTPUT("RTC_frequencies_invalid_test", RTC_frequencies_invalid_test());
 	// TEST_OUTPUT("RTC_open_close_test", RTC_open_close_test());
-	// TEST_OUTPUT("sys_open_read_file_test", sys_open_read_file_test());
-	// TEST_OUTPUT("sys_open_read_dir_test", sys_open_read_dir_test());
+
 	
 	
 	

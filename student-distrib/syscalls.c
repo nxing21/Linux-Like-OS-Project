@@ -72,7 +72,7 @@ int32_t system_execute(const uint8_t* command) {
             break;
         }
     }
-
+    curr_pid = pid;
     // Set up paging and flush TLB
     process_page(pid);
     flushTLB();
@@ -81,7 +81,7 @@ int32_t system_execute(const uint8_t* command) {
     read_data(dentry.inode_num, 0, (uint8_t *) VIRTUAL_ADDR, FOUR_MB);
 
     // Create PCB
-    pcb_t *pcb = (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
+    pcb_t *pcb = get_pcb(pid);
     // Initialize PCB (?)
 
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
@@ -101,7 +101,7 @@ int32_t system_execute(const uint8_t* command) {
         pcb->file_descriptors[i].flags = -1;
     }
 
-    curr_fds = pcb->file_descriptors;
+    // curr_fds = (fd_t*)&pcb->file_descriptors;
 
     // pcb->tss.esp0 = tss.esp0;
     // pcb->tss.ss0 = tss.ss0;
@@ -122,15 +122,15 @@ int32_t system_execute(const uint8_t* command) {
                 pushl %0                     \n\
                 pushl %1                     \n\
                 pushfl                       \n\
-                popl %%ebx                   \n\
-                orl $0x200, %%ebx            \n\
-                pushl %%ebx                  \n\
+                popl %%eax                   \n\
+                orl $0x200, %%eax            \n\
+                pushl %%eax                  \n\
                 pushl %2                     \n\
                 pushl %3                     \n\
                 "
                 :
                 : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (eip)
-                : "eax", "ebx"
+                : "eax"
                 );
 
     asm volatile("iret");
@@ -143,9 +143,9 @@ int32_t system_halt(uint8_t status) {
 }
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
-    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && curr_fds[fd].flags != -1) { 
-        return curr_fds[fd].file_op_table_ptr->read(fd, buf, nbytes);
-        // return terminal_read(fd, buf, nbytes);
+    pcb_t *pcb = get_pcb(curr_pid);
+    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) &&   pcb->file_descriptors[fd].flags != -1) { 
+        return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes);
     }
     else{
         return -1;
@@ -153,9 +153,9 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
 }
 
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
-    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && curr_fds[fd].flags != -1) { 
-        return curr_fds[fd].file_op_table_ptr->write(fd, buf, nbytes);
-        // return terminal_write(fd, buf, nbytes);
+    pcb_t *pcb = get_pcb(curr_pid);
+    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != -1) { 
+        return pcb->file_descriptors[fd].file_op_table_ptr->write(fd, buf, nbytes);
     }
     else{
         return -1;
@@ -167,8 +167,9 @@ int32_t system_open (const uint8_t* filename){
     uint32_t file_type;
     int i;
     int index = -1;
+    pcb_t *pcb = get_pcb(curr_pid);
     for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){
-        if(curr_fds[i].flags == -1){
+        if(pcb->file_descriptors[i].flags == -1){
             index = i;
             break;
         }
@@ -176,9 +177,9 @@ int32_t system_open (const uint8_t* filename){
 
     if((read_dentry_by_name(filename, &temp_dentry) != -1) && index != -1) { //check valid name and fds not full
         file_type = temp_dentry.filetype; // 0 for user-level access to RTC, 1 for the directory, and 2 for a regular file.
-        curr_fds[index].flags = 1; //marking as in use
-        curr_fds[index].inode = temp_dentry.inode_num; //setting to correct inode
-        curr_fds[index].file_pos = 0; // initializing position to 0
+        pcb->file_descriptors[index].flags = 1; //marking as in use
+        pcb->file_descriptors[index].inode = temp_dentry.inode_num; //setting to correct inode
+        pcb->file_descriptors[index].file_pos = 0; // initializing position to 0
 
         switch (file_type)
         {
@@ -187,7 +188,7 @@ int32_t system_open (const uint8_t* filename){
                 dir_ops_table.close = &RTC_close;
                 dir_ops_table.write = &RTC_write;
                 dir_ops_table.read = &RTC_read;
-                curr_fds[index].file_op_table_ptr = &dir_ops_table;
+                pcb->file_descriptors[index].file_op_table_ptr = &dir_ops_table;
                 break;
 
             case 1: /* directory */
@@ -195,7 +196,7 @@ int32_t system_open (const uint8_t* filename){
                 dir_ops_table.close = &close_directory;
                 dir_ops_table.read = &read_directory;
                 dir_ops_table.write = &write_directory;
-                curr_fds[index].file_op_table_ptr = &dir_ops_table;
+                pcb->file_descriptors[index].file_op_table_ptr = &dir_ops_table;
                 break;
 
             case 2: /* file */
@@ -203,14 +204,14 @@ int32_t system_open (const uint8_t* filename){
                 dir_ops_table.close = &close_file;
                 dir_ops_table.read = &read_file;
                 dir_ops_table.write = &write_file;
-                curr_fds[index].file_op_table_ptr = &dir_ops_table;
+                pcb->file_descriptors[index].file_op_table_ptr = &dir_ops_table;
                 break;
             
             default:
                 break;
         }
 
-        return curr_fds[index].file_op_table_ptr->open(filename);
+        return index;
     }
     else{
         // printf("open fd not found");
@@ -219,10 +220,13 @@ int32_t system_open (const uint8_t* filename){
 }
 
 int32_t system_close (int32_t fd){
+    pcb_t *pcb = get_pcb(curr_pid);
     //check if fd is valid index and if fd is in use
-    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && curr_fds[fd].flags != -1) { 
-        return curr_fds[fd].file_op_table_ptr->close(fd);
-
+    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != -1) { 
+        pcb->file_descriptors[fd].flags = -1; //marking as not in use
+        pcb->file_descriptors[fd].inode = -1; //marking as not pointing to any inode
+        pcb->file_descriptors[fd].file_pos = 0; //file position reset to 0 
+        return pcb->file_descriptors[fd].file_op_table_ptr->close(fd);
     }
     else{
         return -1;
@@ -242,3 +246,6 @@ void process_page(int process_id) {
     }
 }
 
+pcb_t* get_pcb(uint32_t pid){
+    return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
+}

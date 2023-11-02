@@ -116,9 +116,6 @@ int32_t RTC_open(const uint8_t* filename) {
  *   SIDE EFFECTS: none
  */
 int32_t RTC_close(int32_t fd) {
-    curr_fds[fd].flags = -1; //marking as not in use
-    curr_fds[fd].inode = -1; //marking as not pointing to any inode
-    curr_fds[fd].file_pos = 0; //file position reset to 0 
     return 0;
 }
 
