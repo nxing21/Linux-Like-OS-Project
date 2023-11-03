@@ -6,7 +6,7 @@
 #include "x86_desc.h"
 #include "terminal.h"
 
-uint8_t cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // cur_processes keeps track of current processes that are running
+int cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // cur_processes keeps track of current processes that are running
 
 /* init_fops_table()
  * Inputs: none
