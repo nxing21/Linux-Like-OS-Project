@@ -109,7 +109,7 @@ int32_t system_execute(const uint8_t* command) {
     pcb->tss_ss0 = tss.ss0;
 
     // Context switch
-    tss.esp0 = EIGHT_MB - pid * EIGHT_KB - 4;
+    tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
     tss.ss0 = KERNEL_DS;
 
     uint32_t temp_esp;
@@ -121,7 +121,7 @@ int32_t system_execute(const uint8_t* command) {
                 "
                 : "=r" (temp_ebp), "=r" (temp_esp)
                 :
-                : "memory"
+                : "eax"
                 );
 
     pcb->ebp = temp_ebp;
@@ -201,7 +201,7 @@ int32_t system_halt(uint8_t status) {
                 "
                 :
                 : "r" (status), "r" (pcb->esp), "r" (pcb->ebp)
-                : "eax", "esp", "ebp"
+                : "eax"
                 );
     // asm volatile("leave");
     // asm volatile("ret");
@@ -212,7 +212,7 @@ int32_t system_halt(uint8_t status) {
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
     pcb_t *pcb = get_pcb(curr_pid);
-    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != -1) { 
+    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX)) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes);
     }
     else{
@@ -222,7 +222,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
 
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
     pcb_t *pcb = get_pcb(curr_pid);
-    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != -1) { 
+    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX)) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->write(fd, buf, nbytes);
     }
     else{

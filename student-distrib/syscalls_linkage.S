@@ -29,14 +29,12 @@ system_call_linkage:
     pushl %ecx
     pushl %ebx
     call *sys_call_table(, %eax, 4) # Call the corresponding system call (4 bytes per function pointer)
-    popl %ebx
-    popl %ecx
-    popl %edx
     jmp finished
 
 invalid_number:
     movl $-1, %eax
 finished:
+    addl $12, %esp
     # Restore registers
     popl %ebx
     popl %ecx
