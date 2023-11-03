@@ -63,8 +63,8 @@ typedef struct process_control_block {
     uint32_t pid;
     uint32_t parent_pid;
     // uint32_t terminal_id;
-    uint32_t *esp;
-    uint32_t *ebp;
+    uint32_t esp;
+    uint32_t ebp;
 } pcb_t;
 
 pcb_t* get_pcb(uint32_t pid);

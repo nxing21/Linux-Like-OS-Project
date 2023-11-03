@@ -112,20 +112,18 @@ int32_t system_execute(const uint8_t* command) {
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
 
-    uint32_t temp_esp;
+    // uint32_t temp_esp;
     uint32_t temp_ebp;
 
     asm volatile("                           \n\
                 movl %%ebp, %0               \n\
-                movl %%esp, %1               \n\
                 "
+                : "=r" (temp_ebp)
                 :
-                : "r" (temp_ebp), "r" (temp_esp)
                 : "memory"
                 );
 
     pcb->ebp = temp_ebp;
-    pcb->esp = temp_esp;
 
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
@@ -182,17 +180,17 @@ int32_t system_halt(uint8_t status) {
     flushTLB();
 
 
-    pcb->file_descriptors[0].flags = -1; //marking as not in use
-    pcb->file_descriptors[0].inode = -1; //marking as not pointing to any inode
-    pcb->file_descriptors[0].file_pos = 0; //file position reset to 0 
+    // pcb->file_descriptors[0].flags = -1; //marking as not in use
+    // pcb->file_descriptors[0].inode = -1; //marking as not pointing to any inode
+    // pcb->file_descriptors[0].file_pos = 0; //file position reset to 0 
 
-    pcb->file_descriptors[1].flags = -1; //marking as not in use
-    pcb->file_descriptors[1].inode = -1; //marking as not pointing to any inode
-    pcb->file_descriptors[1].file_pos = 0; //file position reset to 0 
+    // pcb->file_descriptors[1].flags = -1; //marking as not in use
+    // pcb->file_descriptors[1].inode = -1; //marking as not pointing to any inode
+    // pcb->file_descriptors[1].file_pos = 0; //file position reset to 0 
 
     // Close all file operations
-    for (i = 2; i < FILE_DESCRIPTOR_MAX; i++) {
-        system_close(i);
+    for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
+        pcb->file_descriptors[i].flags = -1; //marking as not in use
     }
 
 
@@ -203,15 +201,16 @@ int32_t system_halt(uint8_t status) {
     // assembly to load old esp, ebp and load 
     asm volatile("                           \n\
                 movl %0, %%ebp               \n\
-                movl %1, %%esp               \n\
-                movl %2, %%eax               \n\
+                movl %1, %%eax               \n\
+                leave                        \n\
+                ret                          \n\
                 "
                 :
-                : "r" (parent_pcb->ebp), "r" (parent_pcb->esp), "r" ((uint32_t) status)
+                : "r" (parent_pcb->ebp), "r" ((uint32_t)status)
                 : "memory"
                 );
 
-    return status;
+    return (uint32_t)status;
 }
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
