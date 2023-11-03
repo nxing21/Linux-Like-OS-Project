@@ -6,7 +6,7 @@
 #include "x86_desc.h"
 #include "terminal.h"
 
-uint8_t cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // we only have two processes for checkpoint 3
+uint8_t cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // cur_processes keeps track of current processes that are running
 
 /* init_fops_table()
  * Inputs: none
@@ -14,13 +14,13 @@ uint8_t cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // we only have two proces
  * Function: sets correct terminal read/write function pointers
  */
 void init_fops_table() {
-    //initializing stdout functions
+    // Initializing stdout functions
     term_write_ops.open = NULL;
     term_write_ops.close = NULL;
     term_write_ops.write = &terminal_write;
     term_write_ops.read = NULL;
 
-    //initializing stdin functions
+    // Initializing stdin functions
     term_read_ops.open = NULL;
     term_read_ops.close = NULL;
     term_read_ops.write = NULL;
@@ -36,23 +36,24 @@ void init_fops_table() {
  * prepares stack and context switch values, IRET
  */
 int32_t system_execute(const uint8_t* command) {
-    int8_t elf_check[ELF_LENGTH];
-    uint8_t filename[FILENAME_LEN + 1];
-    int8_t buf[ELF_LENGTH];
-    uint32_t pid;
+    int8_t elf_check[ELF_LENGTH]; // holds ELF that we want to compare with
+    uint8_t filename[FILENAME_LEN + 1]; // holds name of executable we want to execute
+    int8_t buf[ELF_LENGTH]; // holds info
+    uint32_t pid; // process ID
     
     if (command == NULL) {
         return -1;
     }
-    int i; // loop counter
+    int i; // looping variable
     
+    // Puts correct ELF info inside elf_check
     elf_check[DEL_INDEX] = DEL;
     elf_check[E_INDEX] = E;
     elf_check[L_INDEX] = L;
     elf_check[F_INDEX] = F;
 
     i = 0;
-    // get the name of the executable
+    // Get the name of the executable
     while (command[i] != '\0' && i < FILENAME_LEN) {
         if (command[i] == ' ') {
             break;
@@ -65,7 +66,7 @@ int32_t system_execute(const uint8_t* command) {
     filename[i] = '\0';
 
     dentry_t dentry;
-    // check the validity of the filename
+    // Check the validity of the filename
     if (read_dentry_by_name(filename, &dentry) == -1) {
         return -1;
     }
@@ -82,12 +83,14 @@ int32_t system_execute(const uint8_t* command) {
             printf("cannot open any more processes\n");
             return -1; // no available space for new process
         }
-        else if (cur_processes[i] == 0) { //not in use process
+        else if (cur_processes[i] == 0) { // not in use process
             cur_processes[i] = 1;  // set to in use
             pid = i; // set pid
             break;
         }
     }
+
+    // Set curr_pid to current pid
     curr_pid = pid;
 
     // Set up paging and flush TLB
@@ -99,28 +102,29 @@ int32_t system_execute(const uint8_t* command) {
 
     // Create PCB
     pcb_t *pcb = get_pcb(pid);
-    // Initialize PCB (?)
+    // Initialize PCB's pid
     pcb->pid = pid;
 
-    //initializing stdin
+    // Initializing stdin
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
     pcb->file_descriptors[0].inode = 0;
     pcb->file_descriptors[0].file_pos = 0;
     pcb->file_descriptors[0].flags = IN_USE;
 
-    //initializing stdout
+    // Initializing stdout
     pcb->file_descriptors[1].file_op_table_ptr = &term_write_ops;
     pcb->file_descriptors[1].inode = 0;
     pcb->file_descriptors[1].file_pos = 0;
     pcb->file_descriptors[1].flags = IN_USE;
 
-    //initializing general use fd slots 
+    // Initializing general use fd slots 
     for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){
         pcb->file_descriptors[i].inode = 0;
         pcb->file_descriptors[i].file_pos = 0;
         pcb->file_descriptors[i].flags = NOT_IN_USE;
     }
 
+    // Initialize PCB's tss variables
     pcb->tss_esp0 = tss.esp0;
     pcb->tss_ss0 = tss.ss0;
 
@@ -128,9 +132,11 @@ int32_t system_execute(const uint8_t* command) {
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
     tss.ss0 = KERNEL_DS;
 
+    // Temp variables to hold ebp and esp
     uint32_t temp_esp;
     uint32_t temp_ebp;
-    //grabbing ebp and esp to store for later context switching
+
+    // Grabbing ebp and esp to store for later context switching
     asm volatile("                           \n\
                 movl %%ebp, %0               \n\
                 movl %%esp, %1               \n\
@@ -139,30 +145,35 @@ int32_t system_execute(const uint8_t* command) {
                 :
                 : "eax"
                 );
+
+    // Initialize PCB's ebp and esp
     pcb->ebp = temp_ebp;
     pcb->esp = temp_esp;
 
+    // Reads EIP (bytes 24-27)
     uint32_t eip;
-    read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
+    read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4); // Magic numbers: 24 is the starting index, 4 is the length of bytes 24-27
 
+    // Initialize PCB's eip
     pcb->eip = eip;
 
     // https://wiki.osdev.org/Getting_to_Ring_3
     
     // IRET
-    //first line "0x02B is USER_DS"
-    asm volatile("                           \n\
-                cli                          \n\
-                movw $0x2B, %%ax             \n\
-                movw %%ax, %%ds              \n\
-                pushl %0                     \n\
-                pushl %1                     \n\
-                pushfl                       \n\
-                popl %%eax                   \n\
-                orl $0x200, %%eax            \n\
-                pushl %%eax                  \n\
-                pushl %2                     \n\
-                pushl %3                     \n\
+    // First line "0x02B is USER_DS"
+    // Setting up stack for IRET context switch
+    asm volatile("                                          \n\
+                cli                                         \n\
+                movw $0x2B, %%ax # user ds                  \n\
+                movw %%ax, %%ds                             \n\
+                pushl %0                                    \n\
+                pushl %1                                    \n\
+                pushfl                                      \n\
+                popl %%eax                                  \n\
+                orl $0x200, %%eax   # enabling interrupts   \n\
+                pushl %%eax                                 \n\
+                pushl %2                                    \n\
+                pushl %3                                    \n\
                 "
                 :
                 : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (eip)
@@ -188,30 +199,30 @@ int32_t system_execute(const uint8_t* command) {
  * and jumpts to execute return.
  */
 int32_t system_halt(uint8_t status) {
-    int i;
+    int i; // looping variable
 
-    // Get parent PCB
+    // Get current and parent PCB
     pcb_t* pcb = get_pcb(curr_pid);
     uint32_t parent_pid = pcb->parent_pid;
     pcb_t* parent_pcb = get_pcb(parent_pid);
     uint32_t ext_status;
 
-    // If currently running shell, do nothing
+    // If currently running base shell, reload
     if (curr_pid == 0) {
         printf("cannot close base shell\n");
         
-        asm volatile("                           \n\
-                    cli                          \n\
-                    movw $0x2B, %%ax             \n\
-                    movw %%ax, %%ds              \n\
-                    pushl %0                     \n\
-                    pushl %1                     \n\
-                    pushfl                       \n\
-                    popl %%eax                   \n\
-                    orl $0x200, %%eax            \n\
-                    pushl %%eax                  \n\
-                    pushl %2                     \n\
-                    pushl %3                     \n\
+        asm volatile("                                          \n\
+                    cli                                         \n\
+                    movw $0x2B, %%ax  # user ds                 \n\
+                    movw %%ax, %%ds                             \n\
+                    pushl %0                                    \n\
+                    pushl %1                                    \n\
+                    pushfl                                      \n\
+                    popl %%eax                                  \n\
+                    orl $0x200, %%eax   # enabling interrupts   \n\
+                    pushl %%eax                                 \n\
+                    pushl %2                                    \n\
+                    pushl %3                                    \n\
                     "
                     :
                     : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (pcb->eip)
@@ -233,22 +244,23 @@ int32_t system_halt(uint8_t status) {
 
     // Close all file operations
     for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
-        pcb->file_descriptors[i].flags = NOT_IN_USE; //marking as not in use
+        pcb->file_descriptors[i].flags = NOT_IN_USE; // marking as not in use
     }
 
+    // Restoring tss
     tss.esp0 = parent_pcb->tss_esp0;
     tss.ss0 = parent_pcb->tss_ss0;
 
-    if(status == 255){
-        ext_status = 256;
+    if(status == EXCEPTION){ // accounting for status being 8 bits
+        ext_status = EXCEPTION+1;
     }
     else{
         ext_status = status;
     }
     
-    // assembly to load old esp, ebp and load 
+    // Assembly to load old esp, ebp, and status 
     asm volatile("                           \n\
-                movl %0, %%eax                \n\
+                movl %0, %%eax               \n\
                 movl %1, %%esp               \n\
                 movl %2, %%ebp               \n\
                 jmp execute_return           \n\
@@ -257,7 +269,7 @@ int32_t system_halt(uint8_t status) {
                 : "r" (ext_status), "r" (pcb->esp), "r" (pcb->ebp)
                 : "eax"
                 );
-    // will never reach
+    // Will never reach here
     return 0;
 }
 
@@ -271,7 +283,7 @@ int32_t system_halt(uint8_t status) {
  * if so we call the corresponding read.
  */
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
-    pcb_t *pcb = get_pcb(curr_pid);
+    pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX && fd != 1) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes); // returning respective read
     }
@@ -289,7 +301,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
  * if so we call the corresponding write.
  */
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
-    pcb_t *pcb = get_pcb(curr_pid);
+    pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
     if((fd >= 1 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->write(fd, buf, nbytes); // returning respective write
     }
@@ -309,23 +321,23 @@ int32_t system_open (const uint8_t* filename){
     uint32_t file_type;
     int i;
     int index = -1;
-    pcb_t *pcb = get_pcb(curr_pid);
+    pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
     for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){ // finding first open file descriptor
         if(pcb->file_descriptors[i].flags == NOT_IN_USE){
-            index = i;
+            index = i; // setting index of  open fd
             break;
         }
     }
 
-    if((read_dentry_by_name(filename, &temp_dentry) != -1) && index != -1) { //check valid name and fds not full
+    if((read_dentry_by_name(filename, &temp_dentry) != -1) && index != -1) { // check valid name and fds not full
         file_type = temp_dentry.filetype; // 0 for user-level access to RTC, 1 for the directory, and 2 for a regular file.
-        pcb->file_descriptors[index].flags = IN_USE; //marking as in use
-        pcb->file_descriptors[index].inode = temp_dentry.inode_num; //setting to correct inode
+        pcb->file_descriptors[index].flags = IN_USE; // marking as in use
+        pcb->file_descriptors[index].inode = temp_dentry.inode_num; // setting to correct inode
         pcb->file_descriptors[index].file_pos = 0; // initializing position to 0
 
         switch (file_type)
         {
-            case 0: /* RTC */
+            case 0: /* setting RTC functions */ 
                 dir_ops_table.open = &RTC_open;
                 dir_ops_table.close = &RTC_close;
                 dir_ops_table.write = &RTC_write;
@@ -333,7 +345,7 @@ int32_t system_open (const uint8_t* filename){
                 pcb->file_descriptors[index].file_op_table_ptr = &dir_ops_table;
                 break;
 
-            case 1: /* directory */
+            case 1: /* setting directory functions */
                 dir_ops_table.open = &open_directory;
                 dir_ops_table.close = &close_directory;
                 dir_ops_table.read = &read_directory;
@@ -341,7 +353,7 @@ int32_t system_open (const uint8_t* filename){
                 pcb->file_descriptors[index].file_op_table_ptr = &dir_ops_table;
                 break;
 
-            case 2: /* file */
+            case 2: /*setting file functions*/
                 dir_ops_table.open = &open_file;
                 dir_ops_table.close = &close_file;
                 dir_ops_table.read = &read_file;
@@ -353,7 +365,7 @@ int32_t system_open (const uint8_t* filename){
                 break;
         }
 
-        return index;
+        return index; // returning fd index of opened file descriptor
     }
     else{
         return -1;
@@ -368,14 +380,13 @@ int32_t system_open (const uint8_t* filename){
  */
 int32_t system_close (int32_t fd){
     pcb_t *pcb = get_pcb(curr_pid);
-    //check if fd is valid index and if fd is in use
-    if((fd >= FILE_DESCRIPTOR_MIN && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
-        pcb->file_descriptors[fd].flags = NOT_IN_USE; //marking as not in use
-        pcb->file_descriptors[fd].inode = -1; //marking as not pointing to any inode
-        pcb->file_descriptors[fd].file_pos = 0; //file position reset to 0 
+    // Check if fd is valid index and if fd is in use
+    if ((fd >= FILE_DESCRIPTOR_MIN && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
+        pcb->file_descriptors[fd].flags = NOT_IN_USE; // marking as not in use
+        pcb->file_descriptors[fd].inode = -1; // marking as not pointing to any inode
+        pcb->file_descriptors[fd].file_pos = 0; // file position reset to 0 
         return pcb->file_descriptors[fd].file_op_table_ptr->close(fd);
-    }
-    else{
+    } else {
         return -1;
     }
 }

@@ -33,31 +33,33 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
     dentry_t found_dentry;
     int len;
 
-    if (strlen((int8_t *) fname) == 0) {
+    if (strlen((int8_t *) fname) == 0) {// check if "" name
         return -1;
     }
 
     for(i = 0; i < DIR_ENTRIES; i++) {
         len = strlen((int8_t *)fname);
-        if(len > FILENAME_LEN) {
+        if(len > FILENAME_LEN) { //check if name is too long
             return -1;
         }
+
         //strncmp assumes same length
         const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
         if (strlen((int8_t *) cur_dentry) > len) {
             len = strlen((int8_t *) cur_dentry);
         }
+        // makes sure they are the same string
         if(strncmp((int8_t *)cur_dentry, (int8_t *)fname, len) == 0) {
-            found_flag = 1;
-            found_dentry = dentries_array[i];
+            found_flag = 1; //if so set found flag
+            found_dentry = dentries_array[i]; // set found dentry
             break;
         }
     }
 
     if(found_flag == 1) {
-        *dentry = found_dentry;
+        *dentry = found_dentry; //set load dentry with found dentry
         // dentry->filename[32] = '\0';
-        return 0;
+        return 0; //successful
     }
     // printf("didn't find");
     return -1; // not found
@@ -73,9 +75,9 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
     dentry_t * dentries_array = boot_block->direntries;
     uint32_t num_dentry = boot_block->dir_count;
 
-    if(index < num_dentry) {
-        *dentry = dentries_array[index];
-        return 0;
+    if(index < num_dentry) { // check if index is within bounds of num dentries
+        *dentry = dentries_array[index]; // set dentry to dentry at index
+        return 0; // successful
     } 
 
     return -1; // not found
@@ -192,6 +194,7 @@ int32_t close_file(int32_t fd) {
     return 0;
 }
 
+
 /* int32_t read_directory(int32_t fd, void* buf, void* length_buf, int32_t nbytes)
  * Inputs:  int32_t fd: file descriptor array index, 
  *          void* buf: void pointer buffer to be filled in by data read,
@@ -200,40 +203,6 @@ int32_t close_file(int32_t fd) {
  * Return Value:  number of bytes read
  * Function: reads directory information
  */
-// int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
-//     // loop counters
-//     uint32_t i;
-//     uint32_t j;
-//     // we have two buffers, one for file name and file type, other for file length
-//     uint8_t * buffer = (uint8_t*) buf;
-//     uint32_t * length_buffer = (uint32_t *) length_buf;
-//     // counters so we know what index to put in buffer
-//     uint32_t num_read = 0;
-//     uint32_t num_length_read = 0;
-//     pcb_t *pcb = get_pcb(curr_pid);
-
-//     pcb->file_descriptors[fd].file_pos += nbytes; // updating file position
-
-//     for (i = 0; i < boot_block->dir_count; i++) { // iterate through all files
-//         dentry_t dentry = boot_block->direntries[i];
-//         // get dentry of current file (index i)
-//         read_dentry_by_index(i, &dentry);
-//         for (j = 0; j < FILENAME_LEN; j++) {
-//             buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer
-//             num_read++;
-//         }
-//         buffer[num_read] = dentry.filetype + '0'; //changing num to char equivalent
-//         num_read++;
-
-//         uint32_t inode_number = dentry.inode_num;
-//         inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_number * BYTES_PER_BLOCK); // get current inode
-//         // add length of file into the length buffer
-//         length_buffer[num_length_read] = cur_inode->length;
-//         num_length_read++;
-//     }
-//     return num_read;
-// }
-
 int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
     int offset;
     uint32_t i;
@@ -241,10 +210,9 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
     uint8_t * buffer = (uint8_t*) buf;
     pcb_t *pcb = get_pcb(curr_pid);
 
-    if(fd > 7 || fd < 0){
+    if(fd >= FILE_DESCRIPTOR_MAX || fd < 0){
         return -1;
-    }
-    else{
+    } else {
         offset = pcb->file_descriptors[fd].file_pos; //the order of me doing this seems wrong
         pcb->file_descriptors[fd].file_pos += nbytes;
         read_data(pcb->file_descriptors[fd].inode, offset, buffer, nbytes);
@@ -303,9 +271,6 @@ int32_t open_directory(const uint8_t* filename) {
  * Function: checks if valid index and updates file descriptors accordingly
  */
 int32_t close_directory(int32_t fd) {
-    // curr_fds[fd].flags = -1; //marking as not in use
-    // curr_fds[fd].inode = -1; //marking as not pointing to any inode
-    // curr_fds[fd].file_pos = 0; //file position reset to 0 
     return 0;
 }
 

@@ -6,7 +6,6 @@
 #include "lib.h"
 
 #define NUM_EXCEPTIONS  20
-#define EXCEPTION       256
 
 /* Interrupts and corresponding vector number. */
 #define KEYBOARD   0x21

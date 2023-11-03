@@ -25,6 +25,7 @@
 #define EIP_CHECK       28
 #define IN_USE          1
 #define NOT_IN_USE      -1
+#define EXCEPTION       255
 
 uint32_t curr_pid;
 
@@ -40,7 +41,6 @@ int32_t system_set_handler(int32_t signum, void* handler_access);
 int32_t system_sigreturn(void);
 
 void process_page(int process_num);
-// void delete_page(int process_id);
 void init_fops_table();
 
 typedef struct file_op_table {
@@ -51,10 +51,10 @@ typedef struct file_op_table {
 } fops_t;
 
 typedef struct file_descriptor {
-    fops_t *file_op_table_ptr; /* The file operations jump table associated with the correct file type */
-    int32_t inode; /*The inode number for this file. This is only valid for data files, and should be 0 for directories and the RTC device file.*/
-    int32_t file_pos; /* keeps track of where the user is currently reading from in the file. Every read system call should update this member.*/
-    int32_t flags; /* among other things, marking this file descriptor as “in-use.” */
+    fops_t *file_op_table_ptr; /* The file operations jump table associated with the correct file type. */
+    int32_t inode; /* The inode number for this file. This is only valid for data files, and should be 0 for directories and the RTC device file. */
+    int32_t file_pos; /* Keeps track of where the user is currently reading from in the file. Every read system call should update this member. */
+    int32_t flags; /* Among other things, marking this file descriptor as “in-use.” */
 } fd_t;
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes);
@@ -68,7 +68,6 @@ typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
     uint32_t pid;
     uint32_t parent_pid;
-    // uint32_t terminal_id;
     uint32_t esp;
     uint32_t ebp;
     uint32_t eip;
@@ -78,10 +77,7 @@ typedef struct process_control_block {
 
 pcb_t* get_pcb(uint32_t pid);
 
-
 fops_t term_write_ops;
 fops_t term_read_ops;
-
-
 
 #endif
