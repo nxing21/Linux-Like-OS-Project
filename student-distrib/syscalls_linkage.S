@@ -1,7 +1,7 @@
 #define ASM     1
 
 .data
-    NUM_SYS_CALLS = 6
+    NUM_SYS_CALLS = 10
 
 .text
 
@@ -29,12 +29,12 @@ system_call_linkage:
     pushl %ecx
     pushl %ebx
     call *sys_call_table(, %eax, 4) # Call the corresponding system call (4 bytes per function pointer)
+    addl $12, %esp
     jmp finished
 
 invalid_number:
     movl $-1, %eax
 finished:
-    addl $12, %esp
     # Restore registers
     popl %ebx
     popl %ecx
@@ -48,5 +48,5 @@ finished:
 
 # Jump table
 sys_call_table:
-    .long 0, system_halt, system_execute, system_read, system_write, system_open, system_close
+    .long 0, system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap, system_set_handler, system_sigreturn
 

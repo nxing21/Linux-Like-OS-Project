@@ -1,5 +1,6 @@
 #include "idt.h"
 #include "syscalls_linkage.h"
+#include "syscalls.h"
 
 /* idt_init()
  * Inputs: none
@@ -87,7 +88,7 @@ void build_idt() {
  */
 void divide_error() {
     printf("Divide Error Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* debug()
@@ -97,7 +98,7 @@ void divide_error() {
  */
 void debug() {
     printf("Debug Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* nmi()
@@ -107,7 +108,7 @@ void debug() {
  */
 void nmi() {
     printf("NMI Interrupt\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* breakpoint()
@@ -117,7 +118,7 @@ void nmi() {
  */
 void breakpoint() {
     printf("Breakpoint Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* overflow()
@@ -127,7 +128,7 @@ void breakpoint() {
  */
 void overflow() {
     printf("Overflow Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* bound_range_exceeded()
@@ -137,7 +138,7 @@ void overflow() {
  */
 void bound_range_exceeded() {
     printf("BOUND Range Exceeded Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* invalid_opcode()
@@ -147,7 +148,7 @@ void bound_range_exceeded() {
  */
 void invalid_opcode() {
     printf("Invalid Opcode Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* device_not_available()
@@ -157,7 +158,7 @@ void invalid_opcode() {
  */
 void device_not_available() {
     printf("Device Not Available Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* double_fault()
@@ -167,7 +168,7 @@ void device_not_available() {
  */
 void double_fault() {
     printf("Double Fault Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* coprocessor_segment_overrun()
@@ -177,7 +178,7 @@ void double_fault() {
  */
 void coprocessor_segment_overrun() {
     printf("Coprocessor Segment Overrun\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* invalid_tss()
@@ -187,7 +188,7 @@ void coprocessor_segment_overrun() {
  */
 void invalid_tss() {
     printf("Invalid TSS Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* segment_not_present()
@@ -197,7 +198,7 @@ void invalid_tss() {
  */
 void segment_not_present() {
     printf("Segment Not Present\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* stack_fault()
@@ -207,7 +208,7 @@ void segment_not_present() {
  */
 void stack_fault() {
     printf("Stack Fault Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* general_protection()
@@ -217,7 +218,7 @@ void stack_fault() {
  */
 void general_protection() {
     printf("General Protection Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* page_fault()
@@ -229,7 +230,7 @@ void page_fault() {
     
     uint32_t location = page_fault_location();
     printf("Page-Fault Exception: %x \n", location);
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* x87_fp_error()
@@ -239,7 +240,7 @@ void page_fault() {
  */
 void x87_fp_error() {
     printf("x87 FPU Floating-Point Error\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* alignment_check()
@@ -249,7 +250,7 @@ void x87_fp_error() {
  */
 void alignment_check() {
     printf("Alignment Check Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* machine_check()
@@ -259,7 +260,7 @@ void alignment_check() {
  */
 void machine_check() {
     printf("Machine-Check Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 /* simd_fp_error()
@@ -269,7 +270,7 @@ void machine_check() {
  */
 void simd_fp_error() {
     printf("SIMD Floating-Point Exception\n");
-    system_halt(256);
+    system_halt((uint8_t) 256);
 }
 
 // /* system_call()

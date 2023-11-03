@@ -33,6 +33,10 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
     dentry_t found_dentry;
     int len;
 
+    if (strlen((int8_t *) fname) == 0) {
+        return -1;
+    }
+
     for(i = 0; i < DIR_ENTRIES; i++) {
         len = strlen((int8_t *)fname);
         if(len > FILENAME_LEN) {

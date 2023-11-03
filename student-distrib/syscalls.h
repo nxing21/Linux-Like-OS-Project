@@ -21,7 +21,7 @@
 #define NUM_PROCESSES   6
 #define VIRTUAL_ADDR    0x08048000
 #define USER_ADDR_INDEX 32
-#define USER_ESP        0x08400000
+#define USER_ESP        0x083FFFFC
 #define EIP_CHECK       28
 
 uint32_t curr_pid;
@@ -32,6 +32,10 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes);
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t system_open (const uint8_t* filename);
 int32_t system_close (int32_t fd);
+int32_t system_getargs(uint8_t* buf, int32_t nbytes);
+int32_t system_vidmap(uint8_t** screen_start);
+int32_t system_set_handler(int32_t signum, void* handler_access);
+int32_t system_sigreturn(void);
 
 void process_page(int process_num);
 // void delete_page(int process_id);

@@ -64,6 +64,7 @@ int32_t system_execute(const uint8_t* command) {
     // Find free PID location
     for (i = 0; i <= NUM_PROCESSES; i++) {
         if (i == NUM_PROCESSES) {
+            printf("cannot open any more processes\n");
             return -1; // no available space for new process
         }
         else if (cur_processes[i] == 0) {
@@ -175,25 +176,27 @@ int32_t system_halt(uint8_t status) {
 
     // If currently running shell, do nothing
     if (curr_pid == 0) {
-    asm volatile("                           \n\
-                cli                          \n\
-                movw $0x2B, %%ax             \n\
-                movw %%ax, %%ds              \n\
-                pushl %0                     \n\
-                pushl %1                     \n\
-                pushfl                       \n\
-                popl %%eax                   \n\
-                orl $0x200, %%eax            \n\
-                pushl %%eax                  \n\
-                pushl %2                     \n\
-                pushl %3                     \n\
-                "
-                :
-                : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (pcb->eip)
-                : "eax"
-                );
+        printf("cannot close base shell\n");
+        
+        asm volatile("                           \n\
+                    cli                          \n\
+                    movw $0x2B, %%ax             \n\
+                    movw %%ax, %%ds              \n\
+                    pushl %0                     \n\
+                    pushl %1                     \n\
+                    pushfl                       \n\
+                    popl %%eax                   \n\
+                    orl $0x200, %%eax            \n\
+                    pushl %%eax                  \n\
+                    pushl %2                     \n\
+                    pushl %3                     \n\
+                    "
+                    :
+                    : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (pcb->eip)
+                    : "eax"
+                    );
 
-    asm volatile("iret");
+        asm volatile("iret");
     }
 
     // Update cur_processes
@@ -235,7 +238,7 @@ int32_t system_halt(uint8_t status) {
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
     pcb_t *pcb = get_pcb(curr_pid);
-    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX)) { 
+    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX && fd != 1) && pcb->file_descriptors[fd].flags != -1) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes);
     }
     else{
@@ -245,7 +248,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
 
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
     pcb_t *pcb = get_pcb(curr_pid);
-    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX)) { 
+    if((fd >= 1 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != -1) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->write(fd, buf, nbytes);
     }
     else{
@@ -313,7 +316,7 @@ int32_t system_open (const uint8_t* filename){
 int32_t system_close (int32_t fd){
     pcb_t *pcb = get_pcb(curr_pid);
     //check if fd is valid index and if fd is in use
-    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != -1) { 
+    if((fd >= 2 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != -1) { 
         pcb->file_descriptors[fd].flags = -1; //marking as not in use
         pcb->file_descriptors[fd].inode = -1; //marking as not pointing to any inode
         pcb->file_descriptors[fd].file_pos = 0; //file position reset to 0 
@@ -322,6 +325,19 @@ int32_t system_close (int32_t fd){
     else{
         return -1;
     }
+}
+
+int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
+    return -1;
+}
+int32_t system_vidmap(uint8_t** screen_start) {
+    return 0;
+}
+int32_t system_set_handler(int32_t signum, void* handler_access) {
+    return 0;
+}
+int32_t system_sigreturn(void) {
+    return 0;
 }
 
 void process_page(int process_id) {
