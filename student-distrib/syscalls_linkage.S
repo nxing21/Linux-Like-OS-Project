@@ -10,9 +10,13 @@
 system_call_linkage:
     # Save registers
     pushfl
+    pushl %esp
     pushl %ebp
     pushl %edi
     pushl %esi
+    pushl %edx
+    pushl %ecx
+    pushl %ebx
 
     # Check if valid
     cmpl    $0, %eax
@@ -34,9 +38,13 @@ invalid_number:
     movl $-1, %eax
 finished:
     # Restore registers
+    popl %ebx
+    popl %ecx
+    popl %edx
     popl %esi
     popl %edi
     popl %ebp
+    popl %esp
     popfl
     iret
 

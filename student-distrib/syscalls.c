@@ -105,25 +105,27 @@ int32_t system_execute(const uint8_t* command) {
 
     // curr_fds = (fd_t*)&pcb->file_descriptors;
 
-    // pcb->tss.esp0 = tss.esp0;
-    // pcb->tss.ss0 = tss.ss0;
+    pcb->tss_esp0 = tss.esp0;
+    pcb->tss_ss0 = tss.ss0;
 
     // Context switch
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
 
-    // uint32_t temp_esp;
+    uint32_t temp_esp;
     uint32_t temp_ebp;
 
     asm volatile("                           \n\
                 movl %%ebp, %0               \n\
+                movl %%esp, %1               \n\
                 "
-                : "=r" (temp_ebp)
+                : "=r" (temp_ebp), "=r" (temp_esp)
                 :
                 : "memory"
                 );
 
     pcb->ebp = temp_ebp;
+    pcb->esp = temp_esp;
 
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
@@ -150,6 +152,11 @@ int32_t system_execute(const uint8_t* command) {
                 );
 
     asm volatile("iret");
+    asm volatile("                  \n\
+                execute_return:     \n\
+                leave               \n\
+                ret                 \n\
+                ");
 
     return 0;
 }
@@ -171,51 +178,41 @@ int32_t system_halt(uint8_t status) {
 
     // Update cur_processes
     cur_processes[curr_pid] = 0;
-
-    // Restore parent TSS
-    // tss = parent_pcb->tss;
     
     // Restore paging and flush TLB
     process_page(parent_pcb->pid);
     flushTLB();
-
-
-    // pcb->file_descriptors[0].flags = -1; //marking as not in use
-    // pcb->file_descriptors[0].inode = -1; //marking as not pointing to any inode
-    // pcb->file_descriptors[0].file_pos = 0; //file position reset to 0 
-
-    // pcb->file_descriptors[1].flags = -1; //marking as not in use
-    // pcb->file_descriptors[1].inode = -1; //marking as not pointing to any inode
-    // pcb->file_descriptors[1].file_pos = 0; //file position reset to 0 
 
     // Close all file operations
     for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
         pcb->file_descriptors[i].flags = -1; //marking as not in use
     }
 
-
-    tss.esp0 = EIGHT_MB - pcb->parent_pid * EIGHT_KB - 4;
-    tss.ss0 = KERNEL_DS;
-
+    tss.esp0 = parent_pcb->tss_esp0;
+    tss.ss0 = parent_pcb->tss_ss0;
 
     // assembly to load old esp, ebp and load 
     asm volatile("                           \n\
-                movl %0, %%ebp               \n\
-                movl %1, %%eax               \n\
-                leave                        \n\
-                ret                          \n\
+                xorl %%eax, %%eax            \n\
+                movb %0, %%al                \n\
+                movl %1, %%esp               \n\
+                movl %2, %%ebp               \n\
+                jmp execute_return           \n\
                 "
                 :
-                : "r" (parent_pcb->ebp), "r" ((uint32_t)status)
-                : "memory"
+                : "r" (status), "r" (pcb->esp), "r" (pcb->ebp)
+                : "eax", "esp", "ebp"
                 );
+    // asm volatile("leave");
+    // asm volatile("ret");
 
-    return (uint32_t)status;
+    // will never reach
+    return 0;
 }
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
     pcb_t *pcb = get_pcb(curr_pid);
-    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) &&   pcb->file_descriptors[fd].flags != -1) { 
+    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != -1) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes);
     }
     else{
@@ -315,18 +312,6 @@ void process_page(int process_id) {
         page_directory[USER_ADDR_INDEX].mb.global = 1;
     }
 }
-
-// void delete_page(int process_id) {
-//     // parameter checks
-//     if (process_id >= 0 && process_id < NUM_PROCESSES) {
-//         // set page directory entry
-//         // index will never change (virtual mem), base_addr will change (phys mem)
-//         page_directory[USER_ADDR_INDEX].mb.present = 0;
-//         page_directory[USER_ADDR_INDEX].mb.base_addr = 0;
-//         page_directory[USER_ADDR_INDEX].mb.user_supervisor = 0;
-//         page_directory[USER_ADDR_INDEX].mb.global = 0;
-//     }
-// }
 
 pcb_t* get_pcb(uint32_t pid){
     return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
