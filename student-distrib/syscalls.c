@@ -328,7 +328,7 @@ int32_t system_close (int32_t fd){
 }
 
 int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
-    return -1;
+    return 0;
 }
 int32_t system_vidmap(uint8_t** screen_start) {
     return 0;
