@@ -111,9 +111,21 @@ int32_t system_execute(const uint8_t* command) {
     // Context switch
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB - 4;
     tss.ss0 = KERNEL_DS;
-    pcb->tss = tss;
-    // pcb->ebp = something;
-    // pcb->esp = something;
+
+    uint32_t temp_esp;
+    uint32_t temp_ebp;
+
+    asm volatile("                           \n\
+                movl %%ebp, %0               \n\
+                movl %%esp, %1               \n\
+                "
+                :
+                : "r" (temp_ebp), "r" (temp_esp)
+                : "memory"
+                );
+
+    pcb->ebp = temp_ebp;
+    pcb->esp = temp_esp;
 
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
@@ -163,7 +175,7 @@ int32_t system_halt(uint8_t status) {
     cur_processes[curr_pid] = 0;
 
     // Restore parent TSS
-    tss = parent_pcb->tss;
+    // tss = parent_pcb->tss;
     
     // Restore paging and flush TLB
     process_page(parent_pcb->pid);
@@ -182,6 +194,11 @@ int32_t system_halt(uint8_t status) {
     for (i = 2; i < FILE_DESCRIPTOR_MAX; i++) {
         system_close(i);
     }
+
+
+    tss.esp0 = EIGHT_MB - pcb->parent_pid * EIGHT_KB - 4;
+    tss.ss0 = KERNEL_DS;
+
 
     // assembly to load old esp, ebp and load 
     asm volatile("                           \n\
