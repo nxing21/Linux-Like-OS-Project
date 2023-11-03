@@ -90,9 +90,6 @@ int32_t system_execute(const uint8_t* command) {
         }
     }
 
-    // Create PCB
-    pcb_t *pcb = get_pcb(pid);
-    pcb->parent_pid = curr_pid;
     // Set curr_pid to current pid
     curr_pid = pid;
 
@@ -103,6 +100,8 @@ int32_t system_execute(const uint8_t* command) {
     // User-level program loader
     read_data(dentry.inode_num, 0, (uint8_t *) VIRTUAL_ADDR, FOUR_MB);
 
+    // Create PCB
+    pcb_t *pcb = get_pcb(pid);
     // Initialize PCB's pid
     pcb->pid = pid;
 
