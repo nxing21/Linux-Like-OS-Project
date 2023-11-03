@@ -92,3 +92,11 @@ Oct 22nd, 2023
     suggested to use an updated version of the putc function that he wrote.
     - Overall, took about an hour to realize the issue, and was very quick to solve.
     - Took about 30 minutes to fix.
+
+Oct 31st, 2023
+    - Had an issue where the 'ls' executable does not work, even though 'testprint' and 'hello'
+    worked.
+    - We used GDB to realize how to fix this issue. The issue was our fops table was getting
+    overwritten by the system_execute, so we made an init_fops_table() function and called that
+    from kernel.
+    - This bug cost us about 3 hours.
