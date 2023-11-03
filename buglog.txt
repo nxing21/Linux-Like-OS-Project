@@ -93,6 +93,14 @@ Oct 22nd, 2023
     - Overall, took about an hour to realize the issue, and was very quick to solve.
     - Took about 30 minutes to fix.
 
+Oct 30th, 2023
+    - Had an issue where the first iret would page fault. 
+    - At first we thought it was an inline assembly issue with out stack, so we gdb'd
+    through our code and our stack was fine. 
+    - So we set a breakpoint in our linkage and noticed that the sys_write and sys_read was null
+    - We forgot to set stdin and stdout in our pcb file array
+    - This bug cost us about 5 hours.
+
 Oct 31st, 2023
     - Had an issue where the 'ls' executable does not work, even though 'testprint' and 'hello'
     worked.
@@ -100,6 +108,8 @@ Oct 31st, 2023
     overwritten by the system_execute, so we made an init_fops_table() function and called that
     from kernel.
     - This bug cost us about 3 hours.
+
+
 
 Nov 1st, 2023
     - Faced an issue where the system_execute was not recognizing the inputs properly. For example,
@@ -114,3 +124,17 @@ Nov 2nd, 2023
     - The issue was we were trying to update the esp and ebp registers with the parent pcb, when it
     was supposed to be updated with the current pcb, based on our design.
     - This bug cost us about 7 hours.
+
+Nov 3rd, 2023
+    - Our sys err was failing stdin and stdout checks like not being able to system_read stdout and system_write stdin.
+    - The issue was we didn't add sufficient checks to our system read and write. 
+    - Took about 10 minutes to find and fix.
+
+Nov 3rd: 2023:
+    - Faced an issue where typing "exit" into the shell would not work as intended
+    - We noticed that after typing ls, and then typing "exit", the program would page fault.
+    - We then noted that after first booting up the shell and then just typing "exit" with no other commands, a page fault
+    would not occur.
+    - We then figured out that we were not updating current pid in system system_halt.
+    - We updated current id to equal parent pid.
+    - Took us about 15 minutes. 

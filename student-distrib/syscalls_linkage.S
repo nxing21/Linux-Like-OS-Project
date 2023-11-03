@@ -5,6 +5,10 @@
 
 .text
 
+# system_call_linkage
+# Inputs: %eax holds the system call number we want to execute
+# Return Value: none
+# Function: Calls the corresponding system call, while saving registers, or does nothing if invalid number
 .globl system_call_linkage
 .align 4
 system_call_linkage:
@@ -29,7 +33,7 @@ system_call_linkage:
     pushl %ecx
     pushl %ebx
     call *sys_call_table(, %eax, 4) # Call the corresponding system call (4 bytes per function pointer)
-    addl $12, %esp
+    addl $12, %esp # Pop arguments
     jmp finished
 
 invalid_number:
@@ -46,7 +50,7 @@ finished:
     popfl
     iret
 
-# Jump table
+# Jump table (includes the 10 system calls we are implementing for this MP)
 sys_call_table:
     .long 0, system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap, system_set_handler, system_sigreturn
 

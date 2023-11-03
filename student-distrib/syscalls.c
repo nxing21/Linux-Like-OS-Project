@@ -8,18 +8,33 @@
 
 uint8_t cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // we only have two processes for checkpoint 3
 
+/* init_fops_table()
+ * Inputs: none
+ * Return Value: none
+ * Function: sets correct terminal read/write function pointers
+ */
 void init_fops_table() {
+    //initializing stdout functions
     term_write_ops.open = NULL;
     term_write_ops.close = NULL;
     term_write_ops.write = &terminal_write;
     term_write_ops.read = NULL;
 
+    //initializing stdin functions
     term_read_ops.open = NULL;
     term_read_ops.close = NULL;
     term_read_ops.write = NULL;
     term_read_ops.read = &terminal_read;   
 }
 
+/* system_execute(const uint8_t* command)
+ * Inputs: const uint8_t* command: command inputted that we want to exceute if valid
+ * Return Value: 0 (should never reach here), -1 (failure)
+ * Function: Parses args, makes sure file is valid, sets up paging
+ * for the process, and loads file into memory, creates PCB struct instance,
+ * opens and initiliazes file descriptor array, 
+ * prepares stack and context switch values, IRET
+ */
 int32_t system_execute(const uint8_t* command) {
     int8_t elf_check[ELF_LENGTH];
     uint8_t filename[FILENAME_LEN + 1];
@@ -67,9 +82,9 @@ int32_t system_execute(const uint8_t* command) {
             printf("cannot open any more processes\n");
             return -1; // no available space for new process
         }
-        else if (cur_processes[i] == 0) {
-            cur_processes[i] = 1;
-            pid = i;
+        else if (cur_processes[i] == 0) { //not in use process
+            cur_processes[i] = 1;  // set to in use
+            pid = i; // set pid
             break;
         }
     }
@@ -87,24 +102,24 @@ int32_t system_execute(const uint8_t* command) {
     // Initialize PCB (?)
     pcb->pid = pid;
 
+    //initializing stdin
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
     pcb->file_descriptors[0].inode = 0;
     pcb->file_descriptors[0].file_pos = 0;
     pcb->file_descriptors[0].flags = IN_USE;
 
-
+    //initializing stdout
     pcb->file_descriptors[1].file_op_table_ptr = &term_write_ops;
     pcb->file_descriptors[1].inode = 0;
     pcb->file_descriptors[1].file_pos = 0;
     pcb->file_descriptors[1].flags = IN_USE;
 
+    //initializing general use fd slots 
     for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){
         pcb->file_descriptors[i].inode = 0;
         pcb->file_descriptors[i].file_pos = 0;
         pcb->file_descriptors[i].flags = NOT_IN_USE;
     }
-
-    // curr_fds = (fd_t*)&pcb->file_descriptors;
 
     pcb->tss_esp0 = tss.esp0;
     pcb->tss_ss0 = tss.ss0;
@@ -135,6 +150,7 @@ int32_t system_execute(const uint8_t* command) {
     // https://wiki.osdev.org/Getting_to_Ring_3
     
     // IRET
+    //first line "0x02B is USER_DS"
     asm volatile("                           \n\
                 cli                          \n\
                 movw $0x2B, %%ax             \n\
@@ -163,8 +179,14 @@ int32_t system_execute(const uint8_t* command) {
     return 0;
 }
 
-// bit mask cur esp to get pcb
-// from pcb get parent pid
+/* system_halt(uint8_t status)
+ * Inputs: uint8_t status: return value set by user program
+ * Return Value: never actually returns a value
+ * Function: Restores parent pcb data,
+ * restores parent pcb paging, checks if currently running shell,
+ * if so calls execute("shell") again, else closes all relevant FDs,
+ * and jumpts to execute return.
+ */
 int32_t system_halt(uint8_t status) {
     int i;
 
@@ -172,6 +194,7 @@ int32_t system_halt(uint8_t status) {
     pcb_t* pcb = get_pcb(curr_pid);
     uint32_t parent_pid = pcb->parent_pid;
     pcb_t* parent_pcb = get_pcb(parent_pid);
+    uint32_t ext_status;
 
     // If currently running shell, do nothing
     if (curr_pid == 0) {
@@ -216,52 +239,78 @@ int32_t system_halt(uint8_t status) {
     tss.esp0 = parent_pcb->tss_esp0;
     tss.ss0 = parent_pcb->tss_ss0;
 
+    if(status == 255){
+        ext_status = 256;
+    }
+    else{
+        ext_status = status;
+    }
+    
     // assembly to load old esp, ebp and load 
     asm volatile("                           \n\
-                xorl %%eax, %%eax            \n\
-                movb %0, %%al                \n\
+                movl %0, %%eax                \n\
                 movl %1, %%esp               \n\
                 movl %2, %%ebp               \n\
                 jmp execute_return           \n\
                 "
                 :
-                : "r" (status), "r" (pcb->esp), "r" (pcb->ebp)
+                : "r" (ext_status), "r" (pcb->esp), "r" (pcb->ebp)
                 : "eax"
                 );
-    // asm volatile("leave");
-    // asm volatile("ret");
-
     // will never reach
     return 0;
 }
 
+
+/* system_read (int32_t fd, void* buf, int32_t nbytes)
+ * Inputs: int32_t fd: file descriptor index,
+ * void* buf: buffer to be filled in with data,
+ * int32_t nbytes: number of bytes to read
+ * Return Value: Read function result, -1 ("failure")
+ * Function: Makes sure fd index and the desciptor it points to is valid,
+ * if so we call the corresponding read.
+ */
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
     pcb_t *pcb = get_pcb(curr_pid);
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX && fd != 1) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
-        return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes);
+        return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes); // returning respective read
     }
     else{
         return -1;
     }
 }
 
+/* system_write (int32_t fd, const void* buf, int32_t nbytes)
+ * Inputs: int32_t fd: file descriptor index,
+ * void* buf: buffer contains data to be written,
+ * int32_t nbytes: number of bytes to written.
+ * Return Value: Write function result, -1 ("failure")
+ * Function: Makes sure fd index and the desciptor it points to is valid,
+ * if so we call the corresponding write.
+ */
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
     pcb_t *pcb = get_pcb(curr_pid);
     if((fd >= 1 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
-        return pcb->file_descriptors[fd].file_op_table_ptr->write(fd, buf, nbytes);
+        return pcb->file_descriptors[fd].file_op_table_ptr->write(fd, buf, nbytes); // returning respective write
     }
     else{
         return -1;
     }
 }
 
+/* system_open (const uint8_t* filename)
+ * Inputs: const uint8_t* filename: filename of file to be opened
+ * Return Value: fd index opened, -1 ("failure")
+ * Function: Makes sure fd index and the desciptor it points to is valid,
+ * if so we call the corresponding open.
+ */
 int32_t system_open (const uint8_t* filename){
     dentry_t temp_dentry;
     uint32_t file_type;
     int i;
     int index = -1;
     pcb_t *pcb = get_pcb(curr_pid);
-    for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){
+    for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){ // finding first open file descriptor
         if(pcb->file_descriptors[i].flags == NOT_IN_USE){
             index = i;
             break;
@@ -307,11 +356,16 @@ int32_t system_open (const uint8_t* filename){
         return index;
     }
     else{
-        // printf("open fd not found");
         return -1;
     }
 }
 
+/* system_close (int32_t fd)
+ * Inputs: int32_t fd: file descriptor index.
+ * Return Value: Close function result, -1 ("failure")
+ * Function: Makes sure fd index and the desciptor it points to is valid,
+ * if so we call the corresponding close.
+ */
 int32_t system_close (int32_t fd){
     pcb_t *pcb = get_pcb(curr_pid);
     //check if fd is valid index and if fd is in use
@@ -326,19 +380,53 @@ int32_t system_close (int32_t fd){
     }
 }
 
+/* system_getargs(uint8_t* buf, int32_t nbytes)
+ * Inputs: uint8_t* buf: buffer holding command line arguments, 
+ * int32_t nbytes: bytes to be read.
+ * Return Value: 0 ("success"), -1 ("failure")
+ * Function: Reads the program’s command line arguments into a user-level buffer.
+ */
 int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
+    // buf = (uint8_t*)"lol";
     return 0;
 }
+
+/* system_vidmap(uint8_t** screen_start)
+ * Inputs: uint8_t** screen_start: maps the text-mode video memory into user space at a pre-set virtual address
+ * Return Value: Close function result, -1 ("failure")
+ * Function: Makes sure fd index and the desciptor it points to is valid,
+ * if so we call the corresponding close.
+ */
 int32_t system_vidmap(uint8_t** screen_start) {
     return 0;
 }
+
+/* system_close (int32_t fd)
+ * Inputs: int32_t fd: file descriptor index.
+ * Return Value: Close function result, -1 ("failure")
+ * Function: Makes sure fd index and the desciptor it points to is valid,
+ * if so we call the corresponding close.
+ */
 int32_t system_set_handler(int32_t signum, void* handler_access) {
     return 0;
 }
+
+/* system_close (int32_t fd)
+ * Inputs: int32_t fd: file descriptor index.
+ * Return Value: Close function result, -1 ("failure")
+ * Function: Makes sure fd index and the desciptor it points to is valid,
+ * if so we call the corresponding close.
+ */
 int32_t system_sigreturn(void) {
     return 0;
 }
 
+/* process_page(int process_id)
+ * Inputs: int process_id: process_id that we want to set up paging for
+ * Return Value: nothing
+ * Function: Makes sure process id is valid,
+ * Sets page directory, at user address index, values to correct values.
+ */
 void process_page(int process_id) {
     // parameter checks
     if (process_id >= 0 && process_id < NUM_PROCESSES) {
@@ -351,7 +439,13 @@ void process_page(int process_id) {
     }
 }
 
+
+/* get_pcb(uint32_t pid)
+ * Inputs: uint32_t pid: process_id that we want to get correct pcb pointer for
+ * Return Value: pcb pointer
+ * Function: Calculates correct PCB pointer based on pid.
+ */
 pcb_t* get_pcb(uint32_t pid){
-    return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB);
+    return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB); // pcb start address formula
 }
 
