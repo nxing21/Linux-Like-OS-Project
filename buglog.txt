@@ -100,3 +100,10 @@ Oct 31st, 2023
     overwritten by the system_execute, so we made an init_fops_table() function and called that
     from kernel.
     - This bug cost us about 3 hours.
+
+Nov 1st, 2023
+    - Faced an issue where the system_execute was not recognizing the inputs properly. For example,
+    it would recognize an input of 'testpr' as 'testprint'.
+    - This was fixed by editing the read_dentry_by_name function, as it wasn't comparing strings
+    properly (we were inputting the incorrect length).
+    - This bug cost us about 1 hour.
