@@ -107,3 +107,10 @@ Nov 1st, 2023
     - This was fixed by editing the read_dentry_by_name function, as it wasn't comparing strings
     properly (we were inputting the incorrect length).
     - This bug cost us about 1 hour.
+
+Nov 2nd, 2023
+    - Faced issue where we were page faulting when system_halt was called (it would not return back
+    to the shell like we wanted).
+    - The issue was we were trying to update the esp and ebp registers with the parent pcb, when it
+    was supposed to be updated with the current pcb, based on our design.
+    - This bug cost us about 7 hours.

@@ -90,18 +90,18 @@ int32_t system_execute(const uint8_t* command) {
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
     pcb->file_descriptors[0].inode = 0;
     pcb->file_descriptors[0].file_pos = 0;
-    pcb->file_descriptors[0].flags = 1;
+    pcb->file_descriptors[0].flags = IN_USE;
 
 
     pcb->file_descriptors[1].file_op_table_ptr = &term_write_ops;
     pcb->file_descriptors[1].inode = 0;
     pcb->file_descriptors[1].file_pos = 0;
-    pcb->file_descriptors[1].flags = 1;
+    pcb->file_descriptors[1].flags = IN_USE;
 
     for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){
         pcb->file_descriptors[i].inode = 0;
         pcb->file_descriptors[i].file_pos = 0;
-        pcb->file_descriptors[i].flags = -1;
+        pcb->file_descriptors[i].flags = NOT_IN_USE;
     }
 
     // curr_fds = (fd_t*)&pcb->file_descriptors;
@@ -115,7 +115,7 @@ int32_t system_execute(const uint8_t* command) {
 
     uint32_t temp_esp;
     uint32_t temp_ebp;
-
+    //grabbing ebp and esp to store for later context switching
     asm volatile("                           \n\
                 movl %%ebp, %0               \n\
                 movl %%esp, %1               \n\
@@ -124,7 +124,6 @@ int32_t system_execute(const uint8_t* command) {
                 :
                 : "eax"
                 );
-
     pcb->ebp = temp_ebp;
     pcb->esp = temp_esp;
 
@@ -211,7 +210,7 @@ int32_t system_halt(uint8_t status) {
 
     // Close all file operations
     for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
-        pcb->file_descriptors[i].flags = -1; //marking as not in use
+        pcb->file_descriptors[i].flags = NOT_IN_USE; //marking as not in use
     }
 
     tss.esp0 = parent_pcb->tss_esp0;
@@ -238,7 +237,7 @@ int32_t system_halt(uint8_t status) {
 
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
     pcb_t *pcb = get_pcb(curr_pid);
-    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX && fd != 1) && pcb->file_descriptors[fd].flags != -1) { 
+    if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX && fd != 1) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes);
     }
     else{
@@ -248,7 +247,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
 
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
     pcb_t *pcb = get_pcb(curr_pid);
-    if((fd >= 1 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != -1) { 
+    if((fd >= 1 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->write(fd, buf, nbytes);
     }
     else{
@@ -263,7 +262,7 @@ int32_t system_open (const uint8_t* filename){
     int index = -1;
     pcb_t *pcb = get_pcb(curr_pid);
     for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){
-        if(pcb->file_descriptors[i].flags == -1){
+        if(pcb->file_descriptors[i].flags == NOT_IN_USE){
             index = i;
             break;
         }
@@ -271,7 +270,7 @@ int32_t system_open (const uint8_t* filename){
 
     if((read_dentry_by_name(filename, &temp_dentry) != -1) && index != -1) { //check valid name and fds not full
         file_type = temp_dentry.filetype; // 0 for user-level access to RTC, 1 for the directory, and 2 for a regular file.
-        pcb->file_descriptors[index].flags = 1; //marking as in use
+        pcb->file_descriptors[index].flags = IN_USE; //marking as in use
         pcb->file_descriptors[index].inode = temp_dentry.inode_num; //setting to correct inode
         pcb->file_descriptors[index].file_pos = 0; // initializing position to 0
 
@@ -316,8 +315,8 @@ int32_t system_open (const uint8_t* filename){
 int32_t system_close (int32_t fd){
     pcb_t *pcb = get_pcb(curr_pid);
     //check if fd is valid index and if fd is in use
-    if((fd >= 2 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != -1) { 
-        pcb->file_descriptors[fd].flags = -1; //marking as not in use
+    if((fd >= FILE_DESCRIPTOR_MIN && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
+        pcb->file_descriptors[fd].flags = NOT_IN_USE; //marking as not in use
         pcb->file_descriptors[fd].inode = -1; //marking as not pointing to any inode
         pcb->file_descriptors[fd].file_pos = 0; //file position reset to 0 
         return pcb->file_descriptors[fd].file_op_table_ptr->close(fd);

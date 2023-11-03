@@ -23,6 +23,8 @@
 #define USER_ADDR_INDEX 32
 #define USER_ESP        0x083FFFFC
 #define EIP_CHECK       28
+#define IN_USE          1
+#define NOT_IN_USE      -1
 
 uint32_t curr_pid;
 
