@@ -65,6 +65,7 @@ typedef struct process_control_block {
     // uint32_t terminal_id;
     uint32_t esp;
     uint32_t ebp;
+    uint32_t eip;
     uint32_t tss_esp0;
     uint32_t tss_ss0;
 } pcb_t;

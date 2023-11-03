@@ -130,6 +130,8 @@ int32_t system_execute(const uint8_t* command) {
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4);
 
+    pcb->eip = eip;
+
     // https://wiki.osdev.org/Getting_to_Ring_3
     
     // IRET
@@ -166,18 +168,39 @@ int32_t system_execute(const uint8_t* command) {
 int32_t system_halt(uint8_t status) {
     int i;
 
-    // If currently running shell, do nothing
-    if (curr_pid == 0) {
-        return -1;
-    }
-
     // Get parent PCB
     pcb_t* pcb = get_pcb(curr_pid);
     uint32_t parent_pid = pcb->parent_pid;
     pcb_t* parent_pcb = get_pcb(parent_pid);
 
+    // If currently running shell, do nothing
+    if (curr_pid == 0) {
+    asm volatile("                           \n\
+                cli                          \n\
+                movw $0x2B, %%ax             \n\
+                movw %%ax, %%ds              \n\
+                pushl %0                     \n\
+                pushl %1                     \n\
+                pushfl                       \n\
+                popl %%eax                   \n\
+                orl $0x200, %%eax            \n\
+                pushl %%eax                  \n\
+                pushl %2                     \n\
+                pushl %3                     \n\
+                "
+                :
+                : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (pcb->eip)
+                : "eax"
+                );
+
+    asm volatile("iret");
+    }
+
     // Update cur_processes
     cur_processes[curr_pid] = 0;
+
+    // Set the curr_pid to the parent pid.
+    curr_pid = parent_pid;
     
     // Restore paging and flush TLB
     process_page(parent_pcb->pid);
