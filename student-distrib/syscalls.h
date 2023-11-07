@@ -27,6 +27,8 @@
 #define NOT_IN_USE      -1
 #define EXCEPTION       255
 
+#define NUM_COLS    80
+
 uint32_t curr_pid;
 
 int32_t system_execute(const uint8_t* command);

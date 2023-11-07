@@ -7,7 +7,7 @@
 #include "terminal.h"
 
 int cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // cur_processes keeps track of current processes that are running
-
+char* cur_args = "";
 /* init_fops_table()
  * Inputs: none
  * Return Value: none
@@ -40,7 +40,8 @@ int32_t system_execute(const uint8_t* command) {
     uint8_t filename[FILENAME_LEN + 1]; // holds name of executable we want to execute
     int8_t buf[ELF_LENGTH]; // holds info
     uint32_t pid; // process ID
-    
+    int arg_idx = 0; // start of arguments
+
     if (command == NULL) {
         return -1;
     }
@@ -54,8 +55,10 @@ int32_t system_execute(const uint8_t* command) {
 
     i = 0;
     // Get the name of the executable
-    while (command[i] != '\0' && i < FILENAME_LEN) {
+    while (command[i] != '\0' && i < FILENAME_LEN ) {
         if (command[i] == ' ') {
+            arg_idx = i+1; //where the first arg potentially is
+            
             break;
         }
         else {
@@ -64,6 +67,18 @@ int32_t system_execute(const uint8_t* command) {
         i++;
     }
     filename[i] = '\0';
+
+    i = 0;
+    while(arg_idx != 0 && arg_idx < strlen(command) && command[arg_idx] != '\0'){
+        cur_args[i] = command[arg_idx];
+        arg_idx++;
+        i++;
+    }
+    cur_args[i] = '\0';
+    
+    
+
+
 
     dentry_t dentry;
     // Check the validity of the filename
@@ -398,7 +413,17 @@ int32_t system_close (int32_t fd){
  * Function: Reads the program’s command line arguments into a user-level buffer.
  */
 int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
-    // buf = (uint8_t*)"lol";
+    if(strlen(cur_args) + 1 > nbytes || strlen(cur_args)  == 0) { //+1 to account for '\0' b/c strlen doesn't count it
+        return -1;
+    }
+    else{
+        memcpy(buf, cur_args, nbytes);
+    } 
+
+    
+    
+
+
     return 0;
 }
 
@@ -412,21 +437,19 @@ int32_t system_vidmap(uint8_t** screen_start) {
     return 0;
 }
 
-/* system_close (int32_t fd)
- * Inputs: int32_t fd: file descriptor index.
- * Return Value: Close function result, -1 ("failure")
- * Function: Makes sure fd index and the desciptor it points to is valid,
- * if so we call the corresponding close.
+/* system_set_handler(int32_t signum, void* handler_access)
+ * Inputs: int32_t signum, void* handler_access
+ * Return Value: 
+ * Function: 
  */
 int32_t system_set_handler(int32_t signum, void* handler_access) {
     return 0;
 }
 
-/* system_close (int32_t fd)
- * Inputs: int32_t fd: file descriptor index.
- * Return Value: Close function result, -1 ("failure")
- * Function: Makes sure fd index and the desciptor it points to is valid,
- * if so we call the corresponding close.
+/* system_sigreturn(void)
+ * Inputs: none
+ * Return Value: 
+ * Function: 
  */
 int32_t system_sigreturn(void) {
     return 0;
