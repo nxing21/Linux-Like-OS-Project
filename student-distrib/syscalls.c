@@ -430,10 +430,19 @@ int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
 /* system_vidmap(uint8_t** screen_start)
  * Inputs: uint8_t** screen_start: maps the text-mode video memory into user space at a pre-set virtual address
  * Return Value: Close function result, -1 ("failure")
- * Function: Makes sure fd index and the desciptor it points to is valid,
- * if so we call the corresponding close.
+ * Function: 
  */
 int32_t system_vidmap(uint8_t** screen_start) {
+    //use VIDEO_ADDR
+    // uint32_t lower_bound = EIGHT_MB + FOUR_MB*curr_pid; //start of user_page
+    // uint32_t upper_bound = lower_bound + FOUR_MB; // end of user_page not inclusive.
+    if(screen_start <= 0 || screen_start >= FOUR_MB){
+        return -1;
+    }
+    else{
+        *screen_start = VIDEO_ADDR;
+    }
+
     return 0;
 }
 
@@ -443,7 +452,33 @@ int32_t system_vidmap(uint8_t** screen_start) {
  * Function: 
  */
 int32_t system_set_handler(int32_t signum, void* handler_access) {
-    return 0;
+    // if(handler_access == 0){
+    //     return -1;
+    // }
+    // else{
+    //     switch(signum){
+    //         case 0: //DIV_ZERO
+    //             break;
+            
+    //         case 1: //SEGFAULT
+    //             break;
+
+    //         case 2: //INTERRUPT
+    //             break;
+
+    //         case 3: //ALARM
+    //             break;
+            
+    //         case 4: //USER1
+    //             break;
+
+    //         default:
+    //             break;
+    //     }
+
+    // }
+
+    return -1;
 }
 
 /* system_sigreturn(void)
@@ -452,7 +487,7 @@ int32_t system_set_handler(int32_t signum, void* handler_access) {
  * Function: 
  */
 int32_t system_sigreturn(void) {
-    return 0;
+    return -1;
 }
 
 /* process_page(int process_id)
