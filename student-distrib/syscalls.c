@@ -440,7 +440,7 @@ int32_t system_vidmap(uint8_t** screen_start) {
         return -1;
     }
     else{
-        *screen_start = VIDEO_ADDR;
+        *screen_start = (uint8_t* )(USER_ADDR_INDEX + FOUR_MB + VIDEO_ADDR);
     }
 
     return 0;
