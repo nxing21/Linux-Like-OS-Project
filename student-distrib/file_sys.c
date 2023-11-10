@@ -97,7 +97,6 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
  * Function: readS up to length bytes starting from position offset in the file with inode number inode and returning the number of bytes read and placed in the buffer.
  */
 int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t length) {
-
     uint32_t i; // loop counter
 
     /* Fail case 1: Inode input is greater than the number of inodes we have. */
@@ -212,13 +211,14 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
     // counters so we know what index to put in buffer
     uint32_t num_read = 0;
     pcb_t *pcb = get_pcb(curr_pid);
+
+    // check if we've read all files
     if (pcb->file_descriptors[fd].file_pos >= boot_block->dir_count) {
-        // pcb->file_descriptors[fd].file_pos = 0;
         return 0;
     }
 
+    // get dentry of current file
     dentry_t dentry = boot_block->direntries[pcb->file_descriptors[fd].file_pos];
-    // get dentry of current file (index i)
     read_dentry_by_index(pcb->file_descriptors[fd].file_pos, &dentry);
     for (j = 0; j < FILENAME_LEN; j++) {
         buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer

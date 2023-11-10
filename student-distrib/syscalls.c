@@ -78,7 +78,7 @@ int32_t system_execute(const uint8_t* command) {
     filename[file_index] = '\0';
 
     i = 0;
-    while(arg_idx != 0 && arg_idx < strlen(command) && command[arg_idx] != '\0'){
+    while(arg_idx != 0 && arg_idx < strlen((int8_t*) command) && command[arg_idx] != '\0'){
         cur_args[i] = command[arg_idx];
         arg_idx++;
         i++;
@@ -102,7 +102,6 @@ int32_t system_execute(const uint8_t* command) {
     // Find free PID location
     for (i = 0; i <= NUM_PROCESSES; i++) {
         if (i == NUM_PROCESSES) {
-            printf("cannot open any more processes\n");
             return -1; // no available space for new process
         }
         else if (cur_processes[i] == 0) { // not in use process
