@@ -418,13 +418,9 @@ int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
     }
     else{
         memcpy(buf, cur_args, nbytes);
+        return 0;
     } 
-
     
-    
-
-
-    return 0;
 }
 
 /* system_vidmap(uint8_t** screen_start)
@@ -436,11 +432,32 @@ int32_t system_vidmap(uint8_t** screen_start) {
     //use VIDEO_ADDR
     // uint32_t lower_bound = EIGHT_MB + FOUR_MB*curr_pid; //start of user_page
     // uint32_t upper_bound = lower_bound + FOUR_MB; // end of user_page not inclusive.
-    if(screen_start <= 0 || screen_start >= FOUR_MB){
+    if(screen_start == (uint8_t** ) NULL || !(screen_start >= (uint8_t** ) ONE_TWENTY_EIGHT_MB && screen_start <= (uint8_t** ) ONE_THIRTY_TWO_MB) ){
         return -1;
     }
     else{
-        *screen_start = (uint8_t* )(USER_ADDR_INDEX + FOUR_MB + VIDEO_ADDR);
+        
+        page_table_entry_t vid_map[PAGE_SIZE] __attribute__ ((aligned(ALIGN)));
+
+
+        // *screen_start = (unsigned int)(vid_map) >> shift_12;
+        
+        // (unsigned int)(KERNEL_ADDR) >> shift_22;
+        page_directory[USER_ADDR_INDEX + 4].kb.page_size = 0;   // 4 kB pages
+        page_directory[USER_ADDR_INDEX + 4].kb.present = 1;
+        page_directory[USER_ADDR_INDEX + 4].kb.base_addr =  (unsigned int)(vid_map )>> shift_12;
+        page_directory[USER_ADDR_INDEX + 4].kb.user_supervisor = 1;
+        page_directory[USER_ADDR_INDEX + 4].kb.global = 1;
+
+
+        flushTLB();
+        vid_map[0].present = 1;
+        vid_map[0].user_supervisor = 1;
+        vid_map[0].base_addr = (int) VIDEO_ADDR/ ALIGN;
+
+        *screen_start = (uint8_t* ) ONE_TWENTY_EIGHT_MB + FOUR_MB;
+    
+
     }
 
     return 0;

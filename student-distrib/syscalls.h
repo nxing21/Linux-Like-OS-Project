@@ -26,6 +26,8 @@
 #define IN_USE          1
 #define NOT_IN_USE      -1
 #define EXCEPTION       255
+#define ONE_TWENTY_EIGHT_MB (FOUR_MB*32)
+#define ONE_THIRTY_TWO_MB (ONE_TWENTY_EIGHT_MB+FOUR_MB) 
 
 #define NUM_COLS    80
 
