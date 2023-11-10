@@ -49,6 +49,9 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
         const int8_t* cur_dentry = (const int8_t*) dentries_array[i].filename;
         if (strlen((int8_t *) cur_dentry) > len) {
             len = strlen((int8_t *) cur_dentry);
+            if(len > FILENAME_LEN){
+                len = FILENAME_LEN;
+            }
         }
         // makes sure they are the same string
         if(strncmp((int8_t *)cur_dentry, (int8_t *)fname, len) == 0) {
@@ -111,7 +114,7 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
     inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_num * BYTES_PER_BLOCK); // get current inode
     /* Fail case 2: Offset is greater than the length of our inode. */
     if (offset >= cur_inode->length) {
-        return -1;
+        return 0;
     }
 
     // Change the length if we will be going over the last data block in the current inode
