@@ -78,7 +78,7 @@ int32_t system_execute(const uint8_t* command) {
     filename[file_index] = '\0';
 
     i = 0;
-    while(arg_idx != 0 && arg_idx < strlen((int8_t*) command) && command[arg_idx] != '\0'){
+    while(arg_idx != 0 && arg_idx < strlen((int8_t*) command) && command[arg_idx] != '\0') {
         cur_args[i] = command[arg_idx];
         arg_idx++;
         i++;
@@ -141,7 +141,7 @@ int32_t system_execute(const uint8_t* command) {
     pcb->file_descriptors[1].flags = IN_USE;
 
     // Initializing general use fd slots 
-    for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){
+    for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++) {
         pcb->file_descriptors[i].inode = 0;
         pcb->file_descriptors[i].file_pos = 0;
         pcb->file_descriptors[i].flags = NOT_IN_USE;
@@ -275,7 +275,7 @@ int32_t system_halt(uint8_t status) {
     tss.esp0 = pcb->tss_esp0;
     tss.ss0 = pcb->tss_ss0;
 
-    if(status == EXCEPTION){ // accounting for status being 8 bits
+    if(status == EXCEPTION) { // accounting for status being 8 bits
         ext_status = EXCEPTION+1;
     }
     else{
@@ -306,7 +306,7 @@ int32_t system_halt(uint8_t status) {
  * Function: Makes sure fd index and the desciptor it points to is valid,
  * if so we call the corresponding read.
  */
-int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
+int32_t system_read (int32_t fd, void* buf, int32_t nbytes) {
     pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX && fd != 1) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes); // returning respective read
@@ -324,7 +324,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes){
  * Function: Makes sure fd index and the desciptor it points to is valid,
  * if so we call the corresponding write.
  */
-int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
+int32_t system_write (int32_t fd, const void* buf, int32_t nbytes) {
     pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
     if((fd >= 1 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->write(fd, buf, nbytes); // returning respective write
@@ -340,14 +340,14 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes){
  * Function: Makes sure fd index and the desciptor it points to is valid,
  * if so we call the corresponding open.
  */
-int32_t system_open (const uint8_t* filename){
+int32_t system_open (const uint8_t* filename) {
     dentry_t temp_dentry;
     uint32_t file_type;
     int i;
     int index = -1;
     pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
-    for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++){ // finding first open file descriptor
-        if(pcb->file_descriptors[i].flags == NOT_IN_USE){
+    for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++) { // finding first open file descriptor
+        if(pcb->file_descriptors[i].flags == NOT_IN_USE) {
             index = i; // setting index of  open fd
             break;
         }
@@ -391,7 +391,7 @@ int32_t system_open (const uint8_t* filename){
 
         return index; // returning fd index of opened file descriptor
     }
-    else{
+    else {
         return -1;
     }
 }
@@ -402,7 +402,7 @@ int32_t system_open (const uint8_t* filename){
  * Function: Makes sure fd index and the desciptor it points to is valid,
  * if so we call the corresponding close.
  */
-int32_t system_close (int32_t fd){
+int32_t system_close (int32_t fd) {
     pcb_t *pcb = get_pcb(curr_pid);
     // Check if fd is valid index and if fd is in use
     if ((fd >= FILE_DESCRIPTOR_MIN && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
@@ -425,7 +425,7 @@ int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
     if(strlen(cur_args) + 1 > nbytes || strlen(cur_args)  == 0) { //+1 to account for '\0' b/c strlen doesn't count it
         return -1;
     }
-    else{
+    else {
         memcpy(buf, cur_args, nbytes);
         return 0;
     } 
@@ -441,12 +441,11 @@ int32_t system_vidmap(uint8_t** screen_start) {
     //use VIDEO_ADDR
     // uint32_t lower_bound = EIGHT_MB + FOUR_MB*curr_pid; //start of user_page
     // uint32_t upper_bound = lower_bound + FOUR_MB; // end of user_page not inclusive.
-    if(screen_start == (uint8_t** ) NULL || !(screen_start >= (uint8_t** ) ONE_TWENTY_EIGHT_MB && screen_start <= (uint8_t** ) ONE_THIRTY_TWO_MB) ){
+    if(screen_start == (uint8_t** ) NULL || !(screen_start >= (uint8_t** ) ONE_TWENTY_EIGHT_MB && screen_start <= (uint8_t** ) ONE_THIRTY_TWO_MB)) {
         return -1;
     }
     else{
         // *screen_start = (unsigned int)(vid_map) >> shift_12;
-        
         // (unsigned int)(KERNEL_ADDR) >> shift_22;
         page_directory[USER_ADDR_INDEX + 1].kb.page_size = 0;   // 4 kB pages
         page_directory[USER_ADDR_INDEX + 1].kb.present = 1;
@@ -461,8 +460,6 @@ int32_t system_vidmap(uint8_t** screen_start) {
         vid_map[0].base_addr = (int) VIDEO_ADDR/ ALIGN;
 
         *screen_start = (uint8_t* ) ONE_TWENTY_EIGHT_MB + FOUR_MB;
-    
-
     }
 
     return 0;
@@ -474,32 +471,6 @@ int32_t system_vidmap(uint8_t** screen_start) {
  * Function: 
  */
 int32_t system_set_handler(int32_t signum, void* handler_access) {
-    // if(handler_access == 0){
-    //     return -1;
-    // }
-    // else{
-    //     switch(signum){
-    //         case 0: //DIV_ZERO
-    //             break;
-            
-    //         case 1: //SEGFAULT
-    //             break;
-
-    //         case 2: //INTERRUPT
-    //             break;
-
-    //         case 3: //ALARM
-    //             break;
-            
-    //         case 4: //USER1
-    //             break;
-
-    //         default:
-    //             break;
-    //     }
-
-    // }
-
     return -1;
 }
 
@@ -536,7 +507,7 @@ void process_page(int process_id) {
  * Return Value: pcb pointer
  * Function: Calculates correct PCB pointer based on pid.
  */
-pcb_t* get_pcb(uint32_t pid){
+pcb_t* get_pcb(uint32_t pid) {
     return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB); // pcb start address formula
 }
 
