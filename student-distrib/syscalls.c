@@ -46,6 +46,7 @@ int32_t system_execute(const uint8_t* command) {
         return -1;
     }
     int i; // looping variable
+    int file_index; // looping variable for file index
     
     // Puts correct ELF info inside elf_check
     elf_check[DEL_INDEX] = DEL;
@@ -53,20 +54,28 @@ int32_t system_execute(const uint8_t* command) {
     elf_check[L_INDEX] = L;
     elf_check[F_INDEX] = F;
 
-     i = 0;
+    i = 0;
+    file_index = 0;
+
+    while (command[i] == ' ') {
+        i++;
+    }
     // Get the name of the executable
     while (command[i] != '\0' && i < FILENAME_LEN ) {
         if (command[i] == ' ') {
             arg_idx = i+1; //where the first arg potentially is
-            
+            while (command[arg_idx] == ' ') {
+                arg_idx++;
+            }
             break;
         }
         else {
-            filename[i] = command[i];
+            filename[file_index] = command[i];
         }
         i++;
+        file_index++;
     }
-    filename[i] = '\0';
+    filename[file_index] = '\0';
 
     i = 0;
     while(arg_idx != 0 && arg_idx < strlen(command) && command[arg_idx] != '\0'){
