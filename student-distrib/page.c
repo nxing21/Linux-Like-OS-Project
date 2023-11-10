@@ -62,6 +62,18 @@ void init_page() {
         page_table[i].global = 0;
         page_table[i].avail = 0;
         page_table[i].base_addr = i;
+
+        vid_map[i].present = 0;   // default: not present
+        vid_map[i].read_write = 1;   // enables read/write
+        vid_map[i].user_supervisor = 0;
+        vid_map[i].write_through = 0;
+        vid_map[i].cache_disabled = 0;
+        vid_map[i].accessed = 0;
+        vid_map[i].dirty = 0;
+        vid_map[i].attr_idx = 0;
+        vid_map[i].global = 0;
+        vid_map[i].avail = 0;
+        vid_map[i].base_addr = i;
     }
 
     mem = VIDEO_ADDR / ALIGN;   // gets index of video memory in page table

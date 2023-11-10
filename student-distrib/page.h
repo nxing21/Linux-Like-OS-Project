@@ -79,6 +79,7 @@ typedef struct __attribute__((packed)) page_table_entry {
 page_directory_entry_t page_directory[PAGE_SIZE] __attribute__ ((aligned(ALIGN)));
 /* page table */
 page_table_entry_t page_table[PAGE_SIZE] __attribute__ ((aligned(ALIGN)));
+page_table_entry_t vid_map[PAGE_SIZE] __attribute__ ((aligned(ALIGN)));
 
 #endif /* ASM */
 

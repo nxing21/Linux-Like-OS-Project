@@ -41,7 +41,7 @@ int32_t system_execute(const uint8_t* command) {
     int8_t buf[ELF_LENGTH]; // holds info
     uint32_t pid; // process ID
     int arg_idx = 0; // start of arguments
-    
+
     if (command == NULL) {
         return -1;
     }
@@ -435,18 +435,14 @@ int32_t system_vidmap(uint8_t** screen_start) {
         return -1;
     }
     else{
-        
-        page_table_entry_t vid_map[PAGE_SIZE] __attribute__ ((aligned(ALIGN)));
-
-
         // *screen_start = (unsigned int)(vid_map) >> shift_12;
         
         // (unsigned int)(KERNEL_ADDR) >> shift_22;
-        page_directory[USER_ADDR_INDEX + 4].kb.page_size = 0;   // 4 kB pages
-        page_directory[USER_ADDR_INDEX + 4].kb.present = 1;
-        page_directory[USER_ADDR_INDEX + 4].kb.base_addr =  (unsigned int)(vid_map )>> shift_12;
-        page_directory[USER_ADDR_INDEX + 4].kb.user_supervisor = 1;
-        page_directory[USER_ADDR_INDEX + 4].kb.global = 1;
+        page_directory[USER_ADDR_INDEX + 1].kb.page_size = 0;   // 4 kB pages
+        page_directory[USER_ADDR_INDEX + 1].kb.present = 1;
+        page_directory[USER_ADDR_INDEX + 1].kb.base_addr =  (unsigned int)(vid_map )>> shift_12;
+        page_directory[USER_ADDR_INDEX + 1].kb.user_supervisor = 1;
+        page_directory[USER_ADDR_INDEX + 1].kb.global = 1;
 
 
         flushTLB();
