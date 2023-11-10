@@ -41,7 +41,7 @@ int32_t system_execute(const uint8_t* command) {
     int8_t buf[ELF_LENGTH]; // holds info
     uint32_t pid; // process ID
     int arg_idx = 0; // start of arguments
-
+    
     if (command == NULL) {
         return -1;
     }
@@ -53,7 +53,7 @@ int32_t system_execute(const uint8_t* command) {
     elf_check[L_INDEX] = L;
     elf_check[F_INDEX] = F;
 
-    i = 0;
+     i = 0;
     // Get the name of the executable
     while (command[i] != '\0' && i < FILENAME_LEN ) {
         if (command[i] == ' ') {
@@ -76,8 +76,6 @@ int32_t system_execute(const uint8_t* command) {
     }
     cur_args[i] = '\0';
     
-    
-
 
 
     dentry_t dentry;
@@ -204,6 +202,7 @@ int32_t system_execute(const uint8_t* command) {
 
     return 0;
 }
+
 
 /* system_halt(uint8_t status)
  * Inputs: uint8_t status: return value set by user program
