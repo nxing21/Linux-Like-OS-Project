@@ -204,41 +204,23 @@ int32_t close_file(int32_t fd) {
  * Function: reads directory information
  */
 int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
-    int offset;
-    uint32_t i;
+    // loop counter
     uint32_t j;
+    // we have two buffers, one for file name and file type, other for file length
     uint8_t * buffer = (uint8_t*) buf;
-    pcb_t *pcb = get_pcb(curr_pid);
+    // counters so we know what index to put in buffer
+    uint32_t num_read = 0;
 
-    if(fd >= FILE_DESCRIPTOR_MAX || fd < 0){
-        return -1;
-    } else {
-        offset = pcb->file_descriptors[fd].file_pos; //the order of me doing this seems wrong
-        pcb->file_descriptors[fd].file_pos += nbytes;
-        read_data(pcb->file_descriptors[fd].inode, offset, buffer, nbytes);
-
-        for (i = 0; i < boot_block->dir_count; i++) {
-            printf("File Name: ");
-            dentry_t dentry = boot_block->direntries[i];
-            read_dentry_by_index(i, &dentry);
-            for (j = 0; j < FILENAME_LEN; j++) {
-                putc(dentry.filename[j]);
-            }
-            printf(", File Type: %d, File Size: ", dentry.filetype);
-
-            uint32_t inode_number = dentry.inode_num;
-            inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_number * BYTES_PER_BLOCK); // get current inode
-            printf("%d", cur_inode->length);
-            printf("\n");
-        }
-
-
-
-
-
-        return 0;
+    dentry_t dentry = boot_block->direntries[fd];
+    // get dentry of current file (index i)
+    read_dentry_by_index(fd, &dentry);
+    for (j = 0; j < FILENAME_LEN; j++) {
+        buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer
+        num_read++;
     }
+    return num_read;
 }
+
 
 
 /* int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes)

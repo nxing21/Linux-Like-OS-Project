@@ -40,8 +40,7 @@ int32_t system_execute(const uint8_t* command) {
     uint8_t filename[FILENAME_LEN + 1]; // holds name of executable we want to execute
     int8_t buf[ELF_LENGTH]; // holds info
     uint32_t pid; // process ID
-    int arg_idx = 0; // start of arguments
-
+    
     if (command == NULL) {
         return -1;
     }
@@ -55,10 +54,8 @@ int32_t system_execute(const uint8_t* command) {
 
     i = 0;
     // Get the name of the executable
-    while (command[i] != '\0' && i < FILENAME_LEN ) {
+    while (command[i] != '\0' && i < FILENAME_LEN) {
         if (command[i] == ' ') {
-            arg_idx = i+1; //where the first arg potentially is
-            
             break;
         }
         else {
@@ -67,18 +64,6 @@ int32_t system_execute(const uint8_t* command) {
         i++;
     }
     filename[i] = '\0';
-
-    i = 0;
-    while(arg_idx != 0 && arg_idx < strlen(command) && command[arg_idx] != '\0'){
-        cur_args[i] = command[arg_idx];
-        arg_idx++;
-        i++;
-    }
-    cur_args[i] = '\0';
-    
-    
-
-
 
     dentry_t dentry;
     // Check the validity of the filename
@@ -204,6 +189,7 @@ int32_t system_execute(const uint8_t* command) {
 
     return 0;
 }
+
 
 /* system_halt(uint8_t status)
  * Inputs: uint8_t status: return value set by user program
@@ -436,12 +422,12 @@ int32_t system_vidmap(uint8_t** screen_start) {
     //use VIDEO_ADDR
     // uint32_t lower_bound = EIGHT_MB + FOUR_MB*curr_pid; //start of user_page
     // uint32_t upper_bound = lower_bound + FOUR_MB; // end of user_page not inclusive.
-    if(screen_start <= 0 || screen_start >= FOUR_MB){
-        return -1;
-    }
-    else{
-        *screen_start = (uint8_t* )(USER_ADDR_INDEX + FOUR_MB + VIDEO_ADDR);
-    }
+    // if(screen_start <= 0 || screen_start >= FOUR_MB){
+    //     return -1;
+    // }
+    // else{
+    //     *screen_start = (uint8_t* )(USER_ADDR_INDEX + FOUR_MB + VIDEO_ADDR);
+    // }
 
     return 0;
 }
