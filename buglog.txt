@@ -138,3 +138,24 @@ Nov 3rd: 2023:
     - We then figured out that we were not updating current pid in system system_halt.
     - We updated current id to equal parent pid.
     - Took us about 15 minutes. 
+
+Nov 9th: 2023:
+    - Fixed an issue where running multiple shells would not close properly.
+    - When running more than two shells, trying to close them would cause a page fault.
+    - While using GDB, we noticed that after typing "exit" for a second time, system_halt would be repeatedly called.
+    - Our first change was to set the parent_pid of the child process in system execute, as we did not set that up
+    - In system_halt, we saw that our ss and our esp0 were being restored to the parent processes's pcb. However, in system_execute,
+    we were storing the original proceses's esp0 and ss in the child's pcb.
+    - We then set it so that the tss holds the esp0 and ss of the child's pcb.
+    - Took us about 7 hours to fix. 
+
+
+Nov 10th: 2023:
+    - Faced an issue where fish was not displaying the correct animation
+    - We noticed that after open set fd 2 file_op_ptr to rtc functions, it got overwritten by the next open.
+    - This exposed that our system open wasn't working as intended, it overwrote all the other general use file op table ptr functions.
+    - We then figured out that since we were using the same f_ops variable and setting each fd's pointer to it's address, every subsequent open
+    - would change any fd file op ptr that had been set to the address of that variable.
+    - To fix that we just made separate f_ops tables for each type of file. 
+    - This also fixed our grep function
+    - Took us about 1 hour.
