@@ -103,9 +103,6 @@ int32_t system_execute(const uint8_t* command) {
         }
     }
 
-    // Set curr_pid to current pid
-    curr_pid = pid;
-
     // Set up paging and flush TLB
     process_page(pid);
     flushTLB();
@@ -117,6 +114,11 @@ int32_t system_execute(const uint8_t* command) {
     pcb_t *pcb = get_pcb(pid);
     // Initialize PCB's pid
     pcb->pid = pid;
+
+    // Set curr_pid to current pid
+    pcb->parent_pid = curr_pid;
+    curr_pid = pid;
+
 
     // Initializing stdin
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
@@ -262,8 +264,8 @@ int32_t system_halt(uint8_t status) {
     }
 
     // Restoring tss
-    tss.esp0 = parent_pcb->tss_esp0;
-    tss.ss0 = parent_pcb->tss_ss0;
+    tss.esp0 = pcb->tss_esp0;
+    tss.ss0 = pcb->tss_ss0;
 
     if(status == EXCEPTION){ // accounting for status being 8 bits
         ext_status = EXCEPTION+1;
