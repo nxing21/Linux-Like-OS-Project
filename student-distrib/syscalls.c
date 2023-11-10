@@ -24,7 +24,24 @@ void init_fops_table() {
     term_read_ops.open = NULL;
     term_read_ops.close = NULL;
     term_read_ops.write = NULL;
-    term_read_ops.read = &terminal_read;   
+    term_read_ops.read = &terminal_read;  
+
+    rtc_ops.open = &RTC_open;
+    rtc_ops.close = &RTC_close;
+    rtc_ops.write = &RTC_write;
+    rtc_ops.read = &RTC_read;
+
+    dir_ops.open = &open_directory;
+    dir_ops.close = &close_directory;
+    dir_ops.read = &read_directory;
+    dir_ops.write = &write_directory;
+
+    file_ops.open = &open_file;
+    file_ops.close = &close_file;
+    file_ops.read = &read_file;
+    file_ops.write = &write_file;
+
+
 }
 
 /* system_execute(const uint8_t* command)
@@ -354,27 +371,15 @@ int32_t system_open (const uint8_t* filename){
         switch (file_type)
         {
             case 0: /* setting RTC functions */ 
-                dir_ops_table.open = &RTC_open;
-                dir_ops_table.close = &RTC_close;
-                dir_ops_table.write = &RTC_write;
-                dir_ops_table.read = &RTC_read;
-                pcb->file_descriptors[index].file_op_table_ptr = &dir_ops_table;
+                pcb->file_descriptors[index].file_op_table_ptr = &rtc_ops;
                 break;
 
             case 1: /* setting directory functions */
-                dir_ops_table.open = &open_directory;
-                dir_ops_table.close = &close_directory;
-                dir_ops_table.read = &read_directory;
-                dir_ops_table.write = &write_directory;
-                pcb->file_descriptors[index].file_op_table_ptr = &dir_ops_table;
+                pcb->file_descriptors[index].file_op_table_ptr = &dir_ops;
                 break;
 
             case 2: /*setting file functions*/
-                dir_ops_table.open = &open_file;
-                dir_ops_table.close = &close_file;
-                dir_ops_table.read = &read_file;
-                dir_ops_table.write = &write_file;
-                pcb->file_descriptors[index].file_op_table_ptr = &dir_ops_table;
+                pcb->file_descriptors[index].file_op_table_ptr = &file_ops;
                 break;
             
             default:
