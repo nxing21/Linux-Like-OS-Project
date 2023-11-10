@@ -214,7 +214,7 @@ int read_dentry_test(){
 	// clear();
 	TEST_HEADER;
 	dentry_t dentry;
-	const char* fname = "shell";
+	const char* fname = "verylargetextwithverylongname.tx";
 	int32_t out = read_dentry_by_name((const uint8_t *) fname, &dentry);
 	if(out != 0){
 		return FAIL;
@@ -634,7 +634,7 @@ void launch_tests(){
 	// TEST_OUTPUT("page_kernelmem_test", page_kernelmem_test());
 
 	/* Checkpoint 2 tests*/
-	// TEST_OUTPUT("read_dentry_test", read_dentry_test());
+	TEST_OUTPUT("read_dentry_test", read_dentry_test());
 	// TEST_OUTPUT("read_data_test", read_data_test());
 	// TEST_OUTPUT("open_read_file_test", open_read_file_test());
 	// test_terminal_read_write(); /* Comment this out if you want to separately test read/write of terminal. */
