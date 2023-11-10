@@ -84,4 +84,9 @@ pcb_t* get_pcb(uint32_t pid);
 fops_t term_write_ops;
 fops_t term_read_ops;
 
+fops_t rtc_ops;
+fops_t file_ops;
+fops_t dir_ops;
+
+
 #endif
