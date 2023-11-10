@@ -8,8 +8,6 @@ inode_t * inode;
 uint32_t data_blocks;
 // global dentry variable
 dentry_t *dentry;
-// file number counter
-uint32_t file_num;
 
 /* void init_file_sys(uint32_t starting_addr)
  * Inputs: uint32_t starting_addr = starting address of file system
@@ -194,7 +192,6 @@ int32_t open_file(const uint8_t* filename) {
  * Function: checks if valid index and updates file descriptors accordingly
  */
 int32_t close_file(int32_t fd) {
-    
     return 0;
 }
 
@@ -214,19 +211,20 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
     uint8_t * buffer = (uint8_t*) buf;
     // counters so we know what index to put in buffer
     uint32_t num_read = 0;
-    if (file_num >= boot_block->dir_count) {
-        file_num = 0;
+    pcb_t *pcb = get_pcb(curr_pid);
+    if (pcb->file_descriptors[fd].file_pos >= boot_block->dir_count) {
+        // pcb->file_descriptors[fd].file_pos = 0;
         return 0;
     }
 
-    dentry_t dentry = boot_block->direntries[file_num];
+    dentry_t dentry = boot_block->direntries[pcb->file_descriptors[fd].file_pos];
     // get dentry of current file (index i)
-    read_dentry_by_index(file_num, &dentry);
+    read_dentry_by_index(pcb->file_descriptors[fd].file_pos, &dentry);
     for (j = 0; j < FILENAME_LEN; j++) {
         buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer
         num_read++;
     }
-    file_num++;
+    pcb->file_descriptors[fd].file_pos++;
     return num_read;
 }
 
@@ -250,7 +248,6 @@ int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes) {
  * Function: checks if valid name and updates file descriptors accordlingly
  */
 int32_t open_directory(const uint8_t* filename) {
-    file_num = 0;
     return 0;
 }
 
