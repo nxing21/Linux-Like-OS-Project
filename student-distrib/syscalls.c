@@ -95,7 +95,7 @@ int32_t system_execute(const uint8_t* command) {
     filename[file_index] = '\0';
 
     i = 0;
-    while(arg_idx != 0 && arg_idx < strlen((int8_t*) command) && command[arg_idx] != '\0') {
+    while(arg_idx != 0 && arg_idx < strlen((int8_t*) command) && command[arg_idx] != '\0' && command[arg_idx] != ' ') {
         cur_args[i] = command[arg_idx];
         arg_idx++;
         i++;
