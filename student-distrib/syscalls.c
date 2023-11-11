@@ -26,16 +26,19 @@ void init_fops_table() {
     term_read_ops.write = NULL;
     term_read_ops.read = &terminal_read;  
 
+    // Initializing rtc functions
     rtc_ops.open = &RTC_open;
     rtc_ops.close = &RTC_close;
     rtc_ops.write = &RTC_write;
     rtc_ops.read = &RTC_read;
 
+    // Initializing directory functions
     dir_ops.open = &open_directory;
     dir_ops.close = &close_directory;
     dir_ops.read = &read_directory;
     dir_ops.write = &write_directory;
 
+    // Initializing file functions
     file_ops.open = &open_file;
     file_ops.close = &close_file;
     file_ops.read = &read_file;
@@ -81,7 +84,7 @@ int32_t system_execute(const uint8_t* command) {
     while (command[i] != '\0' && i < FILENAME_LEN ) {
         if (command[i] == ' ') {
             arg_idx = i+1; //where the first arg potentially is
-            while (command[arg_idx] == ' ') {
+            while (command[arg_idx] == ' ') { //skipping spaces between executable name and first arg
                 arg_idx++;
             }
             break;
@@ -95,13 +98,13 @@ int32_t system_execute(const uint8_t* command) {
     filename[file_index] = '\0';
 
     i = 0;
-    while(arg_idx != 0 && arg_idx < strlen((int8_t*) command) && command[arg_idx] != '\0' && command[arg_idx] != ' ') {
+    //Get arguments and putting it into global buffer
+    while(arg_idx != 0 && arg_idx < strlen((int8_t*) command) && command[arg_idx] != '\0') {
         cur_args[i] = command[arg_idx];
         arg_idx++;
         i++;
     }
     cur_args[i] = '\0';
-    
 
 
     dentry_t dentry;
@@ -143,7 +146,6 @@ int32_t system_execute(const uint8_t* command) {
     // Set curr_pid to current pid
     pcb->parent_pid = curr_pid;
     curr_pid = pid;
-
 
     // Initializing stdin
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
@@ -428,8 +430,8 @@ int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
     if(strlen(cur_args) + 1 > nbytes || strlen(cur_args)  == 0) { //+1 to account for '\0' b/c strlen doesn't count it
         return -1;
     }
-    else {
-        memcpy(buf, cur_args, nbytes);
+    else { //if checks pass copy current aargs into user buffer
+        memcpy(buf, cur_args, nbytes); 
         return 0;
     } 
     
@@ -437,32 +439,26 @@ int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
 
 /* system_vidmap(uint8_t** screen_start)
  * Inputs: uint8_t** screen_start: maps the text-mode video memory into user space at a pre-set virtual address
- * Return Value: Close function result, -1 ("failure")
- * Function: 
+ * Return Value: 0 (success), -1 (failure)
+ * Function: Sets up Video Map paging and gives user space access
  */
 int32_t system_vidmap(uint8_t** screen_start) {
-    //use VIDEO_ADDR
-    // uint32_t lower_bound = EIGHT_MB + FOUR_MB*curr_pid; //start of user_page
-    // uint32_t upper_bound = lower_bound + FOUR_MB; // end of user_page not inclusive.
+
     if(screen_start == (uint8_t** ) NULL || !(screen_start >= (uint8_t** ) ONE_TWENTY_EIGHT_MB && screen_start <= (uint8_t** ) ONE_THIRTY_TWO_MB)) {
         return -1;
     }
     else{
-        // *screen_start = (unsigned int)(vid_map) >> shift_12;
-        // (unsigned int)(KERNEL_ADDR) >> shift_22;
         page_directory[USER_ADDR_INDEX + 1].kb.page_size = 0;   // 4 kB pages
-        page_directory[USER_ADDR_INDEX + 1].kb.present = 1;
-        page_directory[USER_ADDR_INDEX + 1].kb.base_addr =  (unsigned int)(vid_map )>> shift_12;
-        page_directory[USER_ADDR_INDEX + 1].kb.user_supervisor = 1;
+        page_directory[USER_ADDR_INDEX + 1].kb.present = 1; // set to present
+        page_directory[USER_ADDR_INDEX + 1].kb.base_addr =  (unsigned int)(vid_map )>> shift_12; // physical address set
+        page_directory[USER_ADDR_INDEX + 1].kb.user_supervisor = 1; //giving user access
         page_directory[USER_ADDR_INDEX + 1].kb.global = 1;
 
-
         flushTLB();
-        vid_map[0].present = 1;
-        vid_map[0].user_supervisor = 1;
-        vid_map[0].base_addr = (int) VIDEO_ADDR/ ALIGN;
-
-        *screen_start = (uint8_t* ) ONE_TWENTY_EIGHT_MB + FOUR_MB;
+        vid_map[0].present = 1; // set to present
+        vid_map[0].user_supervisor = 1; //giving user access
+        vid_map[0].base_addr = (int) VIDEO_ADDR/ ALIGN; // physical address set
+        *screen_start = (uint8_t* ) ONE_TWENTY_EIGHT_MB + FOUR_MB; // setting start of virtual video memory
     }
 
     return 0;
