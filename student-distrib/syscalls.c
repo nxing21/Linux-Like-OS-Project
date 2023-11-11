@@ -250,8 +250,6 @@ int32_t system_halt(uint8_t status) {
 
     // If currently running base shell, reload
     if (curr_pid == 0) {
-        printf("cannot close base shell\n");
-        
         asm volatile("                                          \n\
                     cli                                         \n\
                     movw $0x2B, %%ax  # user ds                 \n\
