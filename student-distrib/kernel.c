@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+#include "pit.h"
 
 // MP 3.1: Added headers
 #include "init_devices.h"
@@ -166,6 +167,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the page*/
     init_page();
+
+    /* Initializes the PIT. */
+    init_pit();
 
     clear();
     init_file_sys(fs);

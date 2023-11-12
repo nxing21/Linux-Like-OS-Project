@@ -6,6 +6,7 @@ static int shift_held = 0;
 static int caps_locked_activated = 0;
 static int caps_lock_held = 0;
 static int ctrl_held = 0;
+static int alt_held = 0;
 
 /* Making a keyboard buffer. */
 uint8_t keyboard_buffer[MAX_BUFFER_SIZE];
@@ -72,6 +73,12 @@ void keyboard_handler(){
             break;
         case TAB_PRESSED:
             tab_key_handler();
+            break;
+        case ALT_PRESSED:
+            alt_key_handler(ALT_PRESSED);
+            break;
+        case ALT_RELEASED:
+            alt_key_handler(ALT_RELEASED);
             break;
         default:
             typing_handler(response);
@@ -153,6 +160,39 @@ void ctrl_key_handler(uint8_t response){
 }
 
 /* 
+ * alt_key_handler
+ *   DESCRIPTION: Takes care of the ALT key.
+ *   INPUTS: uint8_t response -- The ALT key.
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Sets flags based on the state of the ALT key.
+ *                 
+ */
+void alt_key_handler(uint8_t response){
+    if (response == ALT_PRESSED && alt_held == 0){
+        alt_held = 1;
+    }
+
+    if (response == ALT_RELEASED && alt_held == 1){
+        alt_held = 0;
+    }
+
+    /* Set up the logic between switching the terminals. */
+    if (response == F1_PRESSED){
+
+    }
+    if (response == F2_PRESSED){
+
+    }
+    if (response == F3_PRESSED){
+
+    }
+
+
+
+}
+
+/* 
  * typing_handler
  *   DESCRIPTION: Handles typing based on the scan code given by the keyboard.
  *   INPUTS: uint8_t response -- The scan code to map.
@@ -189,6 +229,12 @@ void typing_handler(uint8_t response){
     /* Special case where the CTRL key is held. */
     if (ctrl_held == 1){
         ctrl_key_handler(printed_char);
+        return;
+    }
+
+    /* Special case where the alt key is held. */
+    if (alt_held == 1){
+        alt_key_handler(response);
         return;
     }
 
