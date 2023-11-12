@@ -43,8 +43,6 @@ void init_fops_table() {
     file_ops.close = &close_file;
     file_ops.read = &read_file;
     file_ops.write = &write_file;
-
-
 }
 
 /* system_execute(const uint8_t* command)
@@ -98,14 +96,33 @@ int32_t system_execute(const uint8_t* command) {
     filename[file_index] = '\0';
 
     i = 0;
-    //Get arguments and putting it into global buffer
+    // two variables we will be using to check for spaces at the end of the argument
+    int temp_idx;
+    int space_flag;
+    // Get arguments and putting it into global buffer
     while(arg_idx != 0 && arg_idx < strlen((int8_t*) command) && command[arg_idx] != '\0') {
-        cur_args[i] = command[arg_idx];
+        if (command[arg_idx] == ' ') {
+            space_flag = 0; // space_flag being set to 1 means we are currently iterating through useless spaces at the end
+            temp_idx = arg_idx; // temporary index since arg_idx needs to be saved for later
+            while (command[temp_idx] != '\0') {
+                if (command[temp_idx] != ' ') {
+                    space_flag = 1; // if we found a non-space, it means the space we found originally is not at the end, so we set space_flag to 1
+                    break;
+                }
+                temp_idx++; // keep iterating until end of string or we found a non-space
+            }
+            if (!space_flag) {
+                // if we were at the end of the string, we don't want to add the useless spaces
+                break;
+            }
+        }
+        
+        cur_args[i] = command[arg_idx]; // copy argument into cur_args
+        // iterate index trackers
         arg_idx++;
         i++;
     }
     cur_args[i] = '\0';
-
 
     dentry_t dentry;
     // Check the validity of the filename
