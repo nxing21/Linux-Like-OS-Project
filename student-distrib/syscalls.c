@@ -83,7 +83,7 @@ int32_t system_execute(const uint8_t* command) {
     // Get the name of the executable
     while (command[i] != '\0' && i < FILENAME_LEN ) {
         if (command[i] == ' ') {
-            arg_idx = i+1; //where the first arg potentially is
+            arg_idx = i + 1; //where the first arg potentially is
             while (command[arg_idx] == ' ') { //skipping spaces between executable name and first arg
                 arg_idx++;
             }
@@ -427,14 +427,13 @@ int32_t system_close (int32_t fd) {
  * Function: Reads the program’s command line arguments into a user-level buffer.
  */
 int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
-    if(strlen(cur_args) + 1 > nbytes || strlen(cur_args)  == 0) { //+1 to account for '\0' b/c strlen doesn't count it
+    if(strlen(cur_args) + 1 > nbytes || strlen(cur_args) == 0) { //+1 to account for '\0' b/c strlen doesn't count it
         return -1;
     }
     else { //if checks pass copy current aargs into user buffer
         memcpy(buf, cur_args, nbytes); 
         return 0;
     } 
-    
 }
 
 /* system_vidmap(uint8_t** screen_start)
@@ -443,11 +442,10 @@ int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
  * Function: Sets up Video Map paging and gives user space access
  */
 int32_t system_vidmap(uint8_t** screen_start) {
-
-    if(screen_start == (uint8_t** ) NULL || !(screen_start >= (uint8_t** ) ONE_TWENTY_EIGHT_MB && screen_start <= (uint8_t** ) ONE_THIRTY_TWO_MB)) {
+    if(screen_start == (uint8_t**) NULL || !(screen_start >= (uint8_t**) ONE_TWENTY_EIGHT_MB && screen_start <= (uint8_t**) ONE_THIRTY_TWO_MB)) {
         return -1;
     }
-    else{
+    else {
         page_directory[USER_ADDR_INDEX + 1].kb.page_size = 0;   // 4 kB pages
         page_directory[USER_ADDR_INDEX + 1].kb.present = 1; // set to present
         page_directory[USER_ADDR_INDEX + 1].kb.base_addr =  (unsigned int)(vid_map )>> shift_12; // physical address set
