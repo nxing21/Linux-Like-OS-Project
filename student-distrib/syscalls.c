@@ -103,7 +103,7 @@ int32_t system_execute(const uint8_t* command) {
     // Get arguments and putting it into global buffer
     while(arg_idx != 0 && arg_idx < strlen((int8_t*) command) && command[arg_idx] != '\0') {
         if (command[arg_idx] == ' ') {
-            space_flag = 0; // space_flag being set to 1 means we are currently iterating through useless spaces at the end
+            space_flag = 0; // space_flag being set to 0 means we are currently iterating through useless spaces at the end
             temp_idx = arg_idx; // temporary index since arg_idx needs to be saved for later
             while (command[temp_idx] != '\0') {
                 if (command[temp_idx] != ' ') {
@@ -466,14 +466,14 @@ int32_t system_vidmap(uint8_t** screen_start) {
     else {
         page_directory[USER_ADDR_INDEX + 1].kb.page_size = 0;   // 4 kB pages
         page_directory[USER_ADDR_INDEX + 1].kb.present = 1; // set to present
-        page_directory[USER_ADDR_INDEX + 1].kb.base_addr =  (unsigned int)(vid_map )>> shift_12; // physical address set
+        page_directory[USER_ADDR_INDEX + 1].kb.base_addr =  (unsigned int)(vid_map) >> shift_12; // physical address set
         page_directory[USER_ADDR_INDEX + 1].kb.user_supervisor = 1; //giving user access
         page_directory[USER_ADDR_INDEX + 1].kb.global = 1;
 
         flushTLB();
         vid_map[0].present = 1; // set to present
         vid_map[0].user_supervisor = 1; //giving user access
-        vid_map[0].base_addr = (int) VIDEO_ADDR/ ALIGN; // physical address set
+        vid_map[0].base_addr = (int) VIDEO_ADDR / ALIGN; // physical address set
         *screen_start = (uint8_t* ) ONE_TWENTY_EIGHT_MB + FOUR_MB; // setting start of virtual video memory
     }
 

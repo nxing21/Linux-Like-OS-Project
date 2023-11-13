@@ -21,8 +21,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     int i; /* allows us to iterate through the buffer. */
     int enterAtEnd; /* checks if there is an enter at the end*/
     enterAtEnd = 0;
-    while (buffer[buffer_size-1] != END_OF_LINE){
-    }
+    while (buffer[buffer_size-1] != END_OF_LINE) {}
 
     /* copies the terminal buffer into the userspace buffer. */
     for (i = 0; i < nbytes; i++) {
