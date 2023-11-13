@@ -7,7 +7,8 @@
 #include "terminal.h"
 
 int cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // cur_processes keeps track of current processes that are running
-char* cur_args = "";
+char* cur_args = ""; // keeps track of current arguments inputted
+
 /* init_fops_table()
  * Inputs: none
  * Return Value: none
@@ -75,7 +76,7 @@ int32_t system_execute(const uint8_t* command) {
     i = 0;
     file_index = 0;
 
-    while (command[i] == ' ') {
+    while (command[i] == ' ') { //skips initial spaces
         i++;
     }
     // Get the name of the executable
@@ -482,7 +483,7 @@ int32_t system_vidmap(uint8_t** screen_start) {
 /* system_set_handler(int32_t signum, void* handler_access)
  * Inputs: int32_t signum, void* handler_access
  * Return Value: 
- * Function: 
+ * Function: not implemented
  */
 int32_t system_set_handler(int32_t signum, void* handler_access) {
     return -1;
@@ -491,7 +492,7 @@ int32_t system_set_handler(int32_t signum, void* handler_access) {
 /* system_sigreturn(void)
  * Inputs: none
  * Return Value: 
- * Function: 
+ * Function: not implemented
  */
 int32_t system_sigreturn(void) {
     return -1;
