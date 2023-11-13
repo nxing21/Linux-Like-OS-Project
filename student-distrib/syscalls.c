@@ -250,7 +250,6 @@ int32_t system_execute(const uint8_t* command) {
     return 0;
 }
 
-
 /* system_halt(uint8_t status)
  * Inputs: uint8_t status: return value set by user program
  * Return Value: never actually returns a value
@@ -331,7 +330,6 @@ int32_t system_halt(uint8_t status) {
     // Will never reach here
     return 0;
 }
-
 
 /* system_read (int32_t fd, void* buf, int32_t nbytes)
  * Inputs: int32_t fd: file descriptor index,
@@ -474,7 +472,7 @@ int32_t system_vidmap(uint8_t** screen_start) {
         vid_map[0].present = 1; // set to present
         vid_map[0].user_supervisor = 1; //giving user access
         vid_map[0].base_addr = (int) VIDEO_ADDR / ALIGN; // physical address set
-        *screen_start = (uint8_t* ) ONE_TWENTY_EIGHT_MB + FOUR_MB; // setting start of virtual video memory
+        *screen_start = (uint8_t*) ONE_TWENTY_EIGHT_MB + FOUR_MB; // setting start of virtual video memory
     }
 
     return 0;
@@ -515,7 +513,6 @@ void process_page(int process_id) {
         page_directory[USER_ADDR_INDEX].mb.global = 1;
     }
 }
-
 
 /* get_pcb(uint32_t pid)
  * Inputs: uint32_t pid: process_id that we want to get correct pcb pointer for
