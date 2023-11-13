@@ -149,6 +149,13 @@ Nov 9th: 2023:
     - We then set it so that the tss holds the esp0 and ss of the child's pcb.
     - Took us about 7 hours to fix. 
 
+Nov 9th: 2023:
+    - Fixed an issue where vidmap implementation was causing page faults.
+    - When running vidmap I would get instant page faults.
+    - Turns out I had forgot to setup vidmap in page.called
+    - Simple to fix just added vidmap to our paging iteration loop
+    - Took us about 20 minutes to fix.
+
 Nov 10th: 2023:
     - Faced an issue where fish was not displaying the correct animation
     - We noticed that after open set fd 2 file_op_ptr to rtc functions, it got overwritten by the next open.
