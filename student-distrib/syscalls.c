@@ -466,7 +466,7 @@ int32_t system_vidmap(uint8_t** screen_start) {
     else {
         page_directory[USER_ADDR_INDEX + 1].kb.page_size = 0;   // 4 kB pages
         page_directory[USER_ADDR_INDEX + 1].kb.present = 1; // set to present
-        page_directory[USER_ADDR_INDEX + 1].kb.base_addr =  (unsigned int)(vid_map) >> shift_12; // physical address set
+        page_directory[USER_ADDR_INDEX + 1].kb.base_addr = (unsigned int)(vid_map) >> shift_12; // physical address set
         page_directory[USER_ADDR_INDEX + 1].kb.user_supervisor = 1; //giving user access
         page_directory[USER_ADDR_INDEX + 1].kb.global = 1;
 
