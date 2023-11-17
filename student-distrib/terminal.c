@@ -2,10 +2,6 @@
 #include "lib.h"
 #include "terminal.h"
 
-// uint8_t buffer[MAX_BUF_SIZE];
-// uint8_t write_buffer[MAX_BUF_SIZE];
-// int buffer_size = 0;
-
 /* An array to keep track of the current terminal. */
 terminal_info_t terminal_array[MAX_TERMINALS];
 
@@ -24,6 +20,7 @@ void init_terminal(){
     int i; /* Loop through each terminal in the terminal array*/
 
     for (i = 0; i < MAX_TERMINALS; i++){
+        terminal_array[i].terminal_id = i;
         terminal_array[i].buffer_size = 0;
     }
 }

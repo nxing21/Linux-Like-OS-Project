@@ -6,7 +6,7 @@
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
-#define ATTRIB      0x30
+#define ATTRIB      0x38
 #define CURSOR_LOC_HIGH_REG 0x0E
 #define CURSOR_LOC_LOW_REG 0x0F
 #define GET_8_MSB 8

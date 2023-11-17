@@ -17,6 +17,7 @@ typedef struct terminal_info {
     uint8_t buffer[MAX_BUF_SIZE];
     uint8_t write_buffer[MAX_BUF_SIZE];
     uint8_t buffer_size;
+    uint8_t terminal_id;
 } terminal_info_t;
 
 /* Prints a string of characters to the screen */
