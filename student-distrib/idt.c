@@ -76,9 +76,12 @@ void build_idt() {
     idt[RTC].present = 1;
     idt[KEYBOARD].reserved3 = 0; // Need to change to interrupt gate. See ISA manual page 156.
     idt[KEYBOARD].present = 1;
+    idt[PIT].reserved3 = 0; // Need to change to interrupt gate. See ISA manual page 156.
+    idt[PIT].present = 1;
     // Sets each interrupt with corresponding function pointer
     SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler_linkage);
     SET_IDT_ENTRY(idt[RTC], rtc_handler_linkage);
+    SET_IDT_ENTRY(idt[PIT], pit_handler_linkage);
 }
 
 /* divide_error()

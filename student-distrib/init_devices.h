@@ -34,10 +34,16 @@
 
 #define LEFT_CTL_PRESSED 0x1D
 #define LEFT_CTL_RELEASED 0x9D
-// #define RIGHT_CTL_PRESSED 0xE01D
-// #define RIGHT_CTL_RELEASED 0xE09D
+
+#define ALT_PRESSED 0x38
+#define ALT_RELEASED 0xB8
+
 #define ENTER_PRESESED 0x1C
 #define TAB_PRESSED 0x0F
+
+#define F1_PRESSED 0xBB
+#define F2_PRESSED 0xBC
+#define F3_PRESSED 0xBD
 
 #define READ_PS2_OUTPUT 0xD0
 #define MAX_BUFFER_SIZE 128
@@ -75,6 +81,9 @@ void enter_key_handler();
 
 /* Takes care of TAB key. */
 void tab_key_handler();
+
+/* Takes care of the ALT key. */
+void alt_key_handler(uint8_t response);
 
 /* Retrieves a character based on scan code. */
 uint8_t default_scan_code_data(uint8_t response);
