@@ -5,8 +5,7 @@
 /* An array to keep track of the current terminal. */
 terminal_info_t terminal_array[MAX_TERMINALS];
 
-/* Keeps track of the current terminal. */
-int curr_terminal = 0;
+
 
 /* 
  * init_terminal.
@@ -18,7 +17,7 @@ int curr_terminal = 0;
  */
 void init_terminal(){
     int i; /* Loop through each terminal in the terminal array*/
-
+    curr_terminal = 0;
     for (i = 0; i < MAX_TERMINALS; i++){
         terminal_array[i].terminal_id = i;
         terminal_array[i].buffer_size = 0;

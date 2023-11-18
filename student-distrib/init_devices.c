@@ -24,6 +24,7 @@ void init_ps2devices(){
     /* Enable IRQ 1 in the PIC*/
     keyboard_buffer_size = 0;
     enable_irq(KEYBOARD_IRQ);
+    screen_terminal = 0;
 }
 
 /* 
@@ -179,13 +180,13 @@ void alt_key_handler(uint8_t response){
 
     /* Set up the logic between switching the terminals. */
     if (response == F1_PRESSED){
-
+        switch_screen(0);
     }
     if (response == F2_PRESSED){
-
+        switch_screen(1);
     }
     if (response == F3_PRESSED){
-
+        switch_screen(2);
     }
 
 
@@ -396,4 +397,11 @@ uint8_t shift_and_caps_data(uint8_t response){
     'v', 'b', 'n', 'm', '<', '>', QUESTION_MARK_ASCII, 0x0, '*', 0x0, SPACE_ASCII};
 
     return scan_code_data[response];
+}
+
+void switch_screen(uint8_t new_terminal){
+    memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to terminal video page
+
+    screen_terminal = new_terminal;
+    memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((screen_terminal+1) << 12), 4096); // save terminal video page to  current screen mem values 
 }

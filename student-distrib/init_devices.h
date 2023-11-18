@@ -54,6 +54,11 @@
 #define SINGLE_QUOTE_ASCII 0x27
 #define BACKWARD_SLASH_ASCII 0x5C
 #define SPACE_ASCII 0x20
+#define VIDEO_ADDR 0xB8000     // from lib.c
+
+//Keeps track of Terminal being looked at (Displayed Terminal)
+int screen_terminal;
+
 
 /* Initializes the PS/2 devices. */
 void init_ps2devices();
@@ -97,6 +102,7 @@ uint8_t shift_key_scan_data(uint8_t response);
 /* Maps a scan code to a character if both SHIFT and CAPS Lock is on*/
 uint8_t shift_and_caps_data(uint8_t response);
 
-
+/*Handles terminal video page and terminal logic*/
+void switch_screen(uint8_t new_terminal);
 
 #endif

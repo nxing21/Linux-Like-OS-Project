@@ -12,6 +12,9 @@
 #define END_OF_LINE 0x0A
 #define MAX_TERMINALS 3
 
+/* Keeps track of the current terminal. */
+int curr_terminal;
+
 /* A struct holding information about the terminal. */
 typedef struct terminal_info {
     uint8_t buffer[MAX_BUF_SIZE];

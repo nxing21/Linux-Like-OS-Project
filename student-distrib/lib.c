@@ -2,6 +2,8 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "terminal.h"
+#include "init_devices.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
@@ -180,13 +182,19 @@ int32_t puts(int8_t* s) {
 void putc(uint8_t c) {
     int i, j;
     uint8_t character;
+    char *true_mem = video_mem;
+
+    if(curr_terminal != screen_terminal){
+        true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
+    }
+
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
     } 
     else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(true_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(true_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
         check_size(); // added function
         screen_x %= NUM_COLS;
@@ -197,18 +205,18 @@ void putc(uint8_t c) {
     if (screen_y > NUM_ROWS-1){
         for (i = 0; i < NUM_ROWS-1; i++){
             for (j = 0; j < NUM_COLS; j++){
-                character = *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1));
-                *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
-                *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = character;
-                *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
+                character = *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1));
+                *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
+                *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1)) = character;
+                *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
             }
         }
 
         /* Separate case for printing the last row, since there is no row below it. */
         i = NUM_ROWS-1;
         for (j = 0; j < NUM_COLS; j++){
-            *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
-            *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1) + 1) = ATTRIB;
+            *(uint8_t *)(true_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
+            *(uint8_t *)(true_mem + ((NUM_COLS * (i) + j) << 1) + 1) = ATTRIB;
         }
         screen_y = NUM_ROWS-1;
         screen_x = 0;
