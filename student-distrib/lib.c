@@ -196,8 +196,8 @@ void putc(uint8_t c) {
         screen_x = 0;
     } 
     else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(true_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(true_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
         check_size(); // added function
         screen_x %= NUM_COLS;
@@ -208,18 +208,18 @@ void putc(uint8_t c) {
     if (screen_y > NUM_ROWS-1){
         for (i = 0; i < NUM_ROWS-1; i++){
             for (j = 0; j < NUM_COLS; j++){
-                character = *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1));
-                *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
-                *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = character;
-                *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
+                character = *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1));
+                *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
+                *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1)) = character;
+                *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
             }
         }
 
         /* Separate case for printing the last row, since there is no row below it. */
         i = NUM_ROWS-1;
         for (j = 0; j < NUM_COLS; j++){
-            *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
-            *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1) + 1) = ATTRIB;
+            *(uint8_t *)(true_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
+            *(uint8_t *)(true_mem + ((NUM_COLS * (i) + j) << 1) + 1) = ATTRIB;
         }
         screen_y = NUM_ROWS-1;
         screen_x = 0;
