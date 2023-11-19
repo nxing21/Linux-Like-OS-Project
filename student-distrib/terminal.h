@@ -12,7 +12,11 @@
 #define END_OF_LINE 0x0A
 #define MAX_TERMINALS 3
 
-/* Keeps track of the current terminal. */
+
+//Keeps track of Terminal being looked at (Displayed Terminal)
+int screen_terminal;
+
+/* Keeps track of the current terminal being scheduled (Terminal currently being handled by scheduler). */
 int curr_terminal;
 
 /* A struct holding information about the terminal. */
@@ -21,6 +25,8 @@ typedef struct terminal_info {
     uint8_t write_buffer[MAX_BUF_SIZE];
     uint8_t buffer_size;
     uint8_t terminal_id;
+    int screen_x;
+    int screen_y;
 } terminal_info_t;
 
 /* Prints a string of characters to the screen */

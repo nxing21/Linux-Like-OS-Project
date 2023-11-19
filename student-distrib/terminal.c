@@ -17,10 +17,13 @@ terminal_info_t terminal_array[MAX_TERMINALS];
  */
 void init_terminal(){
     int i; /* Loop through each terminal in the terminal array*/
-    curr_terminal = 0;
+    curr_terminal = 1;
+    screen_terminal = 0;
     for (i = 0; i < MAX_TERMINALS; i++){
         terminal_array[i].terminal_id = i;
         terminal_array[i].buffer_size = 0;
+        terminal_array[i].screen_x = 0;
+        terminal_array[i].screen_y = 0;
     }
 }
 
@@ -114,29 +117,29 @@ int edit_buffer(uint8_t response) {
     cli();
     /* Case where the terminal buffer is full. */ 
         /* Checks if the second to last index is the FULL and is the ENTER KEY*/
-    if (terminal_array[curr_terminal].buffer_size == MAX_BUF_SIZE-2 && response == ENTER_KEY){
-        terminal_array[curr_terminal].buffer[terminal_array[curr_terminal].buffer_size] = END_OF_LINE;
-        terminal_array[curr_terminal].buffer_size++;
+    if (terminal_array[screen_terminal].buffer_size == MAX_BUF_SIZE-2 && response == ENTER_KEY){
+        terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
+        terminal_array[screen_terminal].buffer_size++;
     }
     /* Case to delete from the buffer. */
     else if (response == BACKSPACE_PRESSED) {
-        if (terminal_array[curr_terminal].buffer_size > 0) {
-            terminal_array[curr_terminal].buffer[terminal_array[curr_terminal].buffer_size] = 0x0;
-            terminal_array[curr_terminal].buffer_size--;
+        if (terminal_array[screen_terminal].buffer_size > 0) {
+            terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = 0x0;
+            terminal_array[screen_terminal].buffer_size--;
         }
-        if (terminal_array[curr_terminal].buffer_size == 0) {
-            terminal_array[curr_terminal].buffer[terminal_array[curr_terminal].buffer_size] = 0x0;
+        if (terminal_array[screen_terminal].buffer_size == 0) {
+            terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = 0x0;
         }
     }
     /* Add a character to the buffer */
     else{
         if (response == ENTER_KEY) {
-            terminal_array[curr_terminal].buffer[terminal_array[curr_terminal].buffer_size] = END_OF_LINE;
+            terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
         }
         else {
-            terminal_array[curr_terminal].buffer[terminal_array[curr_terminal].buffer_size] = response;
+            terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = response;
         }
-        terminal_array[curr_terminal].buffer_size++;
+        terminal_array[screen_terminal].buffer_size++;
     }
     sti();
     return 0;
@@ -154,7 +157,7 @@ int clear_writebuffer() {
     /* clear the buffer, resetes size. */
     int i; 
     for (i = 0; i < MAX_BUF_SIZE; i++) {
-        terminal_array[curr_terminal].write_buffer[i] = 0x0;
+        terminal_array[screen_terminal].write_buffer[i] = 0x0;
     }
     return 0;
 }
