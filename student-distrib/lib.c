@@ -224,6 +224,7 @@ void putc(uint8_t c) {
         screen_y = NUM_ROWS-1;
         screen_x = 0;
     }
+
     move_cursor();
 }
 
@@ -559,7 +560,6 @@ void erase_char(){
 void move_cursor(){
     uint16_t position;
     position = screen_y * NUM_COLS + screen_x;
-
     /* Edit ports to move the cursor. */
     outb(CURSOR_LOC_LOW_REG, CRTC_ADDR_PORT);
     outb((uint8_t)(position & GET_8_BITS), CRTC_DATA_PORT);
