@@ -25,6 +25,7 @@ void init_ps2devices(){
     keyboard_buffer_size = 0;
     enable_irq(KEYBOARD_IRQ);
     screen_terminal = 0;
+    DISPLAY_ON_MAIN_PAGE = 0;
 }
 
 /* 
@@ -155,6 +156,7 @@ void ctrl_key_handler(uint8_t response){
     if (response == 'l' || response == 'L'){
         clear();
         for (i = 0; i < keyboard_buffer_size; i++){
+            DISPLAY_ON_MAIN_PAGE = 1;
             putc(keyboard_buffer[i]);
         }
     }
@@ -250,6 +252,7 @@ void typing_handler(uint8_t response){
             keyboard_buffer[keyboard_buffer_size] = printed_char;
             edit_buffer(printed_char);
             keyboard_buffer_size++;
+            DISPLAY_ON_MAIN_PAGE = 1;
             putc(printed_char);
         }
     }
@@ -292,6 +295,7 @@ void enter_key_handler(){
 
     /* Adds the new line character to the screen.  */
     edit_buffer(ENTER_PRESESED);
+    DISPLAY_ON_MAIN_PAGE = 1;
     putc('\n');
     
     /* Clear out the keyboard buffer. */
@@ -320,6 +324,7 @@ void tab_key_handler(){
         else{
             keyboard_buffer[keyboard_buffer_size] = SPACE_ASCII;
             keyboard_buffer_size++;
+            DISPLAY_ON_MAIN_PAGE = 1;
             putc(SPACE_ASCII);
             edit_buffer(SPACE_ASCII);
         }

@@ -59,6 +59,9 @@
 //Keeps track of Terminal being looked at (Displayed Terminal)
 int screen_terminal;
 
+//typing flag to let lib.c no to display on main video page
+int DISPLAY_ON_MAIN_PAGE;
+
 
 /* Initializes the PS/2 devices. */
 void init_ps2devices();
