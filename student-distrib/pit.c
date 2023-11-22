@@ -39,7 +39,6 @@ void scheduler() {
     // First time opening this terminal, need to call execute shell
     if (active_terminals[screen_terminal] == 0) {
         active_terminals[screen_terminal] = 1;
-        curr_terminal = screen_terminal;
         system_execute((uint8_t *) "shell");
     }
 }
