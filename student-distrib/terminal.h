@@ -47,4 +47,7 @@ int clear_writebuffer();
 /* Deletes a character from the screen and the input buffer. */
 int edit_buffer(uint8_t response);
 
+/* Initialize the terminal */
+void init_terminal();
+
 #endif

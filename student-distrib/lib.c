@@ -8,7 +8,7 @@
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
-#define ATTRIB      0x38
+#define ATTRIB      0x7
 #define CURSOR_LOC_HIGH_REG 0x0E
 #define CURSOR_LOC_LOW_REG 0x0F
 #define GET_8_MSB 8
@@ -184,10 +184,10 @@ void putc(uint8_t c) {
     uint8_t character;
     char *true_mem = video_mem;
 
-    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE != 1)){
+    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE != 1)) {
         true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
     }
-    else{
+    else {
         DISPLAY_ON_MAIN_PAGE = 0; //setting flag back to zero, it's keyboard handlers jobs to let libc know each time
     }
 

@@ -94,9 +94,6 @@ void init_page() {
     page_table[mem+3].present = 1;   // present
     page_table[mem+3].cache_disabled = 1;   // disables caching (prob don't need)
 
-
-
-
     // Assembly functions to set up paging
     loadPageDirectory((unsigned int*)page_directory);
     enablePaging();

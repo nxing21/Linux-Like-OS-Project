@@ -40,8 +40,6 @@ typedef struct boot_block {
     dentry_t direntries[DIR_ENTRIES];
 } boot_block_t;
 
-uint32_t length_buf[BYTES_PER_BLOCK];
-
 // function declarations
 void init_file_sys(uint32_t starting_addr);
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);

@@ -5,8 +5,6 @@
 /* An array to keep track of the current terminal. */
 terminal_info_t terminal_array[MAX_TERMINALS];
 
-
-
 /* 
  * init_terminal.
  *   DESCRIPTION: Sets up the terminals by setting the buffer size of each terminal to 0.
@@ -15,7 +13,7 @@ terminal_info_t terminal_array[MAX_TERMINALS];
  *   RETURN VALUE: none
  *   SIDE EFFECTS: Sets the buffer size of each terminal to 0.
  */
-void init_terminal(){
+void init_terminal() {
     int i; /* Loop through each terminal in the terminal array*/
     curr_terminal = 0;
     screen_terminal = 0;
