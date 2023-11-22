@@ -6,6 +6,7 @@ static int shift_held = 0;
 static int caps_locked_activated = 0;
 static int caps_lock_held = 0;
 static int ctrl_held = 0;
+static int alt_held = 0;
 
 /* Making a keyboard buffer. */
 uint8_t keyboard_buffer[MAX_BUFFER_SIZE];
@@ -23,6 +24,7 @@ void init_ps2devices(){
     /* Enable IRQ 1 in the PIC*/
     keyboard_buffer_size = 0;
     enable_irq(KEYBOARD_IRQ);
+    DISPLAY_ON_MAIN_PAGE = 0;
 }
 
 /* 
@@ -72,6 +74,12 @@ void keyboard_handler(){
             break;
         case TAB_PRESSED:
             tab_key_handler();
+            break;
+        case ALT_PRESSED:
+            alt_key_handler(ALT_PRESSED);
+            break;
+        case ALT_RELEASED:
+            alt_key_handler(ALT_RELEASED);
             break;
         default:
             typing_handler(response);
@@ -147,9 +155,43 @@ void ctrl_key_handler(uint8_t response){
     if (response == 'l' || response == 'L'){
         clear();
         for (i = 0; i < keyboard_buffer_size; i++){
+            DISPLAY_ON_MAIN_PAGE = 1;
             putc(keyboard_buffer[i]);
         }
     }
+}
+
+/* 
+ * alt_key_handler
+ *   DESCRIPTION: Takes care of the ALT key.
+ *   INPUTS: uint8_t response -- The ALT key.
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Sets flags based on the state of the ALT key.
+ *                 
+ */
+void alt_key_handler(uint8_t response){
+    if (response == ALT_PRESSED && alt_held == 0){
+        alt_held = 1;
+    }
+
+    if (response == ALT_RELEASED && alt_held == 1){
+        alt_held = 0;
+    }
+
+    /* Set up the logic between switching the terminals. */
+    if (response == F1_PRESSED){
+        switch_screen(0);
+    }
+    if (response == F2_PRESSED){
+        switch_screen(1);
+    }
+    if (response == F3_PRESSED){
+        switch_screen(2);
+    }
+
+
+
 }
 
 /* 
@@ -192,6 +234,12 @@ void typing_handler(uint8_t response){
         return;
     }
 
+    /* Special case where the alt key is held. */
+    if (alt_held == 1){
+        alt_key_handler(response);
+        return;
+    }
+
     /* Checks if the current ASCII can be printed. If so, add to the buffer and print to screen. */
     if (printed_char != 0x0){
         if (keyboard_buffer_size < 0){
@@ -203,6 +251,7 @@ void typing_handler(uint8_t response){
             keyboard_buffer[keyboard_buffer_size] = printed_char;
             edit_buffer(printed_char);
             keyboard_buffer_size++;
+            DISPLAY_ON_MAIN_PAGE = 1;
             putc(printed_char);
         }
     }
@@ -245,6 +294,7 @@ void enter_key_handler(){
 
     /* Adds the new line character to the screen.  */
     edit_buffer(ENTER_PRESESED);
+    DISPLAY_ON_MAIN_PAGE = 1;
     putc('\n');
     
     /* Clear out the keyboard buffer. */
@@ -273,6 +323,7 @@ void tab_key_handler(){
         else{
             keyboard_buffer[keyboard_buffer_size] = SPACE_ASCII;
             keyboard_buffer_size++;
+            DISPLAY_ON_MAIN_PAGE = 1;
             putc(SPACE_ASCII);
             edit_buffer(SPACE_ASCII);
         }
@@ -350,4 +401,11 @@ uint8_t shift_and_caps_data(uint8_t response){
     'v', 'b', 'n', 'm', '<', '>', QUESTION_MARK_ASCII, 0x0, '*', 0x0, SPACE_ASCII};
 
     return scan_code_data[response];
+}
+
+void switch_screen(uint8_t new_terminal){
+    memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to terminal video page
+
+    screen_terminal = new_terminal;
+    memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((screen_terminal+1) << 12), 4096); // save terminal video page to  current screen mem values 
 }
