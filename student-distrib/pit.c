@@ -1,4 +1,6 @@
 #include "pit.h"
+#include "terminal.h"
+#include "syscalls.h"
 
 int timer = 0;
 
@@ -16,5 +18,7 @@ void init_pit(){
 
 void pit_handler()
 {   
+    //pause everything and save previous terminal information
+    curr_terminal = (curr_terminal+1)%3; 
     send_eoi(PIT_IRQ);
 }
