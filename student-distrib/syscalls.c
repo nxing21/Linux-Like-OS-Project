@@ -160,6 +160,8 @@ int32_t system_execute(const uint8_t* command) {
     pcb_t *pcb = get_pcb(pid);
     // Initialize PCB's pid
     pcb->pid = pid;
+    // Set PCB's terminal ID
+    pcb->terminal_id = curr_terminal;
 
     // Set curr_pid to current pid
     pcb->parent_pid = curr_pid;

@@ -25,9 +25,13 @@ typedef struct terminal_info {
     uint8_t write_buffer[MAX_BUF_SIZE];
     uint8_t buffer_size;
     uint8_t terminal_id;
+    uint8_t flag;
     int screen_x;
     int screen_y;
 } terminal_info_t;
+
+/* An array to keep track of the 3 terminals. */
+terminal_info_t terminal_array[MAX_TERMINALS];
 
 /* Prints a string of characters to the screen */
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);

@@ -2,9 +2,6 @@
 #include "lib.h"
 #include "terminal.h"
 
-/* An array to keep track of the current terminal. */
-terminal_info_t terminal_array[MAX_TERMINALS];
-
 /* 
  * init_terminal.
  *   DESCRIPTION: Sets up the terminals by setting the buffer size of each terminal to 0.
@@ -22,7 +19,10 @@ void init_terminal() {
         terminal_array[i].buffer_size = 0;
         terminal_array[i].screen_x = 0;
         terminal_array[i].screen_y = 0;
+        terminal_array[i].flag = 0;
     }
+    // At the start, only the first terminal (terminal 0) will be active
+    terminal_array[0].flag = 1; 
 }
 
 /* 

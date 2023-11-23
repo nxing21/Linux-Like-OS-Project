@@ -72,6 +72,7 @@ typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
     uint32_t pid;
     uint32_t parent_pid;
+    uint32_t terminal_id;
     uint32_t esp;
     uint32_t ebp;
     uint32_t eip;
