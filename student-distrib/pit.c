@@ -19,7 +19,6 @@ void init_pit(){
     // terminal_array[1].flag = 0;
     // terminal_array[2].flag = 0;
     // moved this part to init terminal
-
     /* Enables the IRQ of the PIT*/
     enable_irq(PIT_IRQ);
 }
@@ -30,7 +29,7 @@ void pit_handler()
     // curr_terminal = (curr_terminal+1) % MAX_TERMINALS;
     send_eoi(PIT_IRQ);
     // Call the scheduler
-    scheduler();
+    // scheduler();
 }
 
 void scheduler() {
