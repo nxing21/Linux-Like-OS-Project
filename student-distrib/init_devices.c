@@ -143,7 +143,7 @@ void shift_key_handler(uint8_t response) {
  *                 
  */
 void ctrl_key_handler(uint8_t response) {
-    int i; /* loops through the buffer. */
+    // int i; /* loops through the buffer. */
     if (response == LEFT_CTL_PRESSED) {
         ctrl_held = 1;
     }
@@ -154,10 +154,10 @@ void ctrl_key_handler(uint8_t response) {
 
     /* CTRL-L: Performs a clear screen. */
     if (response == 'l' || response == 'L') {
+        DISPLAY_ON_MAIN_PAGE = 1;
         edit_buffer(CTL_L_COMMAND);
         // clear();
         // for (i = 0; i < keyboard_buffer_size; i++) {
-        //     DISPLAY_ON_MAIN_PAGE = 1;
         //     putc(keyboard_buffer[i]);
         // }
     }
@@ -240,6 +240,7 @@ void typing_handler(uint8_t response) {
     }
 
     /* Checks if the current ASCII can be printed. If so, add to the buffer and print to screen. */
+    DISPLAY_ON_MAIN_PAGE = 1;
     edit_buffer(printed_char);
     // if (printed_char != 0x0) {
     //     if (keyboard_buffer_size < 0) {
@@ -251,7 +252,6 @@ void typing_handler(uint8_t response) {
     //         keyboard_buffer[keyboard_buffer_size] = printed_char;
     //         edit_buffer(printed_char);
     //         keyboard_buffer_size++;
-    //         DISPLAY_ON_MAIN_PAGE = 1;
     //         putc(printed_char);
     //     }
     // }
@@ -275,6 +275,7 @@ void backspace_handler() {
     //     edit_buffer(BACKSPACE_PRESSED);
     // }
     // if (keyboard_buffer_size == 0) {
+    DISPLAY_ON_MAIN_PAGE = 1;
     edit_buffer(BACKSPACE_PRESSED);
         // keyboard_buffer[keyboard_buffer_size] = 0x0;
     // }
@@ -290,11 +291,11 @@ void backspace_handler() {
  *                 
  */
 void enter_key_handler() {
-    int i; 
+    // int i; 
 
     /* Adds the new line character to the screen.  */
-    edit_buffer(ENTER_PRESESED);
     DISPLAY_ON_MAIN_PAGE = 1;
+    edit_buffer(ENTER_PRESESED);
     // putc('\n');
     
     // /* Clear out the keyboard buffer. */

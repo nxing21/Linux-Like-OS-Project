@@ -113,7 +113,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
  */
 int edit_buffer(uint8_t response) {
     cli();
-    int i; /* Allow us to iterate through the line buffer. */
+    uint8_t i; /* Allow us to iterate through the line buffer. */
     /* Case where the terminal buffer is full. */ 
     /* Checks if the response is not NULL. */
     if (response != 0x0) {
@@ -136,7 +136,7 @@ int edit_buffer(uint8_t response) {
         else if (response == CTL_L_PRESSED){
             clear();
             for (i = 0; i < terminal_array[screen_terminal].buffer; i++) {
-                // DISPLAY_ON_MAIN_PAGE = 1;
+                DISPLAY_ON_MAIN_PAGE = 1;
                 putc(terminal_array[screen_terminal].buffer[i]);
             }
         }
