@@ -58,10 +58,10 @@ void scheduler() {
     old_pcb->esp = temp_esp;
 
     //move to next terminal *of the open terminals*
-    curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-    while (terminal_array[curr_terminal].flag == 0) {
-        curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-    }
+    // curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
+    // while (terminal_array[curr_terminal].flag == 0) {
+    //     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
+    // }
 
 
     // // First time opening this terminal, need to call execute shell
@@ -72,18 +72,19 @@ void scheduler() {
 
 
     //get pid of youngest child of terminal
-    for(i = 0; i < NUM_PROCESSES; i++) {
-        next_pcb = get_pcb(i);
-        if(cur_processes[i] != 0  && next_pcb->terminal_id == curr_terminal){
-            next_pid = i;
-        }
-    }
+    // for(i = 0; i < NUM_PROCESSES; i++) {
+    //     next_pcb = get_pcb(i);
+    //     if(cur_processes[i] != 0  && next_pcb->terminal_id == curr_terminal){
+    //         next_pid = i;
+    //     }
+    // }
+
+    next_pid = terminal_array[curr_terminal].pid;
 
     //what if  terminal 0 and/or terminal 1 is using up all the processes TODO!!!
     /*idk if this is correct*/
     // First time opening this terminal, need to call execute shell
     if(next_pid == -1){
-        printf("somehow pid == -1");
         terminal_array[curr_terminal].flag = 1;
         system_execute((uint8_t *) "shell");
         next_pid = curr_pid;
@@ -95,8 +96,6 @@ void scheduler() {
         process_page(next_pcb->pid);
         flushTLB();
     }
-    
-
 
     // Restoring tss
     tss.esp0 = next_pcb->tss_esp0;

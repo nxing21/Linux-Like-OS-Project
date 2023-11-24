@@ -26,6 +26,7 @@ typedef struct terminal_info {
     uint8_t buffer_size;
     uint8_t terminal_id;
     uint8_t flag;
+    int pid;
     int screen_x;
     int screen_y;
 } terminal_info_t;
