@@ -56,6 +56,8 @@
 #define SPACE_ASCII 0x20
 #define VIDEO_ADDR 0xB8000     // from lib.c
 
+#define CTL_L_COMMAND 3444
+
 
 
 //typing flag to let lib.c no to display on main video page

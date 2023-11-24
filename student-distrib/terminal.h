@@ -11,6 +11,7 @@
 #define MAX_BUF_SIZE  128
 #define END_OF_LINE 0x0A
 #define MAX_TERMINALS 3
+#define CTL_L_PRESSED 3444
 
 
 //Keeps track of Terminal being looked at (Displayed Terminal)
