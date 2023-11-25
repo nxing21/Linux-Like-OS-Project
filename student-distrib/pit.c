@@ -6,7 +6,7 @@
 int timer = 0;
 extern int cur_processes[NUM_PROCESSES];
 
-void init_pit(){
+void init_pit() {
     /* Use channel 0 and a square wave generator. */
     int hz = RATE; /* We will divide the Input Clock's frequency with this value to get an IRQ every 10 milliseconds*/
     int divisor = INPUT_CLOCK_HZ / hz;       /* Calculate our divisor */
@@ -14,19 +14,12 @@ void init_pit(){
     outb(divisor & LOW_BYTE, CHANNEL_0);   /* Set low byte of divisor */
     outb(divisor >> HIGH_BYTE, CHANNEL_0);     /* Set high byte of divisor */
 
-    // // At the start, only the first terminal (terminal 0) will be active
-    // terminal_array[0].flag = 1;
-    // terminal_array[1].flag = 0;
-    // terminal_array[2].flag = 0;
-    // moved this part to init terminal
     /* Enables the IRQ of the PIT*/
     enable_irq(PIT_IRQ);
 }
 
-void pit_handler()
-{   
+void pit_handler() {   
     //pause everything and save previous terminal information
-    // curr_terminal = (curr_terminal+1) % MAX_TERMINALS;
     send_eoi(PIT_IRQ);
     // Call the scheduler
     scheduler();
@@ -57,45 +50,37 @@ void scheduler() {
     old_pcb->ebp = temp_ebp;
     old_pcb->esp = temp_esp;
 
-
-
+    // printf("curr_terminal: %d\n", curr_terminal);
     // move to next terminal *of the open terminals*
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-    while (terminal_array[screen_terminal].flag == 0) {
-        curr_terminal = (screen_terminal + 1) % MAX_TERMINALS;
+    while(terminal_array[curr_terminal].flag == 0) {
+        curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
     }
 
-
     // First time opening this terminal, need to call execute shell
-    if (terminal_array[screen_terminal].flag == 0) {
+    if(terminal_array[screen_terminal].flag == 0) {
         terminal_array[screen_terminal].flag = 1;
+        curr_terminal = screen_terminal;
         system_execute((uint8_t *) "shell");
     }
 
-
-
     next_pid = terminal_array[curr_terminal].pid;
 
-    //what if  terminal 0 and/or terminal 1 is using up all the processes TODO!!!
+    //what if terminal 0 and/or terminal 1 is using up all the processes TODO!!!
     /*idk if this is correct*/
     // First time opening this terminal, need to call execute shell
-    if(next_pid == -1){
+    if(next_pid == -1) {
         terminal_array[curr_terminal].flag = 1;
         system_execute((uint8_t *) "shell");
         next_pid = curr_pid;
         next_pcb = get_pcb(next_pid);
     }
-    else{
+    else {
         next_pcb = get_pcb(next_pid);
         // Restore paging and flush TLB
         process_page(next_pcb->pid);
         flushTLB();
     }
-
-    // next_pcb = get_pcb(next_pid);
-    // Restore paging and flush TLB
-    // process_page(next_pid);
-    // flushTLB();
 
     // Restoring tss
     tss.esp0 = next_pcb->tss_esp0;

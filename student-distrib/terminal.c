@@ -95,7 +95,6 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     }
 
     return numbytes;
-
 }
 
 /* 

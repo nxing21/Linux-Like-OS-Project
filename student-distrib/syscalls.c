@@ -80,7 +80,7 @@ int32_t system_execute(const uint8_t* command) {
         i++;
     }
     // Get the name of the executable
-    while (command[i] != '\0' && i < FILENAME_LEN ) {
+    while (command[i] != '\0' && i < FILENAME_LEN) {
         if (command[i] == ' ') {
             arg_idx = i + 1; //where the first arg potentially is
             while (command[arg_idx] == ' ') { //skipping spaces between executable name and first arg

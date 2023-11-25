@@ -411,11 +411,5 @@ void switch_screen(uint8_t new_terminal) {
     memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((screen_terminal+1) << 12), 4096); // save terminal video page to  current screen mem values
     terminal_flag = 0;
     move_cursor();
-    // if (terminal_array[new_terminal].flag == 0) {
-    //     terminal_array[new_terminal].flag = 1;
-    //     curr_terminal = new_terminal;
-    //     send_eoi(KEYBOARD_IRQ);
-    //     system_execute((uint8_t *) "shell");
-        
-    // }
+    // scheduler(); // for testing purposes
 }
