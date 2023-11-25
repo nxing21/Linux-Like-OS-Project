@@ -30,7 +30,7 @@ void pit_handler()
     // curr_terminal = (curr_terminal+1) % MAX_TERMINALS;
     send_eoi(PIT_IRQ);
     // Call the scheduler
-    scheduler();
+    // scheduler();
 }
 
 void scheduler() {
@@ -84,18 +84,23 @@ void scheduler() {
     //what if  terminal 0 and/or terminal 1 is using up all the processes TODO!!!
     /*idk if this is correct*/
     // First time opening this terminal, need to call execute shell
-    if(next_pid == -1){
-        terminal_array[curr_terminal].flag = 1;
-        system_execute((uint8_t *) "shell");
-        next_pid = curr_pid;
-        next_pcb = get_pcb(next_pid);
-    }
-    else{
-        next_pcb = get_pcb(next_pid);
-        // Restore paging and flush TLB
-        process_page(next_pcb->pid);
-        flushTLB();
-    }
+    // if(next_pid == -1){
+    //     terminal_array[curr_terminal].flag = 1;
+    //     system_execute((uint8_t *) "shell");
+    //     next_pid = curr_pid;
+    //     next_pcb = get_pcb(next_pid);
+    // }
+    // else{
+    //     next_pcb = get_pcb(next_pid);
+    //     // Restore paging and flush TLB
+    //     process_page(next_pcb->pid);
+    //     flushTLB();
+    // }
+
+    next_pcb = get_pcb(next_pid);
+    // Restore paging and flush TLB
+    process_page(next_pid);
+    flushTLB();
 
     // Restoring tss
     tss.esp0 = next_pcb->tss_esp0;

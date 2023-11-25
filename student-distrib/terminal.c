@@ -40,12 +40,16 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     int numbytes = 0; /* number of bytes read. */
     int i; /* allows us to iterate through the buffer. */
     int enterAtEnd; /* checks if there is an enter at the end*/
+    int true_bytes = nbytes;
     enterAtEnd = 0;
     while (terminal_array[curr_terminal].buffer[terminal_array[curr_terminal].buffer_size-1] != END_OF_LINE){
     }
 
+    if(MAX_BUF_SIZE < nbytes){
+        true_bytes = MAX_BUF_SIZE;
+    }
     /* copies the terminal buffer into the userspace buffer. */
-    for (i = 0; i < nbytes; i++) {
+    for (i = 0; i < true_bytes; i++) {
         if (i < terminal_array[curr_terminal].buffer_size) {
             numbytes++;
             ((uint8_t *)buf)[i] = terminal_array[curr_terminal].buffer[i]; 
@@ -61,7 +65,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     }
 
     /* clear the terminal buffer */
-    for (i = 0; i < nbytes; i++) {
+    for (i = 0; i < true_bytes; i++) {
         terminal_array[curr_terminal].buffer[i] = 0x0;
     }
     terminal_array[curr_terminal].buffer_size = 0;
@@ -82,24 +86,13 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     int numbytes = 0; /* Number of bytes written. */
     int i; /* Iterates through the user buffer. */
 
-    /* clear the write buffer. */
-    for (i = 0; i < MAX_BUF_SIZE; i++) {
-        terminal_array[curr_terminal].write_buffer[i] = 0x0;
-    }
-    /* Copies the user buffer into a write buffer. */
-    for (i = 0; i < nbytes; i++) {
-        terminal_array[curr_terminal].write_buffer[i] = ((uint8_t *)buf)[i];
-    }
-
     /* Prints characters from the write buffer to the screen. */
     for (i = 0; i < nbytes; i++){
-        if (terminal_array[curr_terminal].write_buffer[i] != NULL) {
-            putc(terminal_array[curr_terminal].write_buffer[i]);
+        if (((uint8_t *)buf)[i] != NULL) {
+            putc(((uint8_t *)buf)[i]);
             numbytes++;
         }
     }
-
-    clear_writebuffer();
 
     return numbytes;
 }
