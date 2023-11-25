@@ -14,6 +14,9 @@ static int alt_held = 0;
 uint8_t keyboard_buffer[MAX_BUFFER_SIZE];
 int keyboard_buffer_size = 0;
 
+/* Terminal Flag used for move_cursor. */
+extern int terminal_flag;
+
 /* 
  * init_ps2devices
  *   DESCRIPTION: Initializes the PS/2 devices (keyboard). Done by enabling IRQ2 on the Master PIC.
@@ -154,6 +157,7 @@ void ctrl_key_handler(uint8_t response) {
 
     /* CTRL-L: Performs a clear screen. */
     if (response == 'l' || response == 'L') {
+        DISPLAY_ON_MAIN_PAGE = 1;
         clear();
         for (i = 0; i < keyboard_buffer_size; i++) {
             DISPLAY_ON_MAIN_PAGE = 1;
@@ -404,5 +408,7 @@ uint8_t shift_and_caps_data(uint8_t response) {
 void switch_screen(uint8_t new_terminal) {
     memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to terminal video page
     screen_terminal = new_terminal;
-    memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((screen_terminal+1) << 12), 4096); // save terminal video page to  current screen mem values 
+    memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((screen_terminal+1) << 12), 4096); // save terminal video page to  current screen mem values
+    terminal_flag == 0;
+    move_cursor();
 }

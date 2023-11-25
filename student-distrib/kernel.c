@@ -36,6 +36,7 @@ void entry(unsigned long magic, unsigned long addr) {
     multiboot_info_t *mbi;
 
     /* Clear the screen. */
+    DISPLAY_ON_MAIN_PAGE = 0;
     clear();
 
     /* Am I booted by a Multiboot-compliant boot loader? */
@@ -171,7 +172,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Initializes the PIT. */
     init_pit();
-
+    DISPLAY_ON_MAIN_PAGE = 0;
     clear();
     init_file_sys(fs);
     init_fops_table();

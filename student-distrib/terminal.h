@@ -23,11 +23,11 @@ int curr_terminal;
 typedef struct terminal_info {
     uint8_t flag;
     uint8_t terminal_id;
+    int screen_x;
+    int screen_y;
     uint8_t buffer[MAX_BUF_SIZE];
     uint8_t write_buffer[MAX_BUF_SIZE];
     uint8_t buffer_size;
-    int screen_x;
-    int screen_y;
 } terminal_info_t;
 
 /* An array to keep track of the 3 terminals. */
