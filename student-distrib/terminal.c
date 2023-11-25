@@ -20,6 +20,7 @@ void init_terminal() {
         terminal_array[i].screen_x = 0;
         terminal_array[i].screen_y = 0;
         terminal_array[i].flag = 0;
+        terminal_array[i].pid = -1;
     }
     // At the start, only the first terminal (terminal 0) will be active
     terminal_array[0].flag = 1; 

@@ -145,6 +145,7 @@ int32_t system_execute(const uint8_t* command) {
         else if (cur_processes[i] == 0) { // not in use process
             cur_processes[i] = 1;  // set to in use
             pid = i; // set pid
+            terminal_array[screen_terminal].pid = pid;
             break;
         }
     }
@@ -297,6 +298,7 @@ int32_t system_halt(uint8_t status) {
 
     // Set the curr_pid to the parent pid.
     curr_pid = parent_pid;
+    terminal_array[pcb->terminal_id].pid = curr_pid;
     
     // Restore paging and flush TLB
     process_page(parent_pcb->pid);
