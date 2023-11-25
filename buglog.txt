@@ -165,3 +165,11 @@ Nov 10th: 2023:
     - To fix that we just made separate f_ops tables for each type of file. 
     - This also fixed our grep function
     - Took us about 4 hour.
+
+Nov 24th: 2023:
+    - Faced an issue where terminal array in-use flag was getting overwritten to garbage values
+    - We noticed that our terminal read buffer that was apart of the terminal struct was overflowing and messing up the subsequent elements.
+    - This exposed that we weren't capping the nbytes of terminal read to 128 bytes in our newer implementation.
+    - We then figured to take the minimum of 128 and input nbytes as what we would use.
+    - This also fixed our flag issue and potentially prevented future issues.
+    - Took us about 2 hours to find and 20 minutes to fix.
