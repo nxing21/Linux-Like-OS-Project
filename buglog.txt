@@ -173,3 +173,11 @@ Nov 24th: 2023:
     - We then figured to take the minimum of 128 and input nbytes as what we would use.
     - This also fixed our flag issue and potentially prevented future issues.
     - Took us about 2 hours to find and 20 minutes to fix.
+
+Nov 24th: 2023:
+    - Faced an issue where on opening terminal our shell page faulted looped
+    - We noted that out checks in PIT was not working as intended.
+    - We tried a bunch of differen implementations thinking that was the issue.
+    - Turns out we were setting  a variable to -1 that was initialized to -1. 
+    - To fix we set the type as int.
+    - Took 1 day to find and 5 minutes to fix.

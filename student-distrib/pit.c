@@ -29,13 +29,13 @@ void pit_handler()
     // curr_terminal = (curr_terminal+1) % MAX_TERMINALS;
     send_eoi(PIT_IRQ);
     // Call the scheduler
-    scheduler();
+    // scheduler();
 }
 
 void scheduler() {
     pcb_t* old_pcb = get_pcb(curr_pid);
     pcb_t* next_pcb;
-    int next_pid = -1;
+    int next_pid;
     int i;
     int garbage;
 
@@ -61,14 +61,14 @@ void scheduler() {
 
     // move to next terminal *of the open terminals*
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-    while (terminal_array[screen_terminal].flag == 0) {
-        curr_terminal = (screen_terminal + 1) % MAX_TERMINALS;
-    }
+    // while (terminal_array[curr_terminal].flag == 0) {
+    //     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
+    // }
 
 
     // First time opening this terminal, need to call execute shell
-    if (terminal_array[screen_terminal].flag == 0) {
-        terminal_array[screen_terminal].flag = 1;
+    if (terminal_array[curr_terminal].flag == 0) {
+        terminal_array[curr_terminal].flag = 1;
         system_execute((uint8_t *) "shell");
     }
 
@@ -80,6 +80,7 @@ void scheduler() {
     /*idk if this is correct*/
     // First time opening this terminal, need to call execute shell
     if(next_pid == -1){
+        printf("IM STILL GETTING HERE");
         terminal_array[curr_terminal].flag = 1;
         system_execute((uint8_t *) "shell");
         next_pid = curr_pid;
