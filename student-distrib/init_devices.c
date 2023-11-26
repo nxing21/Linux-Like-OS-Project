@@ -411,6 +411,6 @@ void switch_screen(uint8_t new_terminal) {
     memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((screen_terminal+1) << 12), 4096); // save terminal video page to  current screen mem values
     terminal_flag = 0;
     move_cursor();
-    send_eoi(KEYBOARD_IRQ);
-    scheduler();
+    // send_eoi(KEYBOARD_IRQ);
+    // scheduler();
 }
