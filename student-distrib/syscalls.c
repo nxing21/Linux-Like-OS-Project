@@ -55,12 +55,14 @@ void init_fops_table() {
  * prepares stack and context switch values, IRET
  */
 int32_t system_execute(const uint8_t* command) {
+    cli(); // clear interrupts
     int8_t elf_check[ELF_LENGTH]; // holds ELF that we want to compare with
     uint8_t filename[FILENAME_LEN + 1]; // holds name of executable we want to execute
     int8_t buf[ELF_LENGTH]; // holds info
     uint32_t pid; // process ID
     int arg_idx = 0; // start of arguments
     if (command == NULL) {
+        sti();
         return -1;
     }
     int i; // looping variable
@@ -127,24 +129,27 @@ int32_t system_execute(const uint8_t* command) {
     dentry_t dentry;
     // Check the validity of the filename
     if (read_dentry_by_name(filename, &dentry) == -1) {
+        sti();
         return -1;
     }
 
     // Check ELF magic constant
     read_data(dentry.inode_num, 0, (uint8_t *) buf, ELF_LENGTH);
     if (strncmp(elf_check, buf, ELF_LENGTH) != 0) {
+        sti();
         return -1;
     }
 
     // Find free PID location
     for (i = 0; i <= NUM_PROCESSES; i++) {
         if (i == NUM_PROCESSES) {
+            sti();
             return -1; // no available space for new process
         }
         else if (cur_processes[i] == 0) { // not in use process
             cur_processes[i] = 1;  // set to in use
             pid = i; // set pid
-            terminal_array[curr_terminal].pid = pid; 
+            terminal_array[curr_terminal].pid = pid;
             break;
         }
     }
@@ -163,6 +168,7 @@ int32_t system_execute(const uint8_t* command) {
     // Set PCB's terminal ID
     pcb->terminal_id = curr_terminal;
 
+    // Check if base shell of the terminal it's on
     if (base_shell) {
         pcb->parent_pid = 0;
     }
@@ -232,7 +238,6 @@ int32_t system_execute(const uint8_t* command) {
     // First line "0x02B is USER_DS"
     // Setting up stack for IRET context switch
     asm volatile("                                          \n\
-                cli                                         \n\
                 movw $0x2B, %%ax # user ds                  \n\
                 movw %%ax, %%ds                             \n\
                 pushl %0                                    \n\

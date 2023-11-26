@@ -35,44 +35,26 @@ void scheduler() {
     // Temp variables to hold ebp and esp
     uint32_t temp_esp;
     uint32_t temp_ebp;
+    int temp_terminal;
+
+    if (terminal_array[curr_terminal].pid == -1) {
+        return;
+    }
     
-
-    // First time opening this terminal, need to call execute shell
-    // if (terminal_array[screen_terminal].flag == 0) {
-    //     terminal_array[screen_terminal].flag = 1;
-    //     curr_terminal = screen_terminal;
-    //     base_shell = 1;
-    //     system_execute((uint8_t *) "shell");
-    // }
-
-    // move to next terminal *of the open terminals*
+    // move to next terminal
+    temp_terminal = curr_terminal;
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-    // while (terminal_array[curr_terminal].flag == 0) {
-    //     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-    // }
+    while (terminal_array[curr_terminal].flag == 0) {
+        curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
+    }
+    // just return if we go to same terminal
+    if (temp_terminal == curr_terminal) {
+        return;
+    }
 
     next_pid = terminal_array[curr_terminal].pid;
 
     //what if  terminal 0 and/or terminal 1 is using up all the processes TODO!!!
-    /*idk if this is correct*/
-    // First time opening this terminal, need to call execute shell
-    if (next_pid == -1) {
-        // printf("IM STILL GETTING HERE");
-        terminal_array[curr_terminal].flag = 1;
-        // curr_terminal = screen_terminal;
-        base_shell = 1;
-        system_execute((uint8_t *) "shell");
-        next_pcb = get_pcb(curr_terminal);
-    } 
-    else {
-        next_pcb = get_pcb(next_pid);
-        // Restore paging and flush TLB
-        // process_page(next_pcb->pid);
-        // flushTLB();
-    }
-
-    process_page(next_pcb->pid);
-    flushTLB();
 
     // Grabbing ebp and esp to store for later context switching
     asm volatile("                           \n\
@@ -88,6 +70,9 @@ void scheduler() {
     old_pcb->ebp = temp_ebp;
     old_pcb->esp = temp_esp;
 
+    next_pcb = get_pcb(next_pid);
+    process_page(next_pcb->pid);
+    flushTLB();
 
     // Restoring tss
     tss.esp0 = next_pcb->tss_esp0;
@@ -103,9 +88,6 @@ void scheduler() {
                 : "eax"
                 );
 }
-
-
-
 
 // the first terminal flag is set to 1 by default
 // the first pid is not

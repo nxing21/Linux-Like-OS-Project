@@ -21,7 +21,7 @@
 // MP 3.3: Added headers
 #include "syscalls.h"
 
-#define RUN_TESTS
+// #define RUN_TESTS
 
 unsigned int fs;
 
