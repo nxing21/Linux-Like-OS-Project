@@ -60,7 +60,6 @@ int32_t system_execute(const uint8_t* command) {
     int8_t buf[ELF_LENGTH]; // holds info
     uint32_t pid; // process ID
     int arg_idx = 0; // start of arguments
-
     if (command == NULL) {
         return -1;
     }
@@ -145,7 +144,7 @@ int32_t system_execute(const uint8_t* command) {
         else if (cur_processes[i] == 0) { // not in use process
             cur_processes[i] = 1;  // set to in use
             pid = i; // set pid
-            terminal_array[screen_terminal].pid = pid;
+            terminal_array[curr_terminal].pid = pid; 
             break;
         }
     }
@@ -162,7 +161,7 @@ int32_t system_execute(const uint8_t* command) {
     // Initialize PCB's pid
     pcb->pid = pid;
     // Set PCB's terminal ID
-    pcb->terminal_id = screen_terminal;
+    pcb->terminal_id = curr_terminal;
 
     // Set curr_pid to current pid
     pcb->parent_pid = curr_pid;
