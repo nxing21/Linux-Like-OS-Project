@@ -13,6 +13,7 @@ void init_pit() {
     outb(SET_CHANNEL_0, COMMAND_REGISTER);             /* Set our command byte 0x36 */
     outb(divisor & LOW_BYTE, CHANNEL_0);   /* Set low byte of divisor */
     outb(divisor >> HIGH_BYTE, CHANNEL_0);     /* Set high byte of divisor */
+    base_shell = 1;
 
     /* Enables the IRQ of the PIT*/
     enable_irq(PIT_IRQ);
@@ -31,59 +32,47 @@ void scheduler() {
     pcb_t* old_pcb = get_pcb(curr_pid);
     pcb_t* next_pcb;
     int next_pid = -1;
-    int i;
-    int garbage;
     // Temp variables to hold ebp and esp
     uint32_t temp_esp;
     uint32_t temp_ebp;
     
 
     // First time opening this terminal, need to call execute shell
-    if (terminal_array[screen_terminal].flag == 0) {
-        terminal_array[screen_terminal].flag = 1;
-        curr_terminal = screen_terminal;
-        system_execute((uint8_t *) "shell");
-    }
+    // if (terminal_array[screen_terminal].flag == 0) {
+    //     terminal_array[screen_terminal].flag = 1;
+    //     curr_terminal = screen_terminal;
+    //     base_shell = 1;
+    //     system_execute((uint8_t *) "shell");
+    // }
 
     // move to next terminal *of the open terminals*
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-    while (terminal_array[curr_terminal].flag == 0) {
-        curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-    }
-
-     //get pid of youngest child of terminal
-    // for(i = 0; i < NUM_PROCESSES; i++) {
-    //     next_pcb = get_pcb(i);
-    //     if(cur_processes[i] != 0  && next_pcb->terminal_id == curr_terminal){
-    //         next_pid = i;
-    //     }
+    // while (terminal_array[curr_terminal].flag == 0) {
+    //     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
     // }
-    next_pid = terminal_array[curr_terminal].pid;
 
+    next_pid = terminal_array[curr_terminal].pid;
 
     //what if  terminal 0 and/or terminal 1 is using up all the processes TODO!!!
     /*idk if this is correct*/
     // First time opening this terminal, need to call execute shell
-    if (next_pid == -1 ){
+    if (next_pid == -1) {
         // printf("IM STILL GETTING HERE");
-        // terminal_array[curr_terminal].flag = 1;
-        // send_eoi(PIT_IRQ);
-        // system_execute((uint8_t *) "shell");
-        // next_pid = curr_pid;
-        // next_pcb = get_pcb(next_pid);
-        return;
+        terminal_array[curr_terminal].flag = 1;
+        // curr_terminal = screen_terminal;
+        base_shell = 1;
+        system_execute((uint8_t *) "shell");
+        next_pcb = get_pcb(curr_terminal);
     } 
     else {
         next_pcb = get_pcb(next_pid);
         // Restore paging and flush TLB
-        process_page(next_pcb->pid);
-        flushTLB();
+        // process_page(next_pcb->pid);
+        // flushTLB();
     }
 
-    // next_pcb = get_pcb(next_pid);
-    // Restore paging and flush TLB
-    // process_page(next_pid);
-    // flushTLB();
+    process_page(next_pcb->pid);
+    flushTLB();
 
     // Grabbing ebp and esp to store for later context switching
     asm volatile("                           \n\

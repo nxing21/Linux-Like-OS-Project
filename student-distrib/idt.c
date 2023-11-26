@@ -230,8 +230,8 @@ void general_protection() {
  * Function: Prints exception message and sends to infinite loop.
  */
 void page_fault() {
-    
     uint32_t location = page_fault_location();
+    DISPLAY_ON_MAIN_PAGE = 1;
     printf("Page-Fault Exception: %x \n", location);
     system_halt((uint8_t) EXCEPTION);
 }

@@ -89,5 +89,6 @@ fops_t rtc_ops;
 fops_t file_ops;
 fops_t dir_ops;
 
+int base_shell;
 
 #endif

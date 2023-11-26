@@ -163,8 +163,15 @@ int32_t system_execute(const uint8_t* command) {
     // Set PCB's terminal ID
     pcb->terminal_id = curr_terminal;
 
-    // Set curr_pid to current pid
-    pcb->parent_pid = curr_pid;
+    if (base_shell) {
+        pcb->parent_pid = 0;
+    }
+    else {
+        // Set curr_pid to current pid
+        pcb->parent_pid = curr_pid;
+    }
+
+    base_shell = 0;    
     curr_pid = pid;
 
     // Initializing stdin
