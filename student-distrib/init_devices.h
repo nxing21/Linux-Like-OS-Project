@@ -34,10 +34,16 @@
 
 #define LEFT_CTL_PRESSED 0x1D
 #define LEFT_CTL_RELEASED 0x9D
-// #define RIGHT_CTL_PRESSED 0xE01D
-// #define RIGHT_CTL_RELEASED 0xE09D
+
+#define ALT_PRESSED 0x38
+#define ALT_RELEASED 0xB8
+
 #define ENTER_PRESESED 0x1C
 #define TAB_PRESSED 0x0F
+
+#define F1_PRESSED 0xBB
+#define F2_PRESSED 0xBC
+#define F3_PRESSED 0xBD
 
 #define READ_PS2_OUTPUT 0xD0
 #define MAX_BUFFER_SIZE 128
@@ -48,6 +54,13 @@
 #define SINGLE_QUOTE_ASCII 0x27
 #define BACKWARD_SLASH_ASCII 0x5C
 #define SPACE_ASCII 0x20
+#define VIDEO_ADDR 0xB8000     // from lib.c
+
+
+
+//typing flag to let lib.c no to display on main video page
+int DISPLAY_ON_MAIN_PAGE;
+
 
 /* Initializes the PS/2 devices. */
 void init_ps2devices();
@@ -76,6 +89,9 @@ void enter_key_handler();
 /* Takes care of TAB key. */
 void tab_key_handler();
 
+/* Takes care of the ALT key. */
+void alt_key_handler(uint8_t response);
+
 /* Retrieves a character based on scan code. */
 uint8_t default_scan_code_data(uint8_t response);
 
@@ -88,6 +104,7 @@ uint8_t shift_key_scan_data(uint8_t response);
 /* Maps a scan code to a character if both SHIFT and CAPS Lock is on*/
 uint8_t shift_and_caps_data(uint8_t response);
 
-
+/*Handles terminal video page and terminal logic*/
+void switch_screen(uint8_t new_terminal);
 
 #endif

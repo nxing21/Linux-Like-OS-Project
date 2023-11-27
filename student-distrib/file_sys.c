@@ -7,7 +7,7 @@ boot_block_t *boot_block;
 inode_t * inode;
 uint32_t data_blocks;
 // global dentry variable
-dentry_t *dentry;
+// dentry_t *dentry;
 
 /* void init_file_sys(uint32_t starting_addr)
  * Inputs: uint32_t starting_addr = starting address of file system
@@ -64,7 +64,6 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
         // dentry->filename[32] = '\0';
         return 0; //successful
     }
-    // printf("didn't find");
     return -1; // not found
 }
 
@@ -99,7 +98,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
 int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t length) {
     uint32_t i; // loop counter
 
-    /* Fail case 1: Inode input is greater than the number of inodes we have. */
+    /* Case 1: Inode input is greater than the number of inodes we have. */
     if (inode_num >= boot_block->inode_count) {
         return -1;
     }
@@ -109,7 +108,7 @@ int32_t read_data (uint32_t inode_num, uint32_t offset, uint8_t* buf, uint32_t l
 
     int32_t num_bytes_copied = 0; // bytes copied counter
     inode_t * cur_inode = (inode_t*) ((uint32_t) inode + inode_num * BYTES_PER_BLOCK); // get current inode
-    /* Fail case 2: Offset is greater than the length of our inode. */
+    /* Case 2: Offset is greater than the length of our inode. */
     if (offset >= cur_inode->length) {
         return 0;
     }

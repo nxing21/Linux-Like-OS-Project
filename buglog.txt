@@ -110,7 +110,6 @@ Oct 31st, 2023
     - This bug cost us about 3 hours.
 
 
-
 Nov 1st, 2023
     - Faced an issue where the system_execute was not recognizing the inputs properly. For example,
     it would recognize an input of 'testpr' as 'testprint'.
@@ -139,6 +138,7 @@ Nov 3rd: 2023:
     - We updated current id to equal parent pid.
     - Took us about 15 minutes. 
 
+
 Nov 9th: 2023:
     - Fixed an issue where running multiple shells would not close properly.
     - When running more than two shells, trying to close them would cause a page fault.
@@ -149,6 +149,12 @@ Nov 9th: 2023:
     - We then set it so that the tss holds the esp0 and ss of the child's pcb.
     - Took us about 7 hours to fix. 
 
+Nov 9th: 2023:
+    - Fixed an issue where vidmap implementation was causing page faults.
+    - When running vidmap I would get instant page faults.
+    - Turns out I had forgot to setup vidmap in page.called
+    - Simple to fix just added vidmap to our paging iteration loop
+    - Took us about 20 minutes to fix.
 
 Nov 10th: 2023:
     - Faced an issue where fish was not displaying the correct animation
@@ -158,4 +164,20 @@ Nov 10th: 2023:
     - would change any fd file op ptr that had been set to the address of that variable.
     - To fix that we just made separate f_ops tables for each type of file. 
     - This also fixed our grep function
-    - Took us about 1 hour.
+    - Took us about 4 hour.
+
+Nov 24th: 2023:
+    - Faced an issue where terminal array in-use flag was getting overwritten to garbage values
+    - We noticed that our terminal read buffer that was apart of the terminal struct was overflowing and messing up the subsequent elements.
+    - This exposed that we weren't capping the nbytes of terminal read to 128 bytes in our newer implementation.
+    - We then figured to take the minimum of 128 and input nbytes as what we would use.
+    - This also fixed our flag issue and potentially prevented future issues.
+    - Took us about 2 hours to find and 20 minutes to fix.
+
+Nov 24th: 2023:
+    - Faced an issue where on opening terminal our shell page faulted looped
+    - We noted that out checks in PIT was not working as intended.
+    - We tried a bunch of differen implementations thinking that was the issue.
+    - Turns out we were setting  a variable to -1 that was initialized to -1. 
+    - To fix we set the type as int.
+    - Took 1 day to find and 5 minutes to fix.

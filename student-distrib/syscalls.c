@@ -7,7 +7,8 @@
 #include "terminal.h"
 
 int cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // cur_processes keeps track of current processes that are running
-char* cur_args = "";
+char* cur_args = ""; // keeps track of current arguments inputted
+
 /* init_fops_table()
  * Inputs: none
  * Return Value: none
@@ -26,22 +27,23 @@ void init_fops_table() {
     term_read_ops.write = NULL;
     term_read_ops.read = &terminal_read;  
 
+    // Initializing rtc functions
     rtc_ops.open = &RTC_open;
     rtc_ops.close = &RTC_close;
     rtc_ops.write = &RTC_write;
     rtc_ops.read = &RTC_read;
 
+    // Initializing directory functions
     dir_ops.open = &open_directory;
     dir_ops.close = &close_directory;
     dir_ops.read = &read_directory;
     dir_ops.write = &write_directory;
 
+    // Initializing file functions
     file_ops.open = &open_file;
     file_ops.close = &close_file;
     file_ops.read = &read_file;
     file_ops.write = &write_file;
-
-
 }
 
 /* system_execute(const uint8_t* command)
@@ -53,13 +55,14 @@ void init_fops_table() {
  * prepares stack and context switch values, IRET
  */
 int32_t system_execute(const uint8_t* command) {
+    cli(); // clear interrupts
     int8_t elf_check[ELF_LENGTH]; // holds ELF that we want to compare with
     uint8_t filename[FILENAME_LEN + 1]; // holds name of executable we want to execute
     int8_t buf[ELF_LENGTH]; // holds info
     uint32_t pid; // process ID
     int arg_idx = 0; // start of arguments
-
     if (command == NULL) {
+        sti();
         return -1;
     }
     int i; // looping variable
@@ -74,14 +77,14 @@ int32_t system_execute(const uint8_t* command) {
     i = 0;
     file_index = 0;
 
-    while (command[i] == ' ') {
+    while (command[i] == ' ') { //skips initial spaces
         i++;
     }
     // Get the name of the executable
-    while (command[i] != '\0' && i < FILENAME_LEN ) {
+    while (command[i] != '\0' && i < FILENAME_LEN) {
         if (command[i] == ' ') {
-            arg_idx = i+1; //where the first arg potentially is
-            while (command[arg_idx] == ' ') {
+            arg_idx = i + 1; //where the first arg potentially is
+            while (command[arg_idx] == ' ') { //skipping spaces between executable name and first arg
                 arg_idx++;
             }
             break;
@@ -95,35 +98,58 @@ int32_t system_execute(const uint8_t* command) {
     filename[file_index] = '\0';
 
     i = 0;
+    // two variables we will be using to check for spaces at the end of the argument
+    int temp_idx;
+    int space_flag;
+    // Get arguments and putting it into global buffer
     while(arg_idx != 0 && arg_idx < strlen((int8_t*) command) && command[arg_idx] != '\0') {
-        cur_args[i] = command[arg_idx];
+        if (command[arg_idx] == ' ') {
+            space_flag = 0; // space_flag being set to 0 means we are currently iterating through useless spaces at the end
+            temp_idx = arg_idx; // temporary index since arg_idx needs to be saved for later
+            while (command[temp_idx] != '\0') {
+                if (command[temp_idx] != ' ') {
+                    space_flag = 1; // if we found a non-space, it means the space we found originally is not at the end, so we set space_flag to 1
+                    break;
+                }
+                temp_idx++; // keep iterating until end of string or we found a non-space
+            }
+            if (!space_flag) {
+                // if we were at the end of the string, we don't want to add the useless spaces
+                break;
+            }
+        }
+        
+        cur_args[i] = command[arg_idx]; // copy argument into cur_args
+        // iterate index trackers
         arg_idx++;
         i++;
     }
     cur_args[i] = '\0';
-    
-
 
     dentry_t dentry;
     // Check the validity of the filename
     if (read_dentry_by_name(filename, &dentry) == -1) {
+        sti();
         return -1;
     }
 
     // Check ELF magic constant
     read_data(dentry.inode_num, 0, (uint8_t *) buf, ELF_LENGTH);
     if (strncmp(elf_check, buf, ELF_LENGTH) != 0) {
+        sti();
         return -1;
     }
 
     // Find free PID location
     for (i = 0; i <= NUM_PROCESSES; i++) {
         if (i == NUM_PROCESSES) {
+            sti();
             return -1; // no available space for new process
         }
         else if (cur_processes[i] == 0) { // not in use process
             cur_processes[i] = 1;  // set to in use
             pid = i; // set pid
+            terminal_array[curr_terminal].pid = pid;
             break;
         }
     }
@@ -139,11 +165,20 @@ int32_t system_execute(const uint8_t* command) {
     pcb_t *pcb = get_pcb(pid);
     // Initialize PCB's pid
     pcb->pid = pid;
+    // Set PCB's terminal ID
+    pcb->terminal_id = curr_terminal;
 
-    // Set curr_pid to current pid
-    pcb->parent_pid = curr_pid;
+    // Check if base shell of the terminal it's on
+    if (base_shell) {
+        pcb->parent_pid = 0;
+    }
+    else {
+        // Set curr_pid to current pid
+        pcb->parent_pid = curr_pid;
+    }
+
+    base_shell = 0;    
     curr_pid = pid;
-
 
     // Initializing stdin
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
@@ -203,7 +238,6 @@ int32_t system_execute(const uint8_t* command) {
     // First line "0x02B is USER_DS"
     // Setting up stack for IRET context switch
     asm volatile("                                          \n\
-                cli                                         \n\
                 movw $0x2B, %%ax # user ds                  \n\
                 movw %%ax, %%ds                             \n\
                 pushl %0                                    \n\
@@ -230,7 +264,6 @@ int32_t system_execute(const uint8_t* command) {
     return 0;
 }
 
-
 /* system_halt(uint8_t status)
  * Inputs: uint8_t status: return value set by user program
  * Return Value: never actually returns a value
@@ -250,8 +283,6 @@ int32_t system_halt(uint8_t status) {
 
     // If currently running base shell, reload
     if (curr_pid == 0) {
-        printf("cannot close base shell\n");
-        
         asm volatile("                                          \n\
                     cli                                         \n\
                     movw $0x2B, %%ax  # user ds                 \n\
@@ -278,6 +309,7 @@ int32_t system_halt(uint8_t status) {
 
     // Set the curr_pid to the parent pid.
     curr_pid = parent_pid;
+    terminal_array[pcb->terminal_id].pid = curr_pid;
     
     // Restore paging and flush TLB
     process_page(parent_pcb->pid);
@@ -313,7 +345,6 @@ int32_t system_halt(uint8_t status) {
     // Will never reach here
     return 0;
 }
-
 
 /* system_read (int32_t fd, void* buf, int32_t nbytes)
  * Inputs: int32_t fd: file descriptor index,
@@ -427,44 +458,36 @@ int32_t system_close (int32_t fd) {
  * Function: Reads the program’s command line arguments into a user-level buffer.
  */
 int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
-    if(strlen(cur_args) + 1 > nbytes || strlen(cur_args)  == 0) { //+1 to account for '\0' b/c strlen doesn't count it
+    if(strlen(cur_args) + 1 > nbytes || strlen(cur_args) == 0) { //+1 to account for '\0' b/c strlen doesn't count it
         return -1;
     }
-    else {
-        memcpy(buf, cur_args, nbytes);
+    else { //if checks pass copy current aargs into user buffer
+        memcpy(buf, cur_args, nbytes); 
         return 0;
     } 
-    
 }
 
 /* system_vidmap(uint8_t** screen_start)
  * Inputs: uint8_t** screen_start: maps the text-mode video memory into user space at a pre-set virtual address
- * Return Value: Close function result, -1 ("failure")
- * Function: 
+ * Return Value: 0 (success), -1 (failure)
+ * Function: Sets up Video Map paging and gives user space access
  */
 int32_t system_vidmap(uint8_t** screen_start) {
-    //use VIDEO_ADDR
-    // uint32_t lower_bound = EIGHT_MB + FOUR_MB*curr_pid; //start of user_page
-    // uint32_t upper_bound = lower_bound + FOUR_MB; // end of user_page not inclusive.
-    if(screen_start == (uint8_t** ) NULL || !(screen_start >= (uint8_t** ) ONE_TWENTY_EIGHT_MB && screen_start <= (uint8_t** ) ONE_THIRTY_TWO_MB)) {
+    if(screen_start == (uint8_t**) NULL || !(screen_start >= (uint8_t**) ONE_TWENTY_EIGHT_MB && screen_start <= (uint8_t**) ONE_THIRTY_TWO_MB)) {
         return -1;
     }
-    else{
-        // *screen_start = (unsigned int)(vid_map) >> shift_12;
-        // (unsigned int)(KERNEL_ADDR) >> shift_22;
+    else {
         page_directory[USER_ADDR_INDEX + 1].kb.page_size = 0;   // 4 kB pages
-        page_directory[USER_ADDR_INDEX + 1].kb.present = 1;
-        page_directory[USER_ADDR_INDEX + 1].kb.base_addr =  (unsigned int)(vid_map )>> shift_12;
-        page_directory[USER_ADDR_INDEX + 1].kb.user_supervisor = 1;
+        page_directory[USER_ADDR_INDEX + 1].kb.present = 1; // set to present
+        page_directory[USER_ADDR_INDEX + 1].kb.base_addr = (unsigned int)(vid_map) >> shift_12; // physical address set
+        page_directory[USER_ADDR_INDEX + 1].kb.user_supervisor = 1; //giving user access
         page_directory[USER_ADDR_INDEX + 1].kb.global = 1;
 
-
         flushTLB();
-        vid_map[0].present = 1;
-        vid_map[0].user_supervisor = 1;
-        vid_map[0].base_addr = (int) VIDEO_ADDR/ ALIGN;
-
-        *screen_start = (uint8_t* ) ONE_TWENTY_EIGHT_MB + FOUR_MB;
+        vid_map[0].present = 1; // set to present
+        vid_map[0].user_supervisor = 1; //giving user access
+        vid_map[0].base_addr = (int) VIDEO_ADDR / ALIGN; // physical address set
+        *screen_start = (uint8_t*) ONE_TWENTY_EIGHT_MB + FOUR_MB; // setting start of virtual video memory
     }
 
     return 0;
@@ -473,7 +496,7 @@ int32_t system_vidmap(uint8_t** screen_start) {
 /* system_set_handler(int32_t signum, void* handler_access)
  * Inputs: int32_t signum, void* handler_access
  * Return Value: 
- * Function: 
+ * Function: not implemented
  */
 int32_t system_set_handler(int32_t signum, void* handler_access) {
     return -1;
@@ -482,7 +505,7 @@ int32_t system_set_handler(int32_t signum, void* handler_access) {
 /* system_sigreturn(void)
  * Inputs: none
  * Return Value: 
- * Function: 
+ * Function: not implemented
  */
 int32_t system_sigreturn(void) {
     return -1;
@@ -505,7 +528,6 @@ void process_page(int process_id) {
         page_directory[USER_ADDR_INDEX].mb.global = 1;
     }
 }
-
 
 /* get_pcb(uint32_t pid)
  * Inputs: uint32_t pid: process_id that we want to get correct pcb pointer for

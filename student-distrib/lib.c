@@ -2,11 +2,13 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "terminal.h"
+#include "init_devices.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
-#define ATTRIB      0x30
+#define ATTRIB      0x7
 #define CURSOR_LOC_HIGH_REG 0x0E
 #define CURSOR_LOC_LOW_REG 0x0F
 #define GET_8_MSB 8
@@ -19,18 +21,34 @@ static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
+// indicates which terminal to operate on, screen terminal (0) or current terminal (1) operated on by scheduler (may or may not be the same)
+int terminal_flag = 0; 
+
 /* void clear(void);
  * Inputs: void
  * Return Value: none
  * Function: Clears video memory */
 void clear(void) {
     int32_t i;
-    for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
-        *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+    char *true_mem = video_mem;
+
+    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE != 1)) {
+        true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
+        terminal_array[curr_terminal].screen_x=0;
+        terminal_array[curr_terminal].screen_y=0;
+        terminal_flag = 1;
     }
-    screen_x = 0;
-    screen_y = 0;
+    else {
+        DISPLAY_ON_MAIN_PAGE = 0; //setting flag back to zero, it's keyboard handlers jobs to let libc know each time
+        terminal_array[screen_terminal].screen_x=0;
+        terminal_array[screen_terminal].screen_y=0;
+        terminal_flag = 0;
+    }
+
+    for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
+        *(uint8_t *)(true_mem + (i << 1)) = ' ';
+        *(uint8_t *)(true_mem + (i << 1) + 1) = ATTRIB;
+    }
     move_cursor();
 }
 
@@ -180,39 +198,53 @@ int32_t puts(int8_t* s) {
 void putc(uint8_t c) {
     int i, j;
     uint8_t character;
+    char *true_mem = video_mem;
+    int true_term_id = screen_terminal;
+
+    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE != 1)) {
+        true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
+        true_term_id = curr_terminal;
+        terminal_flag = 1;
+    }
+    else {
+        DISPLAY_ON_MAIN_PAGE = 0; //setting flag back to zero, it's keyboard handlers jobs to let libc know each time
+        terminal_flag = 0;
+    }
+
     if(c == '\n' || c == '\r') {
-        screen_y++;
-        screen_x = 0;
+        terminal_array[true_term_id].screen_y++;
+        terminal_array[true_term_id].screen_x = 0;
     } 
     else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
+        *(uint8_t *)(true_mem + ((NUM_COLS * terminal_array[true_term_id].screen_y + terminal_array[true_term_id].screen_x) << 1)) = c;
+        *(uint8_t *)(true_mem + ((NUM_COLS * terminal_array[true_term_id].screen_y + terminal_array[true_term_id].screen_x) << 1) + 1) = ATTRIB;
+        terminal_array[true_term_id].screen_x++;
         check_size(); // added function
-        screen_x %= NUM_COLS;
+        terminal_array[true_term_id].screen_x %= NUM_COLS;
         // screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
 
     /* Checks if the y position exceeds the window. If so, scroll up and reposition the cursor.*/
-    if (screen_y > NUM_ROWS-1){
+    if (terminal_array[true_term_id].screen_y > NUM_ROWS-1){
         for (i = 0; i < NUM_ROWS-1; i++){
             for (j = 0; j < NUM_COLS; j++){
-                character = *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1));
-                *(uint8_t *)(video_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
-                *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = character;
-                *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
+                character = *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1));
+                *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
+                *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1)) = character;
+                *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
             }
         }
 
         /* Separate case for printing the last row, since there is no row below it. */
         i = NUM_ROWS-1;
         for (j = 0; j < NUM_COLS; j++){
-            *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
-            *(uint8_t *)(video_mem + ((NUM_COLS * (i) + j) << 1) + 1) = ATTRIB;
+            *(uint8_t *)(true_mem + ((NUM_COLS * (i) + j) << 1)) = 0x0;
+            *(uint8_t *)(true_mem + ((NUM_COLS * (i) + j) << 1) + 1) = ATTRIB;
         }
-        screen_y = NUM_ROWS-1;
-        screen_x = 0;
+        terminal_array[true_term_id].screen_y = NUM_ROWS-1;
+        terminal_array[true_term_id].screen_x = 0;
     }
+
     move_cursor();
 }
 
@@ -516,9 +548,15 @@ void test_interrupts(void) {
  * Return Value: None
  * Function: Checks the position of x and y to see if its out of bounds. */
 void check_size(){
-    if (screen_x >= NUM_COLS){ 
-        screen_y++;
-        screen_x = 0;
+    int true_terminal = screen_terminal;
+    if(terminal_flag == 1) {
+        true_terminal = curr_terminal;
+    }
+
+
+    if (terminal_array[true_terminal].screen_x >= NUM_COLS){ 
+        terminal_array[true_terminal].screen_y++;
+        terminal_array[true_terminal].screen_x = 0;
     }
 }
 
@@ -527,15 +565,17 @@ void check_size(){
  * Return Value: None
  * Function: Deletes a character from the screen*/
 void erase_char(){
+    /*erase_char is only used by typing triggerd cursor movement, meaning only screen terminal*/
+    terminal_flag = 0;
     /* Deletes the previous character. */
-    screen_x--;
-    if (screen_x < 0){
-        screen_x = NUM_COLS-1;
-        screen_y--;
+    terminal_array[screen_terminal].screen_x--;
+    if (terminal_array[screen_terminal].screen_x < 0){
+        terminal_array[screen_terminal].screen_x = NUM_COLS-1;
+        terminal_array[screen_terminal].screen_y--;
     }
-    *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = 0x0;
-    screen_x %= NUM_COLS;
-    screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+    *(uint8_t *)(video_mem + ((NUM_COLS * terminal_array[screen_terminal].screen_y + terminal_array[screen_terminal].screen_x) << 1)) = 0x0;
+    terminal_array[screen_terminal].screen_x %= NUM_COLS;
+    terminal_array[screen_terminal].screen_y = (terminal_array[screen_terminal].screen_y + (terminal_array[screen_terminal].screen_x / NUM_COLS)) % NUM_ROWS;
 
     /* Moves the cursor*/
     move_cursor();
@@ -547,8 +587,15 @@ void erase_char(){
  * Function: Moves the cursor based on the position of x and y*/
 void move_cursor(){
     uint16_t position;
+    if(terminal_flag == 1){
+        screen_x = terminal_array[curr_terminal].screen_x;
+        screen_y = terminal_array[curr_terminal].screen_y;
+    }
+    else{
+        screen_x = terminal_array[screen_terminal].screen_x;
+        screen_y = terminal_array[screen_terminal].screen_y;
+    }
     position = screen_y * NUM_COLS + screen_x;
-
     /* Edit ports to move the cursor. */
     outb(CURSOR_LOC_LOW_REG, CRTC_ADDR_PORT);
     outb((uint8_t)(position & GET_8_BITS), CRTC_DATA_PORT);

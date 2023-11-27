@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+#include "pit.h"
 
 // MP 3.1: Added headers
 #include "init_devices.h"
@@ -20,7 +21,7 @@
 // MP 3.3: Added headers
 #include "syscalls.h"
 
-#define RUN_TESTS
+// #define RUN_TESTS
 
 unsigned int fs;
 
@@ -35,6 +36,7 @@ void entry(unsigned long magic, unsigned long addr) {
     multiboot_info_t *mbi;
 
     /* Clear the screen. */
+    DISPLAY_ON_MAIN_PAGE = 0;
     clear();
 
     /* Am I booted by a Multiboot-compliant boot loader? */
@@ -159,14 +161,18 @@ void entry(unsigned long magic, unsigned long addr) {
      * PIC, any other initialization stuff... */
 
     /* Init the keyboard*/
+    init_terminal();
     init_ps2devices();
-
+    
     /* Init the RTC */
     init_RTC();
 
     /* Init the page*/
     init_page();
 
+    /* Initializes the PIT. */
+    init_pit();
+    DISPLAY_ON_MAIN_PAGE = 0;
     clear();
     init_file_sys(fs);
     init_fops_table();
