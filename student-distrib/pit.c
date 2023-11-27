@@ -2,6 +2,7 @@
 #include "terminal.h"
 #include "syscalls.h"
 #include "page.h"
+#include "init_devices.h"
 
 int timer = 0;
 extern int cur_processes[NUM_PROCESSES];
@@ -25,7 +26,7 @@ void pit_handler() {
     // send_eoi(PIT_IRQ);
     // Call the scheduler
     send_eoi(PIT_IRQ);
-    // scheduler();
+    scheduler();
 }
 
 void scheduler() {
@@ -35,22 +36,17 @@ void scheduler() {
     // Temp variables to hold ebp and esp
     uint32_t temp_esp;
     uint32_t temp_ebp;
-    int temp_terminal;
 
-    if (terminal_array[curr_terminal].pid == -1) {
-        return;
+    // If it's the first time opening that terminal, we need to start the shell
+    if (terminal_array[curr_terminal].flag == 0) {
+        terminal_array[curr_terminal].flag = 1;
+        send_eoi(KEYBOARD_IRQ);
+        base_shell = 1;
+        system_execute((uint8_t *) "shell");
     }
     
     // move to next terminal
-    temp_terminal = curr_terminal;
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-    while (terminal_array[curr_terminal].flag == 0) {
-        curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-    }
-    // just return if we go to same terminal
-    if (temp_terminal == curr_terminal) {
-        return;
-    }
 
     next_pid = terminal_array[curr_terminal].pid;
 
@@ -67,8 +63,8 @@ void scheduler() {
                 );
 
     // store PCB's ebp and esp
-    old_pcb->ebp = temp_ebp;
-    old_pcb->esp = temp_esp;
+    old_pcb->sched_ebp = temp_ebp;
+    old_pcb->sched_esp = temp_esp;
 
     next_pcb = get_pcb(next_pid);
     process_page(next_pcb->pid);
@@ -84,10 +80,7 @@ void scheduler() {
                 movl %1, %%ebp               \n\
                 "
                 :
-                : "r" (next_pcb->esp), "r" (next_pcb->ebp)
+                : "r" (next_pcb->sched_esp), "r" (next_pcb->sched_ebp)
                 : "eax"
                 );
 }
-
-// the first terminal flag is set to 1 by default
-// the first pid is not

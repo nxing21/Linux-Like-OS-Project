@@ -396,12 +396,5 @@ void switch_screen(uint8_t new_terminal) {
     memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((screen_terminal+1) << 12), 4096); // save terminal video page to  current screen mem values
     terminal_flag = 0;
     move_cursor();
-    // If it's the first time opening that terminal, we need to start the shell
-    if (terminal_array[screen_terminal].flag == 0) {
-        terminal_array[screen_terminal].flag = 1;
-        send_eoi(KEYBOARD_IRQ);
-        base_shell = 1;
-        system_execute((uint8_t *) "shell");
-    }
     // scheduler(); // for testing purposes
 }
