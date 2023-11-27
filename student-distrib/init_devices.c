@@ -11,8 +11,8 @@ static int ctrl_held = 0;
 static int alt_held = 0;
 
 /* Making a keyboard buffer. */
-uint8_t keyboard_buffer[MAX_BUFFER_SIZE];
-int keyboard_buffer_size = 0;
+// uint8_t keyboard_buffer[MAX_BUFFER_SIZE];
+// int keyboard_buffer_size = 0;
 
 /* Terminal Flag used for move_cursor. */
 extern int terminal_flag;
@@ -27,7 +27,6 @@ extern int terminal_flag;
  */
 void init_ps2devices() {
     /* Enable IRQ 1 in the PIC*/
-    keyboard_buffer_size = 0;
     enable_irq(KEYBOARD_IRQ);
     DISPLAY_ON_MAIN_PAGE = 0;
 }
@@ -157,12 +156,7 @@ void ctrl_key_handler(uint8_t response) {
 
     /* CTRL-L: Performs a clear screen. */
     if (response == 'l' || response == 'L') {
-        DISPLAY_ON_MAIN_PAGE = 1;
-        clear();
-        for (i = 0; i < keyboard_buffer_size; i++) {
-            DISPLAY_ON_MAIN_PAGE = 1;
-            putc(keyboard_buffer[i]);
-        }
+        edit_buffer(CTL_L_CMD);
     }
 }
 
@@ -244,18 +238,7 @@ void typing_handler(uint8_t response) {
 
     /* Checks if the current ASCII can be printed. If so, add to the buffer and print to screen. */
     if (printed_char != 0x0) {
-        if (keyboard_buffer_size < 0) {
-            keyboard_buffer_size = 0;
-        }
-        if (keyboard_buffer_size == MAX_BUFFER_SIZE-1) {
-        }
-        else {
-            keyboard_buffer[keyboard_buffer_size] = printed_char;
             edit_buffer(printed_char);
-            keyboard_buffer_size++;
-            DISPLAY_ON_MAIN_PAGE = 1;
-            putc(printed_char);
-        }
     }
 }
 
@@ -270,16 +253,16 @@ void typing_handler(uint8_t response) {
  */
 void backspace_handler() {
     /* If the buffer has characters in it, delete them off the screen and the buffer. */
-    if (keyboard_buffer_size > 0) {
-        erase_char();
-        keyboard_buffer[keyboard_buffer_size] = 0x0;
-        keyboard_buffer_size--;
-        edit_buffer(BACKSPACE_PRESSED);
-    }
-    if (keyboard_buffer_size == 0) {
-        edit_buffer(BACKSPACE_PRESSED);
-        keyboard_buffer[keyboard_buffer_size] = 0x0;
-    }
+    // if (keyboard_buffer_size > 0) {
+    //     erase_char();
+    //     keyboard_buffer[keyboard_buffer_size] = 0x0;
+    //     keyboard_buffer_size--;
+    //     edit_buffer(BACKSPACE_PRESSED);
+    // }
+    // if (keyboard_buffer_size == 0) {
+    edit_buffer(BACKSPACE_PRESSED);
+    //     keyboard_buffer[keyboard_buffer_size] = 0x0;
+    // }
 }
 
 /* 
@@ -296,14 +279,14 @@ void enter_key_handler() {
 
     /* Adds the new line character to the screen.  */
     edit_buffer(ENTER_PRESESED);
-    DISPLAY_ON_MAIN_PAGE = 1;
-    putc('\n');
+    // DISPLAY_ON_MAIN_PAGE = 1;
+    // putc('\n');
     
-    /* Clear out the keyboard buffer. */
-    for (i = 0; i < keyboard_buffer_size +1; i++) {
-        keyboard_buffer[i] = 0x0;
-    }
-    keyboard_buffer_size = 0;
+    // /* Clear out the keyboard buffer. */
+    // for (i = 0; i < keyboard_buffer_size +1; i++) {
+    //     keyboard_buffer[i] = 0x0;
+    // }
+    // keyboard_buffer_size = 0;
 }
 
 /* 
@@ -319,16 +302,16 @@ void tab_key_handler() {
     int i;
     /* Try to add four spaces to the buffer and to the screen. */
     for (i = 0; i < 4; i++) {
-         if (keyboard_buffer_size > MAX_BUF_INDEX-1) {
-            return;
-        }
-        else {
-            keyboard_buffer[keyboard_buffer_size] = SPACE_ASCII;
-            keyboard_buffer_size++;
-            DISPLAY_ON_MAIN_PAGE = 1;
-            putc(SPACE_ASCII);
+        //  if (keyboard_buffer_size > MAX_BUF_INDEX-1) {
+        //     return;
+        // }
+        // else {
+            // keyboard_buffer[keyboard_buffer_size] = SPACE_ASCII;
+            // keyboard_buffer_size++;
+            // DISPLAY_ON_MAIN_PAGE = 1;
+            // putc(SPACE_ASCII);
             edit_buffer(SPACE_ASCII);
-        }
+        // }
     } 
 }
 

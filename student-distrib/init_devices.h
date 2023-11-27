@@ -55,11 +55,12 @@
 #define BACKWARD_SLASH_ASCII 0x5C
 #define SPACE_ASCII 0x20
 #define VIDEO_ADDR 0xB8000     // from lib.c
+#define CTL_L_CMD 255
 
 
 
-//typing flag to let lib.c no to display on main video page
-int DISPLAY_ON_MAIN_PAGE;
+// //typing flag to let lib.c no to display on main video page
+// int DISPLAY_ON_MAIN_PAGE;
 
 
 /* Initializes the PS/2 devices. */

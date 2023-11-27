@@ -11,7 +11,10 @@
 #define MAX_BUF_SIZE  128
 #define END_OF_LINE 0x0A
 #define MAX_TERMINALS 3
+#define CTL_L_CMD 255
 
+//typing flag to let lib.c no to display on main video page
+int DISPLAY_ON_MAIN_PAGE;
 
 //Keeps track of Terminal being looked at (Displayed Terminal)
 int screen_terminal;

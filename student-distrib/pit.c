@@ -25,7 +25,7 @@ void pit_handler() {
     // send_eoi(PIT_IRQ);
     // Call the scheduler
     send_eoi(PIT_IRQ);
-    scheduler();
+    // scheduler();
 }
 
 void scheduler() {
