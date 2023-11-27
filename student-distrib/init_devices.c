@@ -27,6 +27,7 @@ extern int terminal_flag;
  */
 void init_ps2devices() {
     /* Enable IRQ 1 in the PIC*/
+    // keyboard_buffer_size = 0;
     enable_irq(KEYBOARD_IRQ);
     DISPLAY_ON_MAIN_PAGE = 0;
 }
@@ -145,7 +146,7 @@ void shift_key_handler(uint8_t response) {
  *                 
  */
 void ctrl_key_handler(uint8_t response) {
-    int i; /* loops through the buffer. */
+    // int i; /* loops through the buffer. */
     if (response == LEFT_CTL_PRESSED) {
         ctrl_held = 1;
     }
@@ -275,7 +276,7 @@ void backspace_handler() {
  *                 
  */
 void enter_key_handler() {
-    int i; 
+    // int i; 
 
     /* Adds the new line character to the screen.  */
     edit_buffer(ENTER_PRESESED);
