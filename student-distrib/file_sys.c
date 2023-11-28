@@ -1,6 +1,7 @@
 #include "syscalls.h"
 #include "file_sys.h"
 #include "lib.h"
+#include "terminal.h"
 
 // global variables, keep track of starting index of boot block, inodes, and data blocks
 boot_block_t *boot_block;
@@ -149,7 +150,7 @@ int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
     int offset;
     int32_t bytes_read;
     uint8_t * buffer = (uint8_t*) buf;
-    pcb_t *pcb = get_pcb(curr_pid);
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid);
 
     if(fd >= FILE_DESCRIPTOR_MAX || fd < 0) { //check if valid fd index
         return -1;
@@ -209,7 +210,7 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
     uint8_t * buffer = (uint8_t*) buf;
     // counters so we know what index to put in buffer
     uint32_t num_read = 0;
-    pcb_t *pcb = get_pcb(curr_pid);
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid);
 
     // check if we've read all files
     if (pcb->file_descriptors[fd].file_pos >= boot_block->dir_count) {
