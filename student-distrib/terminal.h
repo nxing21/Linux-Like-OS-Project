@@ -36,8 +36,6 @@ typedef struct terminal_info {
     int pid;
     uint32_t base_tss_esp0;
     uint32_t base_tss_ss0;
-    uint32_t base_esp;
-    uint32_t base_ebp;
 } terminal_info_t;
 
 /* An array to keep track of the 3 terminals. */
