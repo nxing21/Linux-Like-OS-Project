@@ -62,6 +62,9 @@ int32_t system_execute(const uint8_t* command) {
     int8_t buf[ELF_LENGTH]; // holds info
     uint32_t pid; // process ID
     int arg_idx = 0; // start of arguments
+    uint32_t temp_esp;
+    uint32_t temp_ebp;
+
     if (command == NULL) {
         sti();
         return -1;
@@ -165,6 +168,7 @@ int32_t system_execute(const uint8_t* command) {
 
     // Create PCB
     pcb_t *pcb = get_pcb(pid);
+    pcb_t *parent_pcb;
     // Initialize PCB's pid
     pcb->pid = pid;
     // Set PCB's terminal ID
@@ -179,6 +183,21 @@ int32_t system_execute(const uint8_t* command) {
     else {
         // Set curr_pid to current pid
         pcb->parent_pid = terminal_array[screen_terminal].pid;
+        parent_pcb = get_pcb(terminal_array[screen_terminal].pid);
+
+            /* Getting the ebp and esp of the current terminal. */
+         asm volatile("                     \n\
+            movl %%ebp, %0               \n\
+            movl %%esp, %1               \n\
+            "
+            : "=r" (temp_ebp), "=r" (temp_esp)
+            :
+            : "eax"
+            );
+
+        /* Storing the ebp and esp of the current terminal onto the stack. */
+        parent_pcb->ebp = temp_ebp;
+        parent_pcb->esp = temp_esp;
         terminal_array[screen_terminal].pid = pid;
         pcb->terminal_id = screen_terminal;
     }
@@ -213,23 +232,23 @@ int32_t system_execute(const uint8_t* command) {
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
     tss.ss0 = KERNEL_DS;
 
-    // Temp variables to hold ebp and esp
-    uint32_t temp_esp;
-    uint32_t temp_ebp;
+    // // Temp variables to hold ebp and esp
+    // uint32_t temp_esp;
+    // uint32_t temp_ebp;
 
-    // Grabbing ebp and esp to store for later context switching
-    asm volatile("                           \n\
-                movl %%ebp, %0               \n\
-                movl %%esp, %1               \n\
-                "
-                : "=r" (temp_ebp), "=r" (temp_esp)
-                :
-                : "eax"
-                );
+    // // Grabbing ebp and esp to store for later context switching
+    // asm volatile("                           \n\
+    //             movl %%ebp, %0               \n\
+    //             movl %%esp, %1               \n\
+    //             "
+    //             : "=r" (temp_ebp), "=r" (temp_esp)
+    //             :
+    //             : "eax"
+    //             );
 
-    // Initialize PCB's ebp and esp
-    pcb->ebp = temp_ebp;
-    pcb->esp = temp_esp;
+    // // Initialize PCB's ebp and esp
+    // pcb->ebp = temp_ebp;
+    // pcb->esp = temp_esp;
 
     // Reads EIP (bytes 24-27)
     uint32_t eip;
