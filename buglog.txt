@@ -179,7 +179,16 @@ Nov 10th, 2023:
     - Was not saving parent pcb information in system execute.
     - Made that change in logic, programs do not page fault after halting. 
 
+Nov 10th, 2023:
+    - Fixed an issue with cursor
+    - When running a program that requires a lot of time (counter, pingpong),
+    the visual cursor in other terminals would be moved to that area as well.
+    - Looking at our logic for moving cursor, we had a line where it would move the cursor using the
+    screen_x and screen_y of a terminal that was not being displayed at the moment.
+    - We got rid of that line, only making it so that visual cursor would only be moved using the screen_x and
+    screen_y of the terminal that is on screen.
+    - Took about 10 minutes to fix.
+
 BUGS TO WRITE ABOUT:
-- Cursor is not working
 - ls or grep do not work after running it for a couple times. 
 - fish is not working.
