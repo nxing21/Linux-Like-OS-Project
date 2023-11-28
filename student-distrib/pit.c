@@ -36,10 +36,8 @@ void scheduler() {
     // Temp variables to hold ebp and esp
     uint32_t temp_esp;
     uint32_t temp_ebp;
-    int temp_terminal;
     
     // move to next terminal
-    temp_terminal = curr_terminal;
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
 
     /* Getting the ebp and esp of the current terminal. */
