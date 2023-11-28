@@ -160,23 +160,6 @@ int edit_buffer(uint8_t response) {
 }
 
 /* 
- * clear_writebuffer
- *   DESCRIPTION: Clears the input buffer and resets the size.
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: Returns 0 on success.
- *   SIDE EFFECTS: Clears the input buffer and reset the size.
- */
-int clear_writebuffer() {
-    /* clear the buffer, resetes size. */
-    int i; 
-    for (i = 0; i < MAX_BUF_SIZE; i++) {
-        terminal_array[screen_terminal].write_buffer[i] = 0x0;
-    }
-    return 0;
-}
-
-/* 
  * terminal_open
  *   DESCRIPTION: Sets up the terminal.
  *   INPUTS: filename
@@ -190,7 +173,6 @@ int terminal_open(const char* filename) {
     /* clear the buffer. */
     for (i = 0; i < terminal_array[curr_terminal].buffer_size; i++){
         terminal_array[curr_terminal].buffer[i] = 0x0;
-        terminal_array[curr_terminal].write_buffer[i] = 0x0;
     }
     terminal_array[curr_terminal].buffer_size = 0;
     return 0;

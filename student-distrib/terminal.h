@@ -32,9 +32,12 @@ typedef struct terminal_info {
     int screen_x;
     int screen_y;
     uint8_t buffer[MAX_BUF_SIZE];
-    uint8_t write_buffer[MAX_BUF_SIZE];
     uint8_t buffer_size;
     int pid;
+    uint32_t base_tss_esp0;
+    uint32_t base_tss_ss0;
+    uint32_t base_esp;
+    uint32_t base_ebp;
 } terminal_info_t;
 
 /* An array to keep track of the 3 terminals. */
@@ -51,9 +54,6 @@ int terminal_open(const char* filename);
 
 /* Does nothing. Returns 0. */
 int terminal_close(uint32_t fd);
-
-/* Clears the write buffer. */
-int clear_writebuffer();
 
 /* Deletes a character from the screen and the input buffer. */
 int edit_buffer(uint8_t response);

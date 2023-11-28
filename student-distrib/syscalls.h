@@ -28,9 +28,11 @@
 #define EXCEPTION       255
 #define ONE_TWENTY_EIGHT_MB (FOUR_MB*32)
 #define ONE_THIRTY_TWO_MB (ONE_TWENTY_EIGHT_MB+FOUR_MB) 
+#define BASE_SHELL 24
 
 #define NUM_COLS    80
 
+/* The pid corresponding to the terminal that we are currently looking at. */
 uint32_t curr_pid;
 
 int32_t system_execute(const uint8_t* command);
@@ -75,8 +77,6 @@ typedef struct process_control_block {
     uint32_t terminal_id;
     uint32_t esp;
     uint32_t ebp;
-    uint32_t sched_esp;
-    uint32_t sched_ebp;
     uint32_t eip;
     uint32_t tss_esp0;
     uint32_t tss_ss0;
@@ -91,6 +91,7 @@ fops_t rtc_ops;
 fops_t file_ops;
 fops_t dir_ops;
 
+/* Flag that allows us to check if the PCB we are creating is for a base shell. We initially set this to 1 because the first program we always run is the base shell. */
 int base_shell;
 
 #endif

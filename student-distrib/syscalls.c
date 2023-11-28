@@ -5,6 +5,7 @@
 #include "page.h"
 #include "x86_desc.h"
 #include "terminal.h"
+#include "pit.h"
 
 int cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // cur_processes keeps track of current processes that are running
 char* cur_args = ""; // keeps track of current arguments inputted
@@ -140,6 +141,8 @@ int32_t system_execute(const uint8_t* command) {
         return -1;
     }
 
+    /*--------------------------------------------------------------------------------------------------*/
+
     // Find free PID location
     for (i = 0; i <= NUM_PROCESSES; i++) {
         if (i == NUM_PROCESSES) {
@@ -149,7 +152,6 @@ int32_t system_execute(const uint8_t* command) {
         else if (cur_processes[i] == 0) { // not in use process
             cur_processes[i] = 1;  // set to in use
             pid = i; // set pid
-            terminal_array[curr_terminal].pid = pid;
             break;
         }
     }
@@ -166,19 +168,23 @@ int32_t system_execute(const uint8_t* command) {
     // Initialize PCB's pid
     pcb->pid = pid;
     // Set PCB's terminal ID
-    pcb->terminal_id = curr_terminal;
+    // pcb->terminal_id = screen_terminal;
 
     // Check if base shell of the terminal it's on
-    if (base_shell) {
-        pcb->parent_pid = 0;
+    if (base_shell == 1) {
+        pcb->parent_pid = BASE_SHELL;
+        terminal_array[curr_terminal].pid = pid;
+        pcb->terminal_id = curr_terminal;
     }
     else {
         // Set curr_pid to current pid
-        pcb->parent_pid = curr_pid;
+        pcb->parent_pid = terminal_array[screen_terminal].pid;
+        terminal_array[screen_terminal].pid = pid;
+        pcb->terminal_id = screen_terminal;
     }
 
     base_shell = 0;    
-    curr_pid = pid;
+    // curr_pid = pid;
 
     // Initializing stdin
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
@@ -234,6 +240,8 @@ int32_t system_execute(const uint8_t* command) {
 
     // https://wiki.osdev.org/Getting_to_Ring_3
     
+    add_to_scheduler(pid, curr_terminal); 
+
     // IRET
     // First line "0x02B is USER_DS"
     // Setting up stack for IRET context switch
@@ -253,7 +261,6 @@ int32_t system_execute(const uint8_t* command) {
                 : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (eip)
                 : "eax"
                 );
-
     asm volatile("iret");
     asm volatile("                  \n\
                 execute_return:     \n\
@@ -273,16 +280,22 @@ int32_t system_execute(const uint8_t* command) {
  * and jumpts to execute return.
  */
 int32_t system_halt(uint8_t status) {
+    cli();
     int i; // looping variable
 
     // Get current and parent PCB
-    pcb_t* pcb = get_pcb(curr_pid);
+    /* I think we need to base closing the curr_pid by using the pid of the curr_terminal*/
+    int halting_pid = terminal_array[curr_terminal].pid;
+
+    pcb_t* pcb = get_pcb(halting_pid);
     uint32_t parent_pid = pcb->parent_pid;
     pcb_t* parent_pcb = get_pcb(parent_pid);
     uint32_t ext_status;
 
+    int temp_pid = curr_pid;
+
     // If currently running base shell, reload
-    if (curr_pid == 0) {
+    if (parent_pid == BASE_SHELL && terminal_array[curr_terminal].flag == 1) {
         asm volatile("                                          \n\
                     cli                                         \n\
                     movw $0x2B, %%ax  # user ds                 \n\
@@ -305,11 +318,10 @@ int32_t system_halt(uint8_t status) {
     }
 
     // Update cur_processes
-    cur_processes[curr_pid] = 0;
+    cur_processes[halting_pid] = 0;
 
     // Set the curr_pid to the parent pid.
-    curr_pid = parent_pid;
-    terminal_array[pcb->terminal_id].pid = curr_pid;
+    terminal_array[curr_terminal].pid = parent_pid;
     
     // Restore paging and flush TLB
     process_page(parent_pcb->pid);
@@ -321,8 +333,8 @@ int32_t system_halt(uint8_t status) {
     }
 
     // Restoring tss
-    tss.esp0 = pcb->tss_esp0;
-    tss.ss0 = pcb->tss_ss0;
+    tss.esp0 = EIGHT_MB - parent_pcb->pid * EIGHT_KB;
+    tss.ss0 = KERNEL_DS;
 
     if(status == EXCEPTION) { // accounting for status being 8 bits
         ext_status = EXCEPTION+1;
@@ -330,7 +342,9 @@ int32_t system_halt(uint8_t status) {
     else{
         ext_status = status;
     }
-    
+
+    remove_from_scheduler(parent_pcb->pid, curr_terminal);
+    sti();
     // Assembly to load old esp, ebp, and status 
     asm volatile("                           \n\
                 movl %0, %%eax               \n\
@@ -458,6 +472,7 @@ int32_t system_close (int32_t fd) {
  * Function: Reads the program’s command line arguments into a user-level buffer.
  */
 int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
+    cli();
     if(strlen(cur_args) + 1 > nbytes || strlen(cur_args) == 0) { //+1 to account for '\0' b/c strlen doesn't count it
         return -1;
     }
@@ -465,6 +480,7 @@ int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
         memcpy(buf, cur_args, nbytes); 
         return 0;
     } 
+    sti();
 }
 
 /* system_vidmap(uint8_t** screen_start)
@@ -537,4 +553,5 @@ void process_page(int process_id) {
 pcb_t* get_pcb(uint32_t pid) {
     return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB); // pcb start address formula
 }
+
 

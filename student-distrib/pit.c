@@ -2,7 +2,6 @@
 #include "terminal.h"
 #include "syscalls.h"
 #include "page.h"
-#include "init_devices.h"
 
 int timer = 0;
 extern int cur_processes[NUM_PROCESSES];
@@ -30,49 +29,86 @@ void pit_handler() {
 }
 
 void scheduler() {
-    pcb_t* old_pcb = get_pcb(curr_pid);
+    cli();
+    pcb_t* old_pcb = get_pcb(terminal_array[curr_terminal].pid);
     pcb_t* next_pcb;
     int next_pid = -1;
     // Temp variables to hold ebp and esp
     uint32_t temp_esp;
     uint32_t temp_ebp;
+    int temp_terminal;
 
-    // If it's the first time opening that terminal, we need to start the shell
-    if (terminal_array[curr_terminal].flag == 0) {
-        terminal_array[curr_terminal].flag = 1;
-        send_eoi(KEYBOARD_IRQ);
-        base_shell = 1;
-        system_execute((uint8_t *) "shell");
-    }
+    // if (terminal_array[curr_terminal].pid == -1) {
+    //     return;
+    // }
     
     // move to next terminal
+    temp_terminal = curr_terminal;
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
+
+    /* Getting the ebp and esp of the current terminal. */
+    asm volatile("                     \n\
+          movl %%ebp, %0               \n\
+          movl %%esp, %1               \n\
+      "
+          : "=r" (temp_ebp), "=r" (temp_esp)
+          :
+          : "eax"
+          );
+
+    /* Storing the ebp and esp of the current terminal onto the stack. */
+    old_pcb->ebp = temp_ebp;
+    old_pcb->esp = temp_esp;
+
+    /* Opening a new shell if the flag is set to 0. */
+    if (terminal_array[curr_terminal].flag == 0) {
+        terminal_array[curr_terminal].flag = 1;
+        base_shell = 1;
+        system_execute((uint8_t *) "shell");
+        
+    }
+    // // just return if we go to same terminal
+    // if (temp_terminal == curr_terminal) {
+    //     // Grabbing ebp and esp to store for later context switching
+    //     asm volatile("                           \n\
+    //             movl %%ebp, %0               \n\
+    //             movl %%esp, %1               \n\
+    //             "
+    //             : "=r" (temp_ebp), "=r" (temp_esp)
+    //             :
+    //             : "eax"
+    //             );
+    //     terminal_array[curr_terminal].base_ebp = temp_ebp;
+    //     terminal_array[curr_terminal].base_esp = temp_esp;
+    //     sti();
+    //     return;
+    // }
 
     next_pid = terminal_array[curr_terminal].pid;
 
     //what if  terminal 0 and/or terminal 1 is using up all the processes TODO!!!
 
-    // Grabbing ebp and esp to store for later context switching
-    asm volatile("                           \n\
-                movl %%ebp, %0               \n\
-                movl %%esp, %1               \n\
-                "
-                : "=r" (temp_ebp), "=r" (temp_esp)
-                :
-                : "eax"
-                );
+    // // Grabbing ebp and esp to store for later context switching
+    // asm volatile("                           \n\
+    //             movl %%ebp, %0               \n\
+    //             movl %%esp, %1               \n\
+    //             "
+    //             : "=r" (temp_ebp), "=r" (temp_esp)
+    //             :
+    //             : "eax"
+    //             );
 
-    // store PCB's ebp and esp
-    old_pcb->sched_ebp = temp_ebp;
-    old_pcb->sched_esp = temp_esp;
+    // // store PCB's ebp and esp
+    // terminal_array[temp_terminal].base_ebp = temp_ebp;
+    // terminal_array[temp_terminal].base_esp = temp_esp;
 
     next_pcb = get_pcb(next_pid);
-    process_page(next_pcb->pid);
+    process_page(next_pid);
     flushTLB();
 
     // Restoring tss
-    tss.esp0 = next_pcb->tss_esp0;
-    tss.ss0 = next_pcb->tss_ss0;
+    tss.esp0 = terminal_array[curr_terminal].base_tss_esp0;
+    tss.ss0 = terminal_array[curr_terminal].base_tss_ss0;
 
     //going to stack of new terminal
     asm volatile("                           \n\
@@ -80,7 +116,25 @@ void scheduler() {
                 movl %1, %%ebp               \n\
                 "
                 :
-                : "r" (next_pcb->sched_esp), "r" (next_pcb->sched_ebp)
+                : "r" (next_pcb->esp), "r" (next_pcb->ebp)
                 : "eax"
                 );
+    sti();
 }
+
+/* Adds a new program to the scheduler. */
+void add_to_scheduler(int new_pid, int terminal_id){
+    terminal_array[terminal_id].base_tss_esp0 = EIGHT_MB - new_pid * EIGHT_KB;
+    terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
+    // terminal_array[terminal_id].pid = new_pid;
+}
+
+void remove_from_scheduler(int new_pid, int terminal_id){
+    terminal_array[terminal_id].base_tss_esp0 = EIGHT_MB - new_pid * EIGHT_KB;
+    terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
+    terminal_array[terminal_id].pid = new_pid;
+}
+
+// the first terminal flag is set to 1 by default
+// the first pid is not
+
