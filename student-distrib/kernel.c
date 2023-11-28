@@ -182,7 +182,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     printf("Enabling Interrupts\n");
-    sti();
+    base_shell = 1;
     // clear();
 
 #ifdef RUN_TESTS
@@ -190,6 +190,9 @@ void entry(unsigned long magic, unsigned long addr) {
     // launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
+    /* TODO: CONSIDER THE CASE WHERE THE USER IS SPAMMING ALT-F while the OS is trying to set up the first base shell. */
+    /* If we are trying to open all shells at startup using PIT, do we need this system_execute*/
+    /* Can we assume it will hit the system_execute faster than PIT interrupt?*/
     system_execute((uint8_t *) "shell");
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
