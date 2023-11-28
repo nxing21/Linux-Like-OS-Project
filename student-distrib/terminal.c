@@ -93,7 +93,6 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
             numbytes++;
         }
     }
-
     return numbytes;
 }
 
@@ -107,31 +106,54 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
  */
 int edit_buffer(uint8_t response) {
     cli();
-    /* Case where the terminal buffer is full. */ 
-        /* Checks if the second to last index is the FULL and is the ENTER KEY*/
-    if (terminal_array[screen_terminal].buffer_size == MAX_BUF_SIZE-2 && response == ENTER_KEY){
-        terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
-        terminal_array[screen_terminal].buffer_size++;
-    }
-    /* Case to delete from the buffer. */
-    else if (response == BACKSPACE_PRESSED) {
-        if (terminal_array[screen_terminal].buffer_size > 0) {
-            terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = 0x0;
-            terminal_array[screen_terminal].buffer_size--;
-        }
-        if (terminal_array[screen_terminal].buffer_size == 0) {
-            terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = 0x0;
-        }
-    }
-    /* Add a character to the buffer */
-    else{
-        if (response == ENTER_KEY) {
+    int i; /* Loops through the terminal buffer. */
+        /* Case where the terminal buffer is full. */ 
+            /* Checks if the second to last index is the FULL and is the ENTER KEY*/
+    if (response != 0x0) {
+        if (terminal_array[screen_terminal].buffer_size == MAX_BUF_SIZE-2 && response == ENTER_KEY){
             terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
+            DISPLAY_ON_MAIN_PAGE = 1;
+            putc('\n');
+            terminal_array[screen_terminal].buffer_size++;
+
         }
-        else {
-            terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = response;
+        else if (response == CTL_L_CMD){
+            DISPLAY_ON_MAIN_PAGE = 1;
+            clear();
+            for (i = 0; i < terminal_array[screen_terminal].buffer_size; i++) {
+                DISPLAY_ON_MAIN_PAGE = 1;
+                putc(terminal_array[screen_terminal].buffer[i] );
+            }
         }
-        terminal_array[screen_terminal].buffer_size++;
+        /* Case to delete from the buffer. */
+        else if (response == BACKSPACE_PRESSED) {
+            if (terminal_array[screen_terminal].buffer_size > 0) {
+                erase_char();
+                terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = 0x0;
+                terminal_array[screen_terminal].buffer_size--;
+            }
+            if (terminal_array[screen_terminal].buffer_size == 0) {
+                terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = 0x0;
+            }
+        }
+        /* Add a character to the buffer */
+        else{
+            if (terminal_array[screen_terminal].buffer_size == MAX_BUF_SIZE -1 && response != ENTER_KEY){
+                /* Do nothing.*/
+            }
+            else if (response == ENTER_KEY) {
+                terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
+                DISPLAY_ON_MAIN_PAGE = 1;
+                putc('\n');
+                terminal_array[screen_terminal].buffer_size++;
+            }
+            else {
+                terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = response;
+                DISPLAY_ON_MAIN_PAGE = 1;
+                putc(response);
+                terminal_array[screen_terminal].buffer_size++;
+            }
+        }
     }
     sti();
     return 0;
