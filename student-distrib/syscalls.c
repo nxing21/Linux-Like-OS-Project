@@ -324,7 +324,7 @@ int32_t system_halt(uint8_t status) {
     terminal_array[curr_terminal].pid = parent_pid;
     
     // Restore paging and flush TLB
-    process_page(parent_pcb->pid);
+    process_page(parent_pid);
     flushTLB();
 
     // Close all file operations
@@ -333,7 +333,7 @@ int32_t system_halt(uint8_t status) {
     }
 
     // Restoring tss
-    tss.esp0 = EIGHT_MB - parent_pcb->pid * EIGHT_KB;
+    tss.esp0 = EIGHT_MB - parent_pid * EIGHT_KB;
     tss.ss0 = KERNEL_DS;
 
     if(status == EXCEPTION) { // accounting for status being 8 bits
@@ -343,7 +343,7 @@ int32_t system_halt(uint8_t status) {
         ext_status = status;
     }
 
-    remove_from_scheduler(parent_pcb->pid, curr_terminal);
+    remove_from_scheduler(parent_pid, curr_terminal);
     sti();
     // Assembly to load old esp, ebp, and status 
     asm volatile("                           \n\
@@ -353,7 +353,7 @@ int32_t system_halt(uint8_t status) {
                 jmp execute_return           \n\
                 "
                 :
-                : "r" (ext_status), "r" (pcb->esp), "r" (pcb->ebp)
+                : "r" (ext_status), "r" (parent_pcb->esp), "r" (parent_pcb->ebp)
                 : "eax"
                 );
     // Will never reach here

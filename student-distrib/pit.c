@@ -37,10 +37,6 @@ void scheduler() {
     uint32_t temp_esp;
     uint32_t temp_ebp;
     int temp_terminal;
-
-    // if (terminal_array[curr_terminal].pid == -1) {
-    //     return;
-    // }
     
     // move to next terminal
     temp_terminal = curr_terminal;
@@ -126,7 +122,6 @@ void scheduler() {
 void add_to_scheduler(int new_pid, int terminal_id){
     terminal_array[terminal_id].base_tss_esp0 = EIGHT_MB - new_pid * EIGHT_KB;
     terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
-    // terminal_array[terminal_id].pid = new_pid;
 }
 
 void remove_from_scheduler(int new_pid, int terminal_id){

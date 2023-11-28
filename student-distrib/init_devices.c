@@ -394,11 +394,10 @@ void switch_screen(uint8_t new_terminal) {
     memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to terminal video page
     memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((new_terminal+1) << 12), 4096); // save terminal video page to  current screen mem values
     terminal_flag = 0;
+    screen_terminal = new_terminal;
     move_cursor();
 
      // Temp variables to hold ebp and esp
-    uint32_t temp_esp;
-    uint32_t temp_ebp;
 
     // // If it's the first time opening that terminal, we need to start the shell
     // if (terminal_array[new_terminal].flag == 0) {
@@ -421,7 +420,6 @@ void switch_screen(uint8_t new_terminal) {
     //     system_execute((uint8_t *) "shell");
             
     // }    
-    screen_terminal = new_terminal;
     sti();
     // scheduler(); // for testing purposes
 }
