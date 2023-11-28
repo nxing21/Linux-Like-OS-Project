@@ -189,6 +189,11 @@ Nov 10th, 2023:
     screen_y of the terminal that is on screen.
     - Took about 10 minutes to fix.
 
+Nov 10th, 2023:
+    - Issue with ls and grep not being able to run after being used for a couple times.
+    - Changed everything that used curr_pid into the pid that is stored in the curr_terminal
+    - Sometimes when running a program, it boot loops.
+
 BUGS TO WRITE ABOUT:
 - ls or grep do not work after running it for a couple times. 
 - fish is not working.
