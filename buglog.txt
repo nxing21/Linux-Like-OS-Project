@@ -165,3 +165,21 @@ Nov 10th: 2023:
     - To fix that we just made separate f_ops tables for each type of file. 
     - This also fixed our grep function
     - Took us about 4 hour.
+
+----------------------------------------------------------------------------------------------------------------------------------------
+Nov 9th, 2023:
+    - Several scheduling problems
+
+Nov 10th, 2023:
+    - Terminal would boot loop after running a program twice.
+    - We originally had it so that the pcb would hold its parent's information (esp. ebp)
+    - Changed it so that the scheduler will handle all cases of switching tss info
+    - Changed it so that each pcb will hold its respective information
+    - After making those changes, the program would page fault after halting
+    - Was not saving parent pcb information in system execute.
+    - Made that change in logic, programs do not page fault after halting. 
+
+BUGS TO WRITE ABOUT:
+- Cursor is not working
+- ls or grep do not work after running it for a couple times. 
+- fish is not working.
