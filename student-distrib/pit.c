@@ -2,7 +2,6 @@
 #include "terminal.h"
 #include "syscalls.h"
 #include "page.h"
-#include "init_devices.h"
 
 int timer = 0;
 extern int cur_processes[NUM_PROCESSES];
@@ -40,6 +39,7 @@ void scheduler() {
     int temp_terminal;
     
     // move to next terminal
+    temp_terminal = curr_terminal;
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
 
     /* Getting the ebp and esp of the current terminal. */
@@ -112,7 +112,7 @@ void scheduler() {
                 movl %1, %%ebp               \n\
                 "
                 :
-                : "r" (next_pcb->sched_esp), "r" (next_pcb->sched_ebp)
+                : "r" (next_pcb->esp), "r" (next_pcb->ebp)
                 : "eax"
                 );
     sti();
@@ -129,3 +129,4 @@ void remove_from_scheduler(int new_pid, int terminal_id){
     terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
     terminal_array[terminal_id].pid = new_pid;
 }
+
