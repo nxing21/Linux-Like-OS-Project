@@ -587,14 +587,14 @@ void erase_char(){
  * Function: Moves the cursor based on the position of x and y*/
 void move_cursor(){
     uint16_t position;
-    if(terminal_flag == 1){
-        screen_x = terminal_array[curr_terminal].screen_x;
-        screen_y = terminal_array[curr_terminal].screen_y;
-    }
-    else{
+    // if(terminal_flag == 1){
+    //     screen_x = terminal_array[curr_terminal].screen_x;
+    //     screen_y = terminal_array[curr_terminal].screen_y;
+    // }
+    // else{
         screen_x = terminal_array[screen_terminal].screen_x;
         screen_y = terminal_array[screen_terminal].screen_y;
-    }
+    // }
     position = screen_y * NUM_COLS + screen_x;
     /* Edit ports to move the cursor. */
     outb(CURSOR_LOC_LOW_REG, CRTC_ADDR_PORT);
