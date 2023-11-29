@@ -520,7 +520,7 @@ int32_t system_vidmap(uint8_t** screen_start) {
         page_directory[USER_ADDR_INDEX + 1].kb.global = 1;
         vid_map[0].present = 1; // set to present
         vid_map[0].user_supervisor = 1; //giving user access
-        vid_map[0].base_addr = (int) (VIDEO_ADDR / ALIGN) + (screen_terminal+1); // set to vid mem
+        vid_map[0].base_addr = (int) (VIDEO_ADDR / ALIGN); // set to vid mem
         flushTLB();
         *screen_start = (uint8_t*) ONE_TWENTY_EIGHT_MB + FOUR_MB; // setting start of virtual video memory
     }
