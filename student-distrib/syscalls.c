@@ -347,7 +347,8 @@ int32_t system_halt(uint8_t status) {
 
     // Close all file operations
     for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
-        pcb->file_descriptors[i].flags = NOT_IN_USE; // marking as not in use
+        // pcb->file_descriptors[i].flags = NOT_IN_USE; // marking as not in use
+        system_close(i);
     }
 
     // Restoring tss
