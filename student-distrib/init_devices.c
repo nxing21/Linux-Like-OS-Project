@@ -2,6 +2,7 @@
 #include "terminal.h"
 #include "pit.h"
 #include "syscalls.h"
+#include "page.h"
 
 /* Global variables for handling keyboard */
 static int shift_held = 0;
@@ -391,35 +392,11 @@ uint8_t shift_and_caps_data(uint8_t response) {
 
 void switch_screen(uint8_t new_terminal) {
     cli();
-    memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to terminal video page
-    memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((new_terminal+1) << 12), 4096); // save terminal video page to  current screen mem values
+    memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to backup terminal video page
+
+    memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((new_terminal+1) << 12), 4096); // save backup terminal video page to  current screen mem values
     terminal_flag = 0;
     screen_terminal = new_terminal;
     move_cursor();
-
-     // Temp variables to hold ebp and esp
-
-    // // If it's the first time opening that terminal, we need to start the shell
-    // if (terminal_array[new_terminal].flag == 0) {
-    //     terminal_array[new_terminal].flag = 1;
-    //     // Grabbing ebp and esp to store for later context switching
-    //     asm volatile("                           \n\
-    //             movl %%ebp, %0               \n\
-    //             movl %%esp, %1               \n\
-    //         "
-    //             : "=r" (temp_ebp), "=r" (temp_esp)
-    //             :
-    //             : "eax"
-    //             );
-    //     base_shell = 1;
-    //     terminal_array[screen_terminal].base_ebp = temp_ebp;
-    //     terminal_array[screen_terminal].base_esp = temp_esp;
-    //     send_eoi(KEYBOARD_IRQ);
-    //     screen_terminal = new_terminal;
-    //     curr_terminal = screen_terminal;
-    //     system_execute((uint8_t *) "shell");
-            
-    // }    
     sti();
-    // scheduler(); // for testing purposes
 }

@@ -80,6 +80,7 @@ typedef struct process_control_block {
     uint32_t eip;
     uint32_t tss_esp0;
     uint32_t tss_ss0;
+    char* args; // keeps track of current arguments inputted per process
 } pcb_t;
 
 pcb_t* get_pcb(uint32_t pid);

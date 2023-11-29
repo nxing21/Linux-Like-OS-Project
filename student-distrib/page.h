@@ -9,6 +9,7 @@
 #define PAGE_SIZE       1024        // total entry size of each page
 #define VIDEO_ADDR      0xB8000     // from lib.c
 #define KERNEL_ADDR     0x400000    // from documentation (Appendix C)
+#define USER_ADDR_INDEX 32
 
 #define shift_12    12
 #define shift_22    22
