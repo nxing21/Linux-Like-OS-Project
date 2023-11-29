@@ -393,6 +393,7 @@ uint8_t shift_and_caps_data(uint8_t response) {
 void switch_screen(uint8_t new_terminal) {
     cli();
     memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to backup terminal video page
+    vid_map[0].base_addr = (int) (VIDEO_ADDR / ALIGN) + (screen_terminal+1); // switch user vid map to point to backup terminal page
 
     memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((new_terminal+1) << 12), 4096); // save backup terminal video page to  current screen mem values
     terminal_flag = 0;
