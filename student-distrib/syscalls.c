@@ -62,6 +62,9 @@ int32_t system_execute(const uint8_t* command) {
     int8_t buf[ELF_LENGTH]; // holds info
     uint32_t pid; // process ID
     int arg_idx = 0; // start of arguments
+    uint32_t temp_esp;
+    uint32_t temp_ebp;
+
     if (command == NULL) {
         sti();
         return -1;
@@ -165,6 +168,7 @@ int32_t system_execute(const uint8_t* command) {
 
     // Create PCB
     pcb_t *pcb = get_pcb(pid);
+    pcb_t *parent_pcb;
     // Initialize PCB's pid
     pcb->pid = pid;
     // Set PCB's terminal ID
@@ -179,6 +183,21 @@ int32_t system_execute(const uint8_t* command) {
     else {
         // Set curr_pid to current pid
         pcb->parent_pid = terminal_array[screen_terminal].pid;
+        parent_pcb = get_pcb(terminal_array[screen_terminal].pid);
+
+            /* Getting the ebp and esp of the current terminal. */
+         asm volatile("                     \n\
+            movl %%ebp, %0               \n\
+            movl %%esp, %1               \n\
+            "
+            : "=r" (temp_ebp), "=r" (temp_esp)
+            :
+            : "eax"
+            );
+
+        /* Storing the ebp and esp of the current terminal onto the stack. */
+        parent_pcb->ebp = temp_ebp;
+        parent_pcb->esp = temp_esp;
         terminal_array[screen_terminal].pid = pid;
         pcb->terminal_id = screen_terminal;
     }
@@ -213,23 +232,23 @@ int32_t system_execute(const uint8_t* command) {
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
     tss.ss0 = KERNEL_DS;
 
-    // Temp variables to hold ebp and esp
-    uint32_t temp_esp;
-    uint32_t temp_ebp;
+    // // Temp variables to hold ebp and esp
+    // uint32_t temp_esp;
+    // uint32_t temp_ebp;
 
-    // Grabbing ebp and esp to store for later context switching
-    asm volatile("                           \n\
-                movl %%ebp, %0               \n\
-                movl %%esp, %1               \n\
-                "
-                : "=r" (temp_ebp), "=r" (temp_esp)
-                :
-                : "eax"
-                );
+    // // Grabbing ebp and esp to store for later context switching
+    // asm volatile("                           \n\
+    //             movl %%ebp, %0               \n\
+    //             movl %%esp, %1               \n\
+    //             "
+    //             : "=r" (temp_ebp), "=r" (temp_esp)
+    //             :
+    //             : "eax"
+    //             );
 
-    // Initialize PCB's ebp and esp
-    pcb->ebp = temp_ebp;
-    pcb->esp = temp_esp;
+    // // Initialize PCB's ebp and esp
+    // pcb->ebp = temp_ebp;
+    // pcb->esp = temp_esp;
 
     // Reads EIP (bytes 24-27)
     uint32_t eip;
@@ -291,8 +310,6 @@ int32_t system_halt(uint8_t status) {
     uint32_t parent_pid = pcb->parent_pid;
     pcb_t* parent_pcb = get_pcb(parent_pid);
     uint32_t ext_status;
-
-    int temp_pid = curr_pid;
 
     // If currently running base shell, reload
     if (parent_pid == BASE_SHELL && terminal_array[curr_terminal].flag == 1) {
@@ -369,7 +386,7 @@ int32_t system_halt(uint8_t status) {
  * if so we call the corresponding read.
  */
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes) {
-    pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid); // getting current pcb pointer
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX && fd != 1) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes); // returning respective read
     }
@@ -387,7 +404,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes) {
  * if so we call the corresponding write.
  */
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes) {
-    pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid); // getting current pcb pointer
     if((fd >= 1 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->write(fd, buf, nbytes); // returning respective write
     }
@@ -407,7 +424,7 @@ int32_t system_open (const uint8_t* filename) {
     uint32_t file_type;
     int i;
     int index = -1;
-    pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid); // getting current pcb pointer
     for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++) { // finding first open file descriptor
         if(pcb->file_descriptors[i].flags == NOT_IN_USE) {
             index = i; // setting index of  open fd
@@ -453,7 +470,7 @@ int32_t system_open (const uint8_t* filename) {
  * if so we call the corresponding close.
  */
 int32_t system_close (int32_t fd) {
-    pcb_t *pcb = get_pcb(curr_pid);
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid);
     // Check if fd is valid index and if fd is in use
     if ((fd >= FILE_DESCRIPTOR_MIN && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         pcb->file_descriptors[fd].flags = NOT_IN_USE; // marking as not in use
