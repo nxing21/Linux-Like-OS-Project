@@ -233,24 +233,6 @@ int32_t system_execute(const uint8_t* command) {
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
     tss.ss0 = KERNEL_DS;
 
-    // // Temp variables to hold ebp and esp
-    // uint32_t temp_esp;
-    // uint32_t temp_ebp;
-
-    // // Grabbing ebp and esp to store for later context switching
-    // asm volatile("                           \n\
-    //             movl %%ebp, %0               \n\
-    //             movl %%esp, %1               \n\
-    //             "
-    //             : "=r" (temp_ebp), "=r" (temp_esp)
-    //             :
-    //             : "eax"
-    //             );
-
-    // // Initialize PCB's ebp and esp
-    // pcb->ebp = temp_ebp;
-    // pcb->esp = temp_esp;
-
     // Reads EIP (bytes 24-27)
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4); // Magic numbers: 24 is the starting index, 4 is the length of bytes 24-27
@@ -347,7 +329,6 @@ int32_t system_halt(uint8_t status) {
 
     // Close all file operations
     for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
-        // pcb->file_descriptors[i].flags = NOT_IN_USE; // marking as not in use
         system_close(i);
     }
 

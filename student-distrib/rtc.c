@@ -11,7 +11,6 @@
 #define RATE_OFFSET     3
 
 int RTC_frequency, RTC_max_counter;
-// volatile int RTC_block, RTC_counter;
 volatile int RTC_block;
 volatile int RTC_counters[MAX_TERMINALS]; // each terminal gets a separate RTC counter
 
@@ -163,7 +162,6 @@ int32_t RTC_write(int32_t fd, const void* buffer, int32_t nbytes) {
     
     // obtains frequency from buffer
     freq = *((unsigned int*)(buffer));
-
 
     // loops through all possible rates
     for (i = rtc_lowest_rate; i <= rtc_highest_rate; i++) {
