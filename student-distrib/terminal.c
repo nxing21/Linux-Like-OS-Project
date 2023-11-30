@@ -22,6 +22,7 @@ void init_terminal() {
         terminal_array[i].flag = 0;
         terminal_array[i].pid = -1;
         terminal_array[i].waitingInRead  = 0;
+        terminal_array[i].enter_flag = 0;
     }
     // At the start, only the first terminal (terminal 0) will be active
     terminal_array[0].flag = 1; 
@@ -49,7 +50,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
 
     while (1){
         cli();
-        if (terminal_array[curr_terminal].buffer[terminal_array[curr_terminal].buffer_size-1] == END_OF_LINE){
+        if (terminal_array[curr_terminal].enter_flag == 1){
             break;
         }
         sti();
@@ -80,6 +81,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     }
     terminal_array[curr_terminal].buffer_size = 0;
     terminal_array[curr_terminal].waitingInRead = 0;
+    terminal_array[curr_terminal].enter_flag = 0;
     sti();
     return numbytes;
 }
@@ -136,6 +138,7 @@ int edit_buffer(uint8_t response) {
             terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
             DISPLAY_ON_MAIN_PAGE = 1;
             putc('\n');
+            terminal_array[screen_terminal].enter_flag = 1;
             terminal_array[screen_terminal].buffer_size++;
 
         }
@@ -159,6 +162,7 @@ int edit_buffer(uint8_t response) {
                 terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
                 DISPLAY_ON_MAIN_PAGE = 1;
                 putc('\n');
+                terminal_array[screen_terminal].enter_flag = 1;
                 terminal_array[screen_terminal].buffer_size++;
             }
             else {

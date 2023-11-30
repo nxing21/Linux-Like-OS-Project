@@ -36,6 +36,7 @@ void init_pit() {
  */
 void pit_handler() {   
     // Call the scheduler
+    cli();
     send_eoi(PIT_IRQ);
     scheduler();
 }
@@ -48,7 +49,6 @@ void pit_handler() {
  * Function: Switches between processes and executes base shells of terminal 2 and 3.
  */
 void scheduler() {
-    cli();
     pcb_t* old_pcb = get_pcb(terminal_array[curr_terminal].pid);
     pcb_t* next_pcb;
     int next_pid = -1;
@@ -109,6 +109,7 @@ void scheduler() {
                 : "r" (next_pcb->esp), "r" (next_pcb->ebp)
                 : "eax"
                 );
+    enable_irq(0);
     sti();
 }
 

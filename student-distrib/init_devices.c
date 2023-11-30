@@ -254,17 +254,7 @@ void typing_handler(uint8_t response) {
  *                 
  */
 void backspace_handler() {
-    /* If the buffer has characters in it, delete them off the screen and the buffer. */
-    // if (keyboard_buffer_size > 0) {
-    //     erase_char();
-    //     keyboard_buffer[keyboard_buffer_size] = 0x0;
-    //     keyboard_buffer_size--;
-    //     edit_buffer(BACKSPACE_PRESSED);
-    // }
-    // if (keyboard_buffer_size == 0) {
     edit_buffer(BACKSPACE_PRESSED);
-    //     keyboard_buffer[keyboard_buffer_size] = 0x0;
-    // }
 }
 
 /* 
@@ -277,18 +267,7 @@ void backspace_handler() {
  *                 
  */
 void enter_key_handler() {
-    // int i; 
-
-    /* Adds the new line character to the screen.  */
     edit_buffer(ENTER_PRESESED);
-    // DISPLAY_ON_MAIN_PAGE = 1;
-    // putc('\n');
-    
-    // /* Clear out the keyboard buffer. */
-    // for (i = 0; i < keyboard_buffer_size +1; i++) {
-    //     keyboard_buffer[i] = 0x0;
-    // }
-    // keyboard_buffer_size = 0;
 }
 
 /* 
