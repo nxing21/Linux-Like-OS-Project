@@ -32,7 +32,7 @@ void clear(void) {
     int32_t i;
     char *true_mem = video_mem;
 
-    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE != 1)) {
+    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE == 0)) {
         true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
         terminal_array[curr_terminal].screen_x=0;
         terminal_array[curr_terminal].screen_y=0;
@@ -201,7 +201,7 @@ void putc(uint8_t c) {
     char *true_mem = video_mem;
     int true_term_id = screen_terminal;
 
-    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE != 1)) {
+    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE == 0)) {
         true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
         true_term_id = curr_terminal;
         terminal_flag = 1;
@@ -587,15 +587,12 @@ void erase_char(){
  * Function: Moves the cursor based on the position of x and y*/
 void move_cursor(){
     uint16_t position;
-    if(terminal_flag == 1){
-        screen_x = terminal_array[curr_terminal].screen_x;
-        screen_y = terminal_array[curr_terminal].screen_y;
-    }
-    else{
-        screen_x = terminal_array[screen_terminal].screen_x;
-        screen_y = terminal_array[screen_terminal].screen_y;
-    }
+
+    /* Use the screen_x and screen_y of the terminal that we are currently looking at. */
+    screen_x = terminal_array[screen_terminal].screen_x;
+    screen_y = terminal_array[screen_terminal].screen_y;
     position = screen_y * NUM_COLS + screen_x;
+
     /* Edit ports to move the cursor. */
     outb(CURSOR_LOC_LOW_REG, CRTC_ADDR_PORT);
     outb((uint8_t)(position & GET_8_BITS), CRTC_DATA_PORT);

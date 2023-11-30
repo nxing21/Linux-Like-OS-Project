@@ -63,40 +63,18 @@ void scheduler() {
         system_execute((uint8_t *) "shell");
         
     }
-    // // just return if we go to same terminal
-    // if (temp_terminal == curr_terminal) {
-    //     // Grabbing ebp and esp to store for later context switching
-    //     asm volatile("                           \n\
-    //             movl %%ebp, %0               \n\
-    //             movl %%esp, %1               \n\
-    //             "
-    //             : "=r" (temp_ebp), "=r" (temp_esp)
-    //             :
-    //             : "eax"
-    //             );
-    //     terminal_array[curr_terminal].base_ebp = temp_ebp;
-    //     terminal_array[curr_terminal].base_esp = temp_esp;
-    //     sti();
-    //     return;
-    // }
+
 
     next_pid = terminal_array[curr_terminal].pid;
 
-    //what if  terminal 0 and/or terminal 1 is using up all the processes TODO!!!
-
-    // // Grabbing ebp and esp to store for later context switching
-    // asm volatile("                           \n\
-    //             movl %%ebp, %0               \n\
-    //             movl %%esp, %1               \n\
-    //             "
-    //             : "=r" (temp_ebp), "=r" (temp_esp)
-    //             :
-    //             : "eax"
-    //             );
-
-    // // store PCB's ebp and esp
-    // terminal_array[temp_terminal].base_ebp = temp_ebp;
-    // terminal_array[temp_terminal].base_esp = temp_esp;
+    
+    if(curr_terminal == screen_terminal){
+        vid_map[0].base_addr = (int) (VIDEO_ADDR / ALIGN); // give vidmap pointer back
+    }
+    else{
+        vid_map[0].base_addr = (int) (VIDEO_ADDR / ALIGN) + (curr_terminal+1);
+    }
+    
 
     next_pcb = get_pcb(next_pid);
     process_page(next_pid);

@@ -71,6 +71,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     terminal_array[curr_terminal].buffer_size = 0;
     return numbytes;
 }
+//double check
 
 /* 
  * terminal_write

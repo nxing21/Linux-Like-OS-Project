@@ -22,9 +22,6 @@ int screen_terminal;
 /* Keeps track of the current terminal being scheduled (Terminal currently being handled by scheduler). */
 int curr_terminal;
 
-//typing flag to let lib.c no to display on main video page
-int DISPLAY_ON_MAIN_PAGE;
-
 /* A struct holding information about the terminal. */
 typedef struct terminal_info {
     int flag;
@@ -36,7 +33,9 @@ typedef struct terminal_info {
     int pid;
     uint32_t base_tss_esp0;
     uint32_t base_tss_ss0;
+    int rtc_freq;
 } terminal_info_t;
+
 
 /* An array to keep track of the 3 terminals. */
 terminal_info_t terminal_array[MAX_TERMINALS];
