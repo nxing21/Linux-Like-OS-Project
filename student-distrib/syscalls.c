@@ -204,7 +204,6 @@ int32_t system_execute(const uint8_t* command) {
     }
 
     base_shell = 0;    
-    // curr_pid = pid;
 
     // Initializing stdin
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
