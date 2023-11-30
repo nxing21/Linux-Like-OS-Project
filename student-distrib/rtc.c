@@ -11,7 +11,7 @@
 #define RATE_OFFSET     3
 
 int RTC_frequency, RTC_max_counter;
-volatile int RTC_block;
+volatile int RTC_blocks[MAX_TERMINALS]; //each terminal gets a separate RTC block
 volatile int RTC_counters[MAX_TERMINALS]; // each terminal gets a separate RTC counter
 
 /* 
@@ -25,6 +25,7 @@ volatile int RTC_counters[MAX_TERMINALS]; // each terminal gets a separate RTC c
  */
 void init_RTC() {
     uint8_t prev_data;
+    int i;
     /*Selects Register B and disables NMIs */
     outb(NMI_DISABLE_CMD | RTC_REG_B, RTC_REGISTER_SELECT);
 
@@ -41,7 +42,9 @@ void init_RTC() {
     set_RTC_frequency(rtc_max_usable_frequency);
 
     /* initializes RTC_block */
-    RTC_block = 0;
+    for(i = 0; i < MAX_TERMINALS; i++){
+            RTC_blocks[i] = 0;
+    }
    
     /* Renables NMIs */
     NMI_enable();
@@ -76,6 +79,7 @@ void set_RTC_frequency(int freq) {
  */
 void RTC_handler() {
     uint8_t garbage;   // garbage
+    int i;
 
     /* Function to test RTC */
     // test_interrupts();
@@ -84,13 +88,16 @@ void RTC_handler() {
     outb(RTC_REG_C, RTC_REGISTER_SELECT);
     garbage = inb(RTC_REGISTER_DATA_PORT);
 
-    // Sets RTC_counter for RTC_read
-    if (RTC_counters[curr_terminal] == 0) {
-        RTC_block = 0;
-        RTC_counters[curr_terminal] = RTC_max_counter;
-    } else {
-        RTC_counters[curr_terminal]--;
+    for(i = 0; i < MAX_TERMINALS; i++){
+        // Sets RTC_counter for RTC_read
+        if (RTC_counters[i] == 0) {
+            RTC_blocks[i] = 0;
+            RTC_counters[i] = RTC_max_counter;
+        } else {
+            RTC_counters[i]--;
+        }
     }
+    
 
     send_eoi(RTC_IRQ);
 }
@@ -133,8 +140,8 @@ int32_t RTC_close(int32_t fd) {
  */
 int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
     
-    RTC_block = 1;
-    while (RTC_block == 1);
+    RTC_blocks[curr_terminal] = 1;
+    while (RTC_blocks[curr_terminal] == 1);
     return 0;
 }
 
