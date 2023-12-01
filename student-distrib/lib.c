@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "terminal.h"
 #include "init_devices.h"
+#include "syscalls.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
@@ -237,7 +238,6 @@ void putc(uint8_t c) {
         for (i = 0; i < NUM_ROWS-1; i++){
             for (j = 0; j < NUM_COLS; j++){
                 character = *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1));
-                *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
                 *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1)) = character;
                 *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
             }
@@ -252,7 +252,6 @@ void putc(uint8_t c) {
         terminal_array[true_term_id].screen_y = NUM_ROWS-1;
         terminal_array[true_term_id].screen_x = 0;
     }
-
     move_cursor();
 }
 
