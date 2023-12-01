@@ -107,6 +107,8 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     int numbytes = 0; /* Number of bytes written. */
     int i; /* Iterates through the user buffer. */
 
+    cli();
+
     /* Prints characters from the write buffer to the screen. */
     for (i = 0; i < nbytes; i++){
         if (((uint8_t *)buf)[i] != NULL) {
@@ -114,6 +116,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
             numbytes++;
         }
     }
+    sti();
     return numbytes;
 
 }
