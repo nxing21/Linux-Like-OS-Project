@@ -56,7 +56,7 @@ void scheduler() {
     uint32_t temp_esp;
     uint32_t temp_ebp;
 
-    //move to next scheduled terminal (0->1->3->0->....)
+    //move to next scheduled terminal (0->1->2->0->....)
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
     
     /* Getting the ebp and esp of the current terminal. */
