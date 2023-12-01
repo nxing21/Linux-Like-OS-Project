@@ -4,13 +4,15 @@
 #include "lib.h"
 #include "nmi.h"
 #include "syscalls.h"
+#include "terminal.h"
 
 #define RTC_IRQ         8
 #define BYTE_4          4
 #define RATE_OFFSET     3
 
 int RTC_frequency, RTC_max_counter;
-volatile int RTC_block, RTC_counter;
+volatile int RTC_block;
+volatile int RTC_counters[MAX_TERMINALS]; // each terminal gets a separate RTC counter
 
 /* 
  * init_RTC
@@ -23,6 +25,9 @@ volatile int RTC_block, RTC_counter;
  */
 void init_RTC() {
     uint8_t prev_data;
+
+    /* Source: https://wiki.osdev.org/RTC */
+
     /*Selects Register B and disables NMIs */
     outb(NMI_DISABLE_CMD | RTC_REG_B, RTC_REGISTER_SELECT);
 
@@ -34,9 +39,19 @@ void init_RTC() {
 
     /* Turns on periodic interrupts by setting bit 6 of prev data to 1 (hence 0x40) */
     outb(prev_data | 0x40, RTC_REGISTER_DATA_PORT);
+    
+    /* Selects Register A. */
+    outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
 
-    /* sets frequency to highest possible frequency */
-    set_RTC_frequency(rtc_max_usable_frequency);
+    /* Gets the data from Register A*/
+    prev_data = inb(RTC_REGISTER_DATA_PORT);
+
+    /* Selects Register A again. */
+    outb(NMI_DISABLE_CMD | RTC_REG_A, RTC_REGISTER_SELECT);
+
+    /* Setting the lowest frequency, by setting the rate equal to 3. 0xF0 bit masks our previous data, allowing us to edit the lower 4 bits. */
+    outb((prev_data & 0xF0)| RATE_OF_LOW_FREQ, RTC_REGISTER_DATA_PORT);
+
 
     /* initializes RTC_block */
     RTC_block = 0;
@@ -60,7 +75,7 @@ void set_RTC_frequency(int freq) {
     if (freq >= rtc_min_frequency && freq <= rtc_max_usable_frequency) {
         RTC_frequency = freq;
         RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
-        RTC_counter = RTC_max_counter;
+        RTC_counters[curr_terminal] = RTC_max_counter;
     }
 }
 
@@ -83,11 +98,11 @@ void RTC_handler() {
     garbage = inb(RTC_REGISTER_DATA_PORT);
 
     // Sets RTC_counter for RTC_read
-    if (RTC_counter == 0) {
+    if (RTC_counters[curr_terminal] == 0) {
         RTC_block = 0;
-        RTC_counter = RTC_max_counter;
+        RTC_counters[curr_terminal] = RTC_max_counter;
     } else {
-        RTC_counter--;
+        RTC_counters[curr_terminal]--;
     }
 
     send_eoi(RTC_IRQ);

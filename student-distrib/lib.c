@@ -32,7 +32,7 @@ void clear(void) {
     int32_t i;
     char *true_mem = video_mem;
 
-    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE != 1)) {
+    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE == 0)) {
         true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
         terminal_array[curr_terminal].screen_x=0;
         terminal_array[curr_terminal].screen_y=0;
@@ -201,7 +201,7 @@ void putc(uint8_t c) {
     char *true_mem = video_mem;
     int true_term_id = screen_terminal;
 
-    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE != 1)) {
+    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE == 0)) {
         true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
         true_term_id = curr_terminal;
         terminal_flag = 1;

@@ -21,6 +21,8 @@ void init_terminal() {
         terminal_array[i].screen_y = 0;
         terminal_array[i].flag = 0;
         terminal_array[i].pid = -1;
+        terminal_array[i].waitingInRead  = 0;
+        terminal_array[i].enter_flag = 0;
     }
     // At the start, only the first terminal (terminal 0) will be active
     terminal_array[0].flag = 1; 
@@ -42,7 +44,16 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     int enterAtEnd; /* checks if there is an enter at the end*/
     int true_bytes = nbytes;
     enterAtEnd = 0;
-    while (terminal_array[curr_terminal].buffer[terminal_array[curr_terminal].buffer_size-1] != END_OF_LINE){
+
+    /* Indicates that this is a program that uses user input. */
+    terminal_array[curr_terminal].waitingInRead = 1;
+
+    while (1){
+        cli();
+        if (terminal_array[curr_terminal].enter_flag == 1){
+            break;
+        }
+        sti();
     }
 
     if(MAX_BUF_SIZE < nbytes){
@@ -69,8 +80,12 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
         terminal_array[curr_terminal].buffer[i] = 0x0;
     }
     terminal_array[curr_terminal].buffer_size = 0;
+    terminal_array[curr_terminal].waitingInRead = 0;
+    terminal_array[curr_terminal].enter_flag = 0;
+    sti();
     return numbytes;
 }
+//double check
 
 /* 
  * terminal_write
@@ -94,6 +109,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
         }
     }
     return numbytes;
+
 }
 
 /* 
@@ -107,23 +123,24 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
 int edit_buffer(uint8_t response) {
     cli();
     int i; /* Loops through the terminal buffer. */
-        /* Case where the terminal buffer is full. */ 
-            /* Checks if the second to last index is the FULL and is the ENTER KEY*/
-    if (response != 0x0) {
+
+    if (response == CTL_L_CMD){
+        DISPLAY_ON_MAIN_PAGE = 1;
+        clear();
+        for (i = 0; i < terminal_array[screen_terminal].buffer_size; i++) {
+            DISPLAY_ON_MAIN_PAGE = 1;
+            putc(terminal_array[screen_terminal].buffer[i] );
+        }
+    }
+    else if (terminal_array[screen_terminal].waitingInRead == 1 && response != 0x0) {
+        /* Case where the terminal buffer is almost full, just waiting for ENTER KEY. */ 
         if (terminal_array[screen_terminal].buffer_size == MAX_BUF_SIZE-2 && response == ENTER_KEY){
             terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
             DISPLAY_ON_MAIN_PAGE = 1;
             putc('\n');
+            terminal_array[screen_terminal].enter_flag = 1;
             terminal_array[screen_terminal].buffer_size++;
 
-        }
-        else if (response == CTL_L_CMD){
-            DISPLAY_ON_MAIN_PAGE = 1;
-            clear();
-            for (i = 0; i < terminal_array[screen_terminal].buffer_size; i++) {
-                DISPLAY_ON_MAIN_PAGE = 1;
-                putc(terminal_array[screen_terminal].buffer[i] );
-            }
         }
         /* Case to delete from the buffer. */
         else if (response == BACKSPACE_PRESSED) {
@@ -145,6 +162,7 @@ int edit_buffer(uint8_t response) {
                 terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
                 DISPLAY_ON_MAIN_PAGE = 1;
                 putc('\n');
+                terminal_array[screen_terminal].enter_flag = 1;
                 terminal_array[screen_terminal].buffer_size++;
             }
             else {

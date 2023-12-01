@@ -2,6 +2,7 @@
 #include "terminal.h"
 #include "pit.h"
 #include "syscalls.h"
+#include "page.h"
 
 /* Global variables for handling keyboard */
 static int shift_held = 0;
@@ -253,17 +254,7 @@ void typing_handler(uint8_t response) {
  *                 
  */
 void backspace_handler() {
-    /* If the buffer has characters in it, delete them off the screen and the buffer. */
-    // if (keyboard_buffer_size > 0) {
-    //     erase_char();
-    //     keyboard_buffer[keyboard_buffer_size] = 0x0;
-    //     keyboard_buffer_size--;
-    //     edit_buffer(BACKSPACE_PRESSED);
-    // }
-    // if (keyboard_buffer_size == 0) {
     edit_buffer(BACKSPACE_PRESSED);
-    //     keyboard_buffer[keyboard_buffer_size] = 0x0;
-    // }
 }
 
 /* 
@@ -276,18 +267,7 @@ void backspace_handler() {
  *                 
  */
 void enter_key_handler() {
-    // int i; 
-
-    /* Adds the new line character to the screen.  */
     edit_buffer(ENTER_PRESESED);
-    // DISPLAY_ON_MAIN_PAGE = 1;
-    // putc('\n');
-    
-    // /* Clear out the keyboard buffer. */
-    // for (i = 0; i < keyboard_buffer_size +1; i++) {
-    //     keyboard_buffer[i] = 0x0;
-    // }
-    // keyboard_buffer_size = 0;
 }
 
 /* 
@@ -391,10 +371,12 @@ uint8_t shift_and_caps_data(uint8_t response) {
 
 void switch_screen(uint8_t new_terminal) {
     cli();
-    memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to terminal video page
-    memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((new_terminal+1) << 12), 4096); // save terminal video page to  current screen mem values
+    memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to backup terminal video page
+    vid_map[0].base_addr = (int) (VIDEO_ADDR / ALIGN) + (screen_terminal+1); // switch user vid map to point to backup terminal page
+    flushTLB();
+    memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((new_terminal+1) << 12), 4096); // save backup terminal video page to  current screen mem values
     terminal_flag = 0;
     screen_terminal = new_terminal;
     move_cursor();
-    // scheduler(); // for testing purposes
+    sti();
 }

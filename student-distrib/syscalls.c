@@ -8,7 +8,7 @@
 #include "pit.h"
 
 int cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // cur_processes keeps track of current processes that are running
-char* cur_args = ""; // keeps track of current arguments inputted
+
 
 /* init_fops_table()
  * Inputs: none
@@ -64,6 +64,7 @@ int32_t system_execute(const uint8_t* command) {
     int arg_idx = 0; // start of arguments
     uint32_t temp_esp;
     uint32_t temp_ebp;
+    char* cur_args = ""; // keeps track of current arguments inputted
 
     if (command == NULL) {
         sti();
@@ -171,8 +172,8 @@ int32_t system_execute(const uint8_t* command) {
     pcb_t *parent_pcb;
     // Initialize PCB's pid
     pcb->pid = pid;
-    // Set PCB's terminal ID
-    // pcb->terminal_id = screen_terminal;
+    // store pcb's arguments
+    pcb->args = cur_args;
 
     // Check if base shell of the terminal it's on
     if (base_shell == 1) {
@@ -203,7 +204,6 @@ int32_t system_execute(const uint8_t* command) {
     }
 
     base_shell = 0;    
-    // curr_pid = pid;
 
     // Initializing stdin
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
@@ -231,24 +231,6 @@ int32_t system_execute(const uint8_t* command) {
     // Context switch
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
     tss.ss0 = KERNEL_DS;
-
-    // // Temp variables to hold ebp and esp
-    // uint32_t temp_esp;
-    // uint32_t temp_ebp;
-
-    // // Grabbing ebp and esp to store for later context switching
-    // asm volatile("                           \n\
-    //             movl %%ebp, %0               \n\
-    //             movl %%esp, %1               \n\
-    //             "
-    //             : "=r" (temp_ebp), "=r" (temp_esp)
-    //             :
-    //             : "eax"
-    //             );
-
-    // // Initialize PCB's ebp and esp
-    // pcb->ebp = temp_ebp;
-    // pcb->esp = temp_esp;
 
     // Reads EIP (bytes 24-27)
     uint32_t eip;
@@ -346,7 +328,7 @@ int32_t system_halt(uint8_t status) {
 
     // Close all file operations
     for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
-        pcb->file_descriptors[i].flags = NOT_IN_USE; // marking as not in use
+        system_close(i);
     }
 
     // Restoring tss
@@ -489,15 +471,16 @@ int32_t system_close (int32_t fd) {
  * Function: Reads the program’s command line arguments into a user-level buffer.
  */
 int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
-    cli();
-    if(strlen(cur_args) + 1 > nbytes || strlen(cur_args) == 0) { //+1 to account for '\0' b/c strlen doesn't count it
+    // cli();
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid);
+    if(strlen(pcb->args) + 1 > nbytes || strlen(pcb->args) == 0) { //+1 to account for '\0' b/c strlen doesn't count it
         return -1;
     }
     else { //if checks pass copy current aargs into user buffer
-        memcpy(buf, cur_args, nbytes); 
+        memcpy(buf, pcb->args, nbytes); 
         return 0;
     } 
-    sti();
+    // sti();
 }
 
 /* system_vidmap(uint8_t** screen_start)
@@ -506,20 +489,20 @@ int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
  * Function: Sets up Video Map paging and gives user space access
  */
 int32_t system_vidmap(uint8_t** screen_start) {
+    
     if(screen_start == (uint8_t**) NULL || !(screen_start >= (uint8_t**) ONE_TWENTY_EIGHT_MB && screen_start <= (uint8_t**) ONE_THIRTY_TWO_MB)) {
         return -1;
     }
     else {
         page_directory[USER_ADDR_INDEX + 1].kb.page_size = 0;   // 4 kB pages
         page_directory[USER_ADDR_INDEX + 1].kb.present = 1; // set to present
-        page_directory[USER_ADDR_INDEX + 1].kb.base_addr = (unsigned int)(vid_map) >> shift_12; // physical address set
+        page_directory[USER_ADDR_INDEX + 1].kb.base_addr = ((unsigned int)(vid_map) >> shift_12); // physical address set
         page_directory[USER_ADDR_INDEX + 1].kb.user_supervisor = 1; //giving user access
         page_directory[USER_ADDR_INDEX + 1].kb.global = 1;
-
-        flushTLB();
         vid_map[0].present = 1; // set to present
         vid_map[0].user_supervisor = 1; //giving user access
-        vid_map[0].base_addr = (int) VIDEO_ADDR / ALIGN; // physical address set
+        vid_map[0].base_addr = (int) (VIDEO_ADDR / ALIGN); // set to vid mem
+        flushTLB();
         *screen_start = (uint8_t*) ONE_TWENTY_EIGHT_MB + FOUR_MB; // setting start of virtual video memory
     }
 

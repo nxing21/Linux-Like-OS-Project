@@ -161,8 +161,10 @@ void entry(unsigned long magic, unsigned long addr) {
      * PIC, any other initialization stuff... */
 
     /* Init the keyboard*/
-    init_terminal();
     init_ps2devices();
+
+    /* Init the terminal. */
+    init_terminal();
     
     /* Init the RTC */
     init_RTC();
