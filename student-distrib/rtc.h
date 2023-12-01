@@ -20,6 +20,8 @@
 #define rtc_lowest_rate             6
 #define rtc_highest_rate            15
 
+#define RATE_OF_LOW_FREQ    3
+
 /* Initializes the RTC. */
 void init_RTC();
 

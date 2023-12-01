@@ -8,7 +8,7 @@
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
-#define ATTRIB      0x7
+// #define ATTRIB      0x7
 #define CURSOR_LOC_HIGH_REG 0x0E
 #define CURSOR_LOC_LOW_REG 0x0F
 #define GET_8_MSB 8
@@ -17,9 +17,11 @@
 #define CRTC_DATA_PORT 0x3D5
 
 
-static int screen_x;
-static int screen_y;
+// static int screen_x;
+// static int screen_y;
 static char* video_mem = (char *)VIDEO;
+
+int ATTRIB = 0x7;
 
 // indicates which terminal to operate on, screen terminal (0) or current terminal (1) operated on by scheduler (may or may not be the same)
 int terminal_flag = 0; 
@@ -30,18 +32,21 @@ int terminal_flag = 0;
  * Function: Clears video memory */
 void clear(void) {
     int32_t i;
+    uint8_t ATTRIB;
     char *true_mem = video_mem;
 
-    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE != 1)) {
+    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE == 0)) {
         true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
         terminal_array[curr_terminal].screen_x=0;
         terminal_array[curr_terminal].screen_y=0;
         terminal_flag = 1;
+        ATTRIB = terminal_array[curr_terminal].attribute;
     }
     else {
         DISPLAY_ON_MAIN_PAGE = 0; //setting flag back to zero, it's keyboard handlers jobs to let libc know each time
         terminal_array[screen_terminal].screen_x=0;
         terminal_array[screen_terminal].screen_y=0;
+        ATTRIB = terminal_array[screen_terminal].attribute;
         terminal_flag = 0;
     }
 
@@ -197,18 +202,21 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     int i, j;
+    uint8_t ATTRIB;
     uint8_t character;
     char *true_mem = video_mem;
     int true_term_id = screen_terminal;
 
-    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE != 1)) {
+    if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE == 0)) {
         true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
         true_term_id = curr_terminal;
         terminal_flag = 1;
+        ATTRIB = terminal_array[curr_terminal].attribute;
     }
     else {
         DISPLAY_ON_MAIN_PAGE = 0; //setting flag back to zero, it's keyboard handlers jobs to let libc know each time
         terminal_flag = 0;
+        ATTRIB = terminal_array[screen_terminal].attribute;
     }
 
     if(c == '\n' || c == '\r') {
@@ -589,9 +597,7 @@ void move_cursor(){
     uint16_t position;
 
     /* Use the screen_x and screen_y of the terminal that we are currently looking at. */
-    screen_x = terminal_array[screen_terminal].screen_x;
-    screen_y = terminal_array[screen_terminal].screen_y;
-    position = screen_y * NUM_COLS + screen_x;
+    position = terminal_array[screen_terminal].screen_y* NUM_COLS + terminal_array[screen_terminal].screen_x;
 
     /* Edit ports to move the cursor. */
     outb(CURSOR_LOC_LOW_REG, CRTC_ADDR_PORT);
