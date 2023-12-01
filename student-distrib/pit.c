@@ -84,7 +84,7 @@ void scheduler() {
         
     }
 
-    //get youngest process id of new terminal
+    // get youngest process id of new terminal
     next_pid = terminal_array[curr_terminal].pid;
     
     if(curr_terminal == screen_terminal){ //if current terminal being handled is screen terminal give vidmap addr to actual screen vid mem
@@ -130,7 +130,7 @@ void add_to_scheduler(int new_pid, int terminal_id){
     terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
 }
 
-/* Removes a  program to the scheduler. */
+/* Removes a program to the scheduler. */
 void remove_from_scheduler(int new_pid, int terminal_id){
     terminal_array[terminal_id].base_tss_esp0 = EIGHT_MB - new_pid * EIGHT_KB;
     terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
