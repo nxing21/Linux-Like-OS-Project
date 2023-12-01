@@ -58,7 +58,7 @@ void scheduler() {
 
     //move to next scheduled terminal (0->1->3->0->....)
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
-
+    
     /* Getting the ebp and esp of the current terminal. */
     asm volatile("                     \n\
           movl %%ebp, %0               \n\
@@ -75,6 +75,7 @@ void scheduler() {
 
     /* Opening a new shell if the flag is set to 0. */
     if (terminal_array[curr_terminal].flag == 0) {
+        screen_color_style(curr_terminal);
         terminal_array[curr_terminal].flag = 1;
         base_shell = 1;
         system_execute((uint8_t *) "shell");

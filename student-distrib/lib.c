@@ -8,7 +8,7 @@
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
-#define ATTRIB      0x7
+// #define ATTRIB      0x7
 #define CURSOR_LOC_HIGH_REG 0x0E
 #define CURSOR_LOC_LOW_REG 0x0F
 #define GET_8_MSB 8
@@ -20,6 +20,8 @@
 static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
+
+int ATTRIB = 0x7;
 
 // indicates which terminal to operate on, screen terminal (0) or current terminal (1) operated on by scheduler (may or may not be the same)
 int terminal_flag = 0; 
@@ -598,4 +600,22 @@ void move_cursor(){
     outb((uint8_t)(position & GET_8_BITS), CRTC_DATA_PORT);
     outb(CURSOR_LOC_HIGH_REG,CRTC_ADDR_PORT);
     outb((uint8_t)((position >> GET_8_MSB) & GET_8_BITS), CRTC_DATA_PORT);
+}
+
+
+void screen_color_style(uint8_t term_id){
+    switch(term_id){
+        case 0:
+            ATTRIB = 0x50;
+            break;
+        case 1:
+            ATTRIB = 0x3A;
+            break;
+        case 2:
+            ATTRIB = 0xC9;
+            break;
+        default:
+            ATTRIB = 0x7;
+            break;
+    }
 }
