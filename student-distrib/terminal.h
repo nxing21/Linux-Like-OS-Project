@@ -36,6 +36,7 @@ typedef struct terminal_info {
     int rtc_freq;
     int waitingInRead;
     int enter_flag;
+    uint8_t attribute;
 } terminal_info_t;
 
 

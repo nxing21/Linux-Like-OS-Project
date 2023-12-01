@@ -25,6 +25,9 @@ volatile int RTC_counters[MAX_TERMINALS]; // each terminal gets a separate RTC c
  */
 void init_RTC() {
     uint8_t prev_data;
+
+    /* Source: https://wiki.osdev.org/RTC */
+
     int i;
     /*Selects Register B and disables NMIs */
     outb(NMI_DISABLE_CMD | RTC_REG_B, RTC_REGISTER_SELECT);
@@ -151,7 +154,11 @@ int32_t RTC_close(int32_t fd) {
 int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
     
     RTC_blocks[curr_terminal] = 1;
-    while (RTC_blocks[curr_terminal] == 1);
+    while (1){
+        if (RTC_blocks[curr_terminal] == 0){
+            break;
+        }
+    }
     return 0;
 }
 

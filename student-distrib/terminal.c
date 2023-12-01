@@ -26,6 +26,12 @@ void init_terminal() {
     }
     // At the start, only the first terminal (terminal 0) will be active
     terminal_array[0].flag = 1; 
+
+    /* Setting attributes of each terminal. */
+    terminal_array[0].attribute =  0x7;
+    terminal_array[1].attribute= 0x7;
+    terminal_array[2].attribute = 0x7;
+
 }
 
 /* 
