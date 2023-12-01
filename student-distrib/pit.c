@@ -55,8 +55,10 @@ void scheduler() {
     // Temp variables to hold ebp and esp
     uint32_t temp_esp;
     uint32_t temp_ebp;
-
-    //move to next scheduled terminal (0->1->3->0->....)
+    int temp_terminal;
+    
+    // move to next terminal
+    temp_terminal = curr_terminal;
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
     
     /* Getting the ebp and esp of the current terminal. */
@@ -134,4 +136,7 @@ void remove_from_scheduler(int new_pid, int terminal_id){
     terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
     terminal_array[terminal_id].pid = new_pid;
 }
+
+// the first terminal flag is set to 1 by default
+// the first pid is not
 
