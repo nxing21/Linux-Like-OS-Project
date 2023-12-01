@@ -34,6 +34,7 @@ unsigned int fs;
 void entry(unsigned long magic, unsigned long addr) {
 
     multiboot_info_t *mbi;
+    int i; /* Allows us to loop through each terminal. */
 
     /* Clear the screen. */
     DISPLAY_ON_MAIN_PAGE = 0;
@@ -175,7 +176,14 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Initializes the PIT. */
     init_pit();
     DISPLAY_ON_MAIN_PAGE = 0;
-    clear();
+    
+    for (i = 0; i < MAX_TERMINALS; i++){
+        curr_terminal = i;
+        clear();
+    }
+
+    curr_terminal = 0;
+
     init_file_sys(fs);
     init_fops_table();
 
