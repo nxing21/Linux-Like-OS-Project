@@ -28,7 +28,6 @@ extern int terminal_flag;
  */
 void init_ps2devices() {
     /* Enable IRQ 1 in the PIC*/
-    // keyboard_buffer_size = 0;
     enable_irq(KEYBOARD_IRQ);
     DISPLAY_ON_MAIN_PAGE = 0;
 }

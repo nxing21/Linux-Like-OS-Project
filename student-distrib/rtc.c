@@ -154,7 +154,11 @@ int32_t RTC_close(int32_t fd) {
 int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
     
     RTC_blocks[curr_terminal] = 1;
-    while (RTC_blocks[curr_terminal] == 1);
+    while (1){
+        if (RTC_blocks[curr_terminal] == 0){
+            break;
+        }
+    }
     return 0;
 }
 
