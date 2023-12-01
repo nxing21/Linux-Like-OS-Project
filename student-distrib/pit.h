@@ -26,8 +26,4 @@ void pit_handler();
 
 void scheduler();
 
-void add_to_scheduler(int new_pid, int terminal_id);
-
-void remove_from_scheduler(int new_pid, int terminal_id);
-
 #endif

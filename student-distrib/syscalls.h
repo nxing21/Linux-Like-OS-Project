@@ -97,4 +97,6 @@ fops_t dir_ops;
 /* Flag that allows us to check if the PCB we are creating is for a base shell. We initially set this to 1 because the first program we always run is the base shell. */
 int base_shell;
 
+void update_tss(int new_pid, int terminal_id);
+
 #endif

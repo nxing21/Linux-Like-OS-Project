@@ -113,24 +113,3 @@ void scheduler() {
     sti();
 }
 
-/* add_to_scheduler(int new_pid, int terminal_id)
- * DESCRIPTION: Adds a new program to the scheduler.
- * Inputs: int new_pid: , 
- *         int terminal_id:
- * Outputs: none
- * Return Value: none
- * Function: Switches between processes and executes base shells of terminal 2 and 3.
- */
-
-void add_to_scheduler(int new_pid, int terminal_id){
-    terminal_array[terminal_id].base_tss_esp0 = EIGHT_MB - new_pid * EIGHT_KB;
-    terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
-}
-
-/* Removes a  program to the scheduler. */
-void remove_from_scheduler(int new_pid, int terminal_id){
-    terminal_array[terminal_id].base_tss_esp0 = EIGHT_MB - new_pid * EIGHT_KB;
-    terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
-    terminal_array[terminal_id].pid = new_pid;
-}
-
