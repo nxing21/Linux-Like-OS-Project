@@ -373,7 +373,6 @@ void switch_screen(uint8_t new_terminal) {
     memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to backup terminal video page
     vid_map[0].base_addr = (int) (VIDEO_ADDR / ALIGN) + (screen_terminal+1); // switch user vid map to point to backup terminal page
     flushTLB();
-    screen_color_style(new_terminal);
     memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((new_terminal+1) << 12), 4096); // save backup terminal video page to  current screen mem values
     terminal_flag = 0;
     screen_terminal = new_terminal;

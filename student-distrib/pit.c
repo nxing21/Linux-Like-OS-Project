@@ -75,7 +75,6 @@ void scheduler() {
 
     /* Opening a new shell if the flag is set to 0. */
     if (terminal_array[curr_terminal].flag == 0) {
-        screen_color_style(curr_terminal);
         terminal_array[curr_terminal].flag = 1;
         base_shell = 1;
         system_execute((uint8_t *) "shell");

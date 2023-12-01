@@ -605,21 +605,3 @@ void move_cursor(){
     outb(CURSOR_LOC_HIGH_REG,CRTC_ADDR_PORT);
     outb((uint8_t)((position >> GET_8_MSB) & GET_8_BITS), CRTC_DATA_PORT);
 }
-
-
-void screen_color_style(uint8_t term_id){
-    switch(term_id){
-        case 0:
-            ATTRIB = 0x50;
-            break;
-        case 1:
-            ATTRIB = 0x3A;
-            break;
-        case 2:
-            ATTRIB = 0xC9;
-            break;
-        default:
-            ATTRIB = 0x7;
-            break;
-    }
-}

@@ -28,9 +28,9 @@ void init_terminal() {
     terminal_array[0].flag = 1; 
 
     /* Setting attributes of each terminal. */
-    terminal_array[0].attribute =  0x7;
-    terminal_array[1].attribute= 0x7;
-    terminal_array[2].attribute = 0x7;
+    terminal_array[0].attribute =  0x07; //grey text on black bg
+    terminal_array[1].attribute= 0x70; // reverse reverse
+    terminal_array[2].attribute = 0x1F; // white text, blue bg
 
 }
 
@@ -104,6 +104,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
  *   SIDE EFFECTS: Copies the userpace buffer into the output buffer, prints the output buffer to the screen.
  */
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
+    cli();
     int numbytes = 0; /* Number of bytes written. */
     int i; /* Iterates through the user buffer. */
 
@@ -114,6 +115,7 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
             numbytes++;
         }
     }
+    sti();
     return numbytes;
 
 }
