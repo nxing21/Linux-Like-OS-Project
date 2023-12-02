@@ -51,6 +51,15 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     int true_bytes = nbytes;
     enterAtEnd = 0;
 
+    /* Parameter checking.*/
+    if (buf == NULL){
+        return -1;
+    }
+    if (nbytes <= 0){
+        return -1;
+    }
+
+
     /* Indicates that this is a program that uses user input. */
     terminal_array[curr_terminal].waitingInRead = 1;
 
@@ -104,11 +113,19 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
  *   SIDE EFFECTS: Copies the userpace buffer into the output buffer, prints the output buffer to the screen.
  */
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
-    cli();
     int numbytes = 0; /* Number of bytes written. */
     int i; /* Iterates through the user buffer. */
 
+    /* Parameter checking.*/
+    if (buf == NULL){
+        return -1;
+    }
+    if (nbytes <= 0){
+        return -1;
+    }
+
     /* Prints characters from the write buffer to the screen. */
+    cli();
     for (i = 0; i < nbytes; i++){
         if (((uint8_t *)buf)[i] != NULL) {
             putc(((uint8_t *)buf)[i]);
