@@ -581,8 +581,6 @@ void erase_char(){
         terminal_array[screen_terminal].screen_y--;
     }
     *(uint8_t *)(video_mem + ((NUM_COLS * terminal_array[screen_terminal].screen_y + terminal_array[screen_terminal].screen_x) << 1)) = 0x0;
-    terminal_array[screen_terminal].screen_x %= NUM_COLS;
-    terminal_array[screen_terminal].screen_y = (terminal_array[screen_terminal].screen_y + (terminal_array[screen_terminal].screen_x / NUM_COLS)) % NUM_ROWS;
 
     /* Moves the cursor*/
     move_cursor();

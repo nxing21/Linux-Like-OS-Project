@@ -30,7 +30,7 @@ void init_terminal() {
     /* Setting attributes of each terminal. */
     terminal_array[0].attribute =  0x07; //grey text on black bg
     terminal_array[1].attribute= 0x70; // reverse reverse
-    terminal_array[2].attribute = 0x1F; // white text, blue bg
+    terminal_array[2].attribute = 0x9F; // white text, blue bg
 
 }
 

@@ -33,7 +33,7 @@ void i8259_init(void) {
     outb(master_mask, MASTER_8259_PORT+1); // Restore the saved masks
     outb(slave_mask, SLAVE_8259_PORT+1); 
 
-    enable_irq(2); /* Enables the second PIC*/
+    enable_irq(SLAVE_PIC_IRQ); /* Enables the second PIC*/
 }
 
 /* 

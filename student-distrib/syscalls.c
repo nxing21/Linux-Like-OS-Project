@@ -182,7 +182,7 @@ int32_t system_execute(const uint8_t* command) {
         pcb->terminal_id = curr_terminal;
     }
     else {
-        // Set curr_pid to current pid
+        // Set parent pcb to the pid in the terminal_array
         pcb->parent_pid = terminal_array[screen_terminal].pid;
         parent_pcb = get_pcb(terminal_array[screen_terminal].pid);
 
