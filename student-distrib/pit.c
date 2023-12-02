@@ -110,7 +110,7 @@ void scheduler() {
                 : "r" (next_pcb->esp), "r" (next_pcb->ebp)
                 : "eax"
                 );
-    enable_irq(0);
+                
     sti();
 }
 
