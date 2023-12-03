@@ -577,7 +577,7 @@ void erase_char(){
     /*erase_char is only used by typing triggerd cursor movement, meaning only screen terminal*/
     terminal_flag = 0;
     /* Deletes the previous character. */
-    terminal_array[screen_terminal].screen_x--;\
+    terminal_array[screen_terminal].screen_x--;
 
     /* Checks if we went out of bounds in the direction. If so, place screen_x at the very last column and move screen_y up one row. */
     if (terminal_array[screen_terminal].screen_x < 0){
