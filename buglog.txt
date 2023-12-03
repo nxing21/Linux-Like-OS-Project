@@ -166,16 +166,6 @@ Nov 10th: 2023:
     - This also fixed our grep function
     - Took us about 4 hour.
 
-<<<<<<< HEAD
-Nov 27th: 2023:
-    - For terminal switching, we originally planned on opening a base shell of a terminal only upon the first terminal switch.
-    - However, we faced a bug where 6 shells would open on the first terminal.
-    - We tried to fix the issue, but ultimately we decided to switch our design choice such that each of the 3 terminals would open a base
-    shell upon startup, after we could not fully fix the issue.
-    - Took us about 3 hours of fixing before we eventually changed our design choice.
-=======
-<<<<<<< HEAD
-----------------------------------------------------------------------------------------------------------------------------------------
 Nov 9th, 2023:
     - Several scheduling problems
 
@@ -215,7 +205,7 @@ Nov 30th, 2023
 BUGS TO WRITE ABOUT:
 - ls or grep do not work after running it for a couple times. 
 - fish is not working.
-=======
+
 Nov 24th: 2023:
     - Faced an issue where terminal array in-use flag was getting overwritten to garbage values
     - We noticed that our terminal read buffer that was apart of the terminal struct was overflowing and messing up the subsequent elements.
@@ -231,4 +221,10 @@ Nov 24th: 2023:
     - Turns out we were setting  a variable to -1 that was initialized to -1. 
     - To fix we set the type as int.
     - Took 1 day to find and 5 minutes to fix.
->>>>>>> 8ed964239c96edb911aa570815a94a48465408b2
+
+Nov 27th: 2023:
+    - For terminal switching, we originally planned on opening a base shell of a terminal only upon the first terminal switch.
+    - However, we faced a bug where 6 shells would open on the first terminal.
+    - We tried to fix the issue, but ultimately we decided to switch our design choice such that each of the 3 terminals would open a base
+    shell upon startup, after we could not fully fix the issue.
+    - Took us about 3 hours of fixing before we eventually changed our design choice.
