@@ -11,7 +11,7 @@
 #include "pit.h"
 
 // MP 3.1: Added headers
-#include "init_devices.h"
+#include "keyboard.h"
 #include "rtc.h"
 #include "page.h"
 // MP 3.2: Added headers
