@@ -171,7 +171,7 @@ Nov 10th: 2023:
 Nov 9th, 2023:
     - Several scheduling problems
 
-Nov 10th, 2023:
+Nov 27th, 2023:
     - Terminal would boot loop after running a program twice.
     - We originally had it so that the pcb would hold its parent's information (esp. ebp)
     - Changed it so that the scheduler will handle all cases of switching tss info
@@ -180,7 +180,7 @@ Nov 10th, 2023:
     - Was not saving parent pcb information in system execute.
     - Made that change in logic, programs do not page fault after halting. 
 
-Nov 10th, 2023:
+Nov 28th, 2023:
     - Fixed an issue with cursor
     - When running a program that requires a lot of time (counter, pingpong),
     the visual cursor in other terminals would be moved to that area as well.
@@ -190,11 +190,20 @@ Nov 10th, 2023:
     screen_y of the terminal that is on screen.
     - Took about 10 minutes to fix.
 
-Nov 10th, 2023:
+Nov 28th, 2023:
     - Issue with ls and grep not being able to run after being used for a couple times.
     - Changed everything that used curr_pid into the pid that is stored in the curr_terminal
     - Sometimes when running a program, it boot loops.
 
+Nov 30th, 2023
+    - Noticed an issue with running counter on one terminal and then fast terminal switching.
+    - Whenever we fast swapped, elements of the counter would cause the other terminals to either lose or gain garbage 
+    video output.
+    - We noticed that in counter, it solely uses terminal_write.
+    - We then decided to add a cli and sti around the for loop for the putc statement.
+    - After implementing that change, fast terminal switching with counter does not cause any unintended video memory issues.
+    - Took about 2 hours to debug.
+    
 BUGS TO WRITE ABOUT:
 - ls or grep do not work after running it for a couple times. 
 - fish is not working.
