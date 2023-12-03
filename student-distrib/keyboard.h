@@ -1,5 +1,5 @@
-#ifndef _INIT_DEVICES_H
-#define _INIT_DEVICES_H
+#ifndef _keyboard_H
+#define _keyboard_H
 
 #include "lib.h"
 #include "i8259.h"
@@ -56,9 +56,6 @@
 #define SPACE_ASCII 0x20
 #define VIDEO_ADDR 0xB8000     // from lib.c
 #define CTL_L_CMD 255
-
-// //typing flag to let lib.c no to display on main video page
-// int DISPLAY_ON_MAIN_PAGE;
 
 
 /* Initializes the PS/2 devices. */

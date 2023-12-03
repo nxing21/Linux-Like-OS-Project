@@ -80,19 +80,19 @@ void init_page() {
 
     /*Video Page for Screen*/
     page_table[mem].present = 1;   // present
-    page_table[mem].cache_disabled = 1;   // disables caching (prob don't need)
+    // page_table[mem].cache_disabled = 1;   // disables caching (prob don't need)
 
     /*Video Page for Terminal 0*/
     page_table[mem+1].present = 1;   // present
-    page_table[mem+1].cache_disabled = 1;   // disables caching (prob don't need)
+    // page_table[mem+1].cache_disabled = 1;   // disables caching (prob don't need)
     
     /*Video Page for Terminal 1*/
     page_table[mem+2].present = 1;   // present
-    page_table[mem+2].cache_disabled = 1;   // disables caching (prob don't need)
+    // page_table[mem+2].cache_disabled = 1;   // disables caching (prob don't need)
 
     /*Video Page for Terminal 2*/
     page_table[mem+3].present = 1;   // present
-    page_table[mem+3].cache_disabled = 1;   // disables caching (prob don't need)
+    // page_table[mem+3].cache_disabled = 1;   // disables caching (prob don't need)
 
 
 
