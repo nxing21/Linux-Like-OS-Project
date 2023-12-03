@@ -28,9 +28,9 @@ void init_terminal() {
     terminal_array[0].flag = 1; 
 
     /* Setting attributes of each terminal. */
-    terminal_array[0].attribute =  0x7;
-    terminal_array[1].attribute= 0x7;
-    terminal_array[2].attribute = 0x7;
+    terminal_array[0].attribute =  0x07; //grey text on black bg
+    terminal_array[1].attribute= 0x70; // reverse reverse
+    terminal_array[2].attribute = 0x9F; // white text, blue bg
 
 }
 
@@ -50,6 +50,15 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     int enterAtEnd; /* checks if there is an enter at the end*/
     int true_bytes = nbytes;
     enterAtEnd = 0;
+
+    /* Parameter checking.*/
+    if (buf == NULL){
+        return -1;
+    }
+    if (nbytes <= 0){
+        return -1;
+    }
+
 
     /* Indicates that this is a program that uses user input. */
     terminal_array[curr_terminal].waitingInRead = 1;
@@ -107,9 +116,16 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     int numbytes = 0; /* Number of bytes written. */
     int i; /* Iterates through the user buffer. */
 
-    cli();
+    /* Parameter checking.*/
+    if (buf == NULL){
+        return -1;
+    }
+    if (nbytes <= 0){
+        return -1;
+    }
 
     /* Prints characters from the write buffer to the screen. */
+    cli();
     for (i = 0; i < nbytes; i++){
         if (((uint8_t *)buf)[i] != NULL) {
             putc(((uint8_t *)buf)[i]);

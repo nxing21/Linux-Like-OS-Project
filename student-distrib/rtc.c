@@ -10,9 +10,10 @@
 #define BYTE_4          4
 #define RATE_OFFSET     3
 
-int RTC_frequency, RTC_max_counter;
-volatile int RTC_blocks[MAX_TERMINALS]; //each terminal gets a separate RTC block
-volatile int RTC_counters[MAX_TERMINALS]; // each terminal gets a separate RTC counter
+int RTC_frequency;
+volatile int RTC_max_counter[MAX_TERMINALS]; // each terminal has it's own max
+volatile int RTC_block[MAX_TERMINALS]; //each terminal gets a separate RTC block
+volatile int RTC_counter[MAX_TERMINALS]; // each terminal gets a separate RTC counter
 
 /* 
  * init_RTC
@@ -56,7 +57,7 @@ void init_RTC() {
 
     /* initializes RTC_block */
     for(i = 0; i < MAX_TERMINALS; i++){
-            RTC_blocks[i] = 0;
+            RTC_block[i] = 0;
     }
    
     /* Renables NMIs */
@@ -77,8 +78,8 @@ void init_RTC() {
 void set_RTC_frequency(int freq) {
     if (freq >= rtc_min_frequency && freq <= rtc_max_usable_frequency) {
         RTC_frequency = freq;
-        RTC_max_counter = rtc_max_usable_frequency / RTC_frequency;
-        RTC_counters[curr_terminal] = RTC_max_counter;
+        RTC_max_counter[curr_terminal] = rtc_max_usable_frequency / RTC_frequency;
+        RTC_counter[curr_terminal] = RTC_max_counter[curr_terminal];
     }
 }
 
@@ -103,11 +104,11 @@ void RTC_handler() {
 
     for(i = 0; i < MAX_TERMINALS; i++){
         // Sets RTC_counter for RTC_read
-        if (RTC_counters[i] == 0) {
-            RTC_blocks[i] = 0;
-            RTC_counters[i] = RTC_max_counter;
+        if (RTC_counter[i] == 0) { // once counter = 0 change block to 0 indicating a tick
+            RTC_block[i] = 0;
+            RTC_counter[i] = RTC_max_counter[i];
         } else {
-            RTC_counters[i]--;
+            RTC_counter[i]--; 
         }
     }
     
@@ -152,10 +153,12 @@ int32_t RTC_close(int32_t fd) {
  *   SIDE EFFECTS: none
  */
 int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
-    
-    RTC_blocks[curr_terminal] = 1;
+
+    RTC_counter[curr_terminal] = RTC_max_counter[curr_terminal]; //set counter to max (start value)
+    RTC_block[curr_terminal] = 1; // initialize block to 1
+
     while (1){
-        if (RTC_blocks[curr_terminal] == 0){
+        if (RTC_block[curr_terminal] == 0){ //once counter hits 0 block becomes 0 and we can return from read
             break;
         }
     }

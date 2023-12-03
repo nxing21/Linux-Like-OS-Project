@@ -28,7 +28,6 @@ void test_interrupts();
 void check_size();
 void erase_char();
 void move_cursor();
-void screen_color_style(uint8_t term_id);
 
 /* Userspace address-check functions */
 int32_t bad_userspace_addr(const void* addr, int32_t len);

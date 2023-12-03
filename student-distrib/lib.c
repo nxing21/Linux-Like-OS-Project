@@ -3,7 +3,8 @@
 
 #include "lib.h"
 #include "terminal.h"
-#include "init_devices.h"
+#include "keyboard.h"
+#include "syscalls.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
@@ -237,7 +238,6 @@ void putc(uint8_t c) {
         for (i = 0; i < NUM_ROWS-1; i++){
             for (j = 0; j < NUM_COLS; j++){
                 character = *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1));
-                *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1)) = 0x0;
                 *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1)) = character;
                 *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
             }
@@ -252,7 +252,6 @@ void putc(uint8_t c) {
         terminal_array[true_term_id].screen_y = NUM_ROWS-1;
         terminal_array[true_term_id].screen_x = 0;
     }
-
     move_cursor();
 }
 
@@ -582,8 +581,6 @@ void erase_char(){
         terminal_array[screen_terminal].screen_y--;
     }
     *(uint8_t *)(video_mem + ((NUM_COLS * terminal_array[screen_terminal].screen_y + terminal_array[screen_terminal].screen_x) << 1)) = 0x0;
-    terminal_array[screen_terminal].screen_x %= NUM_COLS;
-    terminal_array[screen_terminal].screen_y = (terminal_array[screen_terminal].screen_y + (terminal_array[screen_terminal].screen_x / NUM_COLS)) % NUM_ROWS;
 
     /* Moves the cursor*/
     move_cursor();
@@ -604,22 +601,4 @@ void move_cursor(){
     outb((uint8_t)(position & GET_8_BITS), CRTC_DATA_PORT);
     outb(CURSOR_LOC_HIGH_REG,CRTC_ADDR_PORT);
     outb((uint8_t)((position >> GET_8_MSB) & GET_8_BITS), CRTC_DATA_PORT);
-}
-
-
-void screen_color_style(uint8_t term_id){
-    switch(term_id){
-        case 0:
-            ATTRIB = 0x50;
-            break;
-        case 1:
-            ATTRIB = 0x3A;
-            break;
-        case 2:
-            ATTRIB = 0xC9;
-            break;
-        default:
-            ATTRIB = 0x7;
-            break;
-    }
 }

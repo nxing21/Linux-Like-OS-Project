@@ -33,7 +33,6 @@ typedef struct terminal_info {
     int pid;
     uint32_t base_tss_esp0;
     uint32_t base_tss_ss0;
-    int rtc_freq;
     int waitingInRead;
     int enter_flag;
     uint8_t attribute;

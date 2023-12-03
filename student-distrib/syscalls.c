@@ -182,7 +182,7 @@ int32_t system_execute(const uint8_t* command) {
         pcb->terminal_id = curr_terminal;
     }
     else {
-        // Set curr_pid to current pid
+        // Set parent pcb to the pid in the terminal_array
         pcb->parent_pid = terminal_array[screen_terminal].pid;
         parent_pcb = get_pcb(terminal_array[screen_terminal].pid);
 
@@ -241,7 +241,7 @@ int32_t system_execute(const uint8_t* command) {
 
     // https://wiki.osdev.org/Getting_to_Ring_3
     
-    add_to_scheduler(pid, curr_terminal); 
+    update_tss(pid, curr_terminal); 
 
     // IRET
     // First line "0x02B is USER_DS"
@@ -342,7 +342,9 @@ int32_t system_halt(uint8_t status) {
         ext_status = status;
     }
 
-    remove_from_scheduler(parent_pid, curr_terminal);
+    update_tss(parent_pid, curr_terminal);
+    terminal_array[curr_terminal].pid = parent_pid;
+
     sti();
     // Assembly to load old esp, ebp, and status 
     asm volatile("                           \n\
@@ -554,4 +556,16 @@ pcb_t* get_pcb(uint32_t pid) {
     return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB); // pcb start address formula
 }
 
+/* update_tss(int new_pid, int terminal_id)
+ * DESCRIPTION: Updates tss values of the inputted terminal
+ * Inputs: int new_pid: pid used for tss_esp0 calculation, 
+ *         int terminal_id: terminal index for terminal array (which terminal to alter)
+ * Outputs: none
+ * Return Value: none
+ * Function: Used in halt and execute to alter the base tss values of each terminal
+ */
+void update_tss(int new_pid, int terminal_id){
+    terminal_array[terminal_id].base_tss_esp0 = EIGHT_MB - new_pid * EIGHT_KB;
+    terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
+}
 

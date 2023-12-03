@@ -3,9 +3,6 @@
 #include "syscalls.h"
 #include "page.h"
 
-int timer = 0;
-extern int cur_processes[NUM_PROCESSES];
-
 /* init_pit
  * DESCRIPTION: Initializes the PIT by enabling IRQ0 on the PIC, turning on square wave interrupts on the pit,
  *                and setting the PIC frequency to divisor.
@@ -55,10 +52,8 @@ void scheduler() {
     // Temp variables to hold ebp and esp
     uint32_t temp_esp;
     uint32_t temp_ebp;
-    int temp_terminal;
-    
-    // move to next terminal
-    temp_terminal = curr_terminal;
+
+    //move to next scheduled terminal (0->1->2->0->....)
     curr_terminal = (curr_terminal + 1) % MAX_TERMINALS;
     
     /* Getting the ebp and esp of the current terminal. */
@@ -77,7 +72,7 @@ void scheduler() {
 
     /* Opening a new shell if the flag is set to 0. */
     if (terminal_array[curr_terminal].flag == 0) {
-        screen_color_style(curr_terminal);
+        clear();
         terminal_array[curr_terminal].flag = 1;
         base_shell = 1;
         system_execute((uint8_t *) "shell");
@@ -112,31 +107,7 @@ void scheduler() {
                 : "r" (next_pcb->esp), "r" (next_pcb->ebp)
                 : "eax"
                 );
-    enable_irq(0);
+                
     sti();
 }
-
-/* add_to_scheduler(int new_pid, int terminal_id)
- * DESCRIPTION: Adds a new program to the scheduler.
- * Inputs: int new_pid: , 
- *         int terminal_id:
- * Outputs: none
- * Return Value: none
- * Function: Switches between processes and executes base shells of terminal 2 and 3.
- */
-
-void add_to_scheduler(int new_pid, int terminal_id){
-    terminal_array[terminal_id].base_tss_esp0 = EIGHT_MB - new_pid * EIGHT_KB;
-    terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
-}
-
-/* Removes a program to the scheduler. */
-void remove_from_scheduler(int new_pid, int terminal_id){
-    terminal_array[terminal_id].base_tss_esp0 = EIGHT_MB - new_pid * EIGHT_KB;
-    terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
-    terminal_array[terminal_id].pid = new_pid;
-}
-
-// the first terminal flag is set to 1 by default
-// the first pid is not
 
