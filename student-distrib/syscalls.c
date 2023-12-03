@@ -438,7 +438,7 @@ int32_t system_open (const uint8_t* filename) {
             default:
                 break;
         }
-
+        pcb->file_descriptors[index].file_op_table_ptr->open(temp_dentry.filename);
         return index; // returning fd index of opened file descriptor
     }
     else {
