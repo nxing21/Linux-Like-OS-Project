@@ -3,9 +3,6 @@
 #include "syscalls.h"
 #include "page.h"
 
-int timer = 0;
-extern int cur_processes[NUM_PROCESSES];
-
 /* init_pit
  * DESCRIPTION: Initializes the PIT by enabling IRQ0 on the PIC, turning on square wave interrupts on the pit,
  *                and setting the PIC frequency to divisor.
