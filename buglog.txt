@@ -225,3 +225,11 @@ Dec 1st, 2023
     - So we made a counter just for keeping track of files in directory read and made sure to set it back to 0 once read directory,
     - hit the max number of files.
     - Took about 5 days to find and 10 minutes to fix.
+
+Dec 3rd, 2023
+    - For some reason cat RTC did not pause like it should from the open being called.
+    - At first we couldn't figure out why our RTC open wasn't working as intended.  
+    - Once we decided to GDB we noticed RTC open was not getting called.
+    - Then we realized open was not even getting called in system_open at all, 
+    - this went unnnoticed because for files and directories their respective opens don't alter anything.
+    - Took about 1 day to find and 2 minutes to fix.
