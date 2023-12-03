@@ -223,4 +223,3 @@ Nov 24th: 2023:
     - Turns out we were setting  a variable to -1 that was initialized to -1. 
     - To fix we set the type as int.
     - Took 1 day to find and 5 minutes to fix.
->>>>>>> 7f0ce658caf85394966e264e1580ec25bb7db711
