@@ -165,3 +165,10 @@ Nov 10th: 2023:
     - To fix that we just made separate f_ops tables for each type of file. 
     - This also fixed our grep function
     - Took us about 4 hour.
+
+Nov 27th: 2023:
+    - For terminal switching, we originally planned on opening a base shell of a terminal only upon the first terminal switch.
+    - However, we faced a bug where 6 shells would open on the first terminal.
+    - We tried to fix the issue, but ultimately we decided to switch our design choice such that each of the 3 terminals would open a base
+    shell upon startup, after we could not fully fix the issue.
+    - Took us about 3 hours of fixing before we eventually changed our design choice.
