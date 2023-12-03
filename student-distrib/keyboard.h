@@ -1,5 +1,5 @@
-#ifndef _INIT_DEVICES_H
-#define _INIT_DEVICES_H
+#ifndef _keyboard_H
+#define _keyboard_H
 
 #include "lib.h"
 #include "i8259.h"
@@ -62,6 +62,8 @@
 #define TERMINAL_0 0
 #define TERMINAL_1 1
 #define TERMINAL_2 2
+#define FOUR_KB 4096
+
 
 /* Initializes the PS/2 devices. */
 void init_ps2devices();

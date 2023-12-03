@@ -1,4 +1,4 @@
-#include "init_devices.h"
+#include "keyboard.h"
 #include "terminal.h"
 #include "pit.h"
 #include "syscalls.h"
@@ -367,10 +367,10 @@ uint8_t shift_and_caps_data(uint8_t response) {
  */
 void switch_screen(uint8_t new_terminal) {
     cli();
-    memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) << 12), (char *) VIDEO_ADDR , 4096); // save current screen mem values to backup terminal video page
+    memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) * ALIGN), (char *) VIDEO_ADDR , FOUR_KB); // save current screen mem values to backup terminal video page
     vid_map[0].base_addr = (int) (VIDEO_ADDR / ALIGN) + (screen_terminal+1); // switch user vid map to point to backup terminal page
     flushTLB();
-    memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((new_terminal+1) << 12), 4096); // save backup terminal video page to  current screen mem values
+    memcpy((char *) VIDEO_ADDR, (char *) VIDEO_ADDR + ((new_terminal+1) * ALIGN), FOUR_KB); // save backup terminal video page to  current screen mem values
     terminal_flag = 0;
     screen_terminal = new_terminal;
     move_cursor();

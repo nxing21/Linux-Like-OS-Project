@@ -10,7 +10,7 @@
 #include "tests.h"
 
 // MP 3.1: Added headers
-#include "init_devices.h"
+#include "keyboard.h"
 #include "rtc.h"
 #include "page.h"
 

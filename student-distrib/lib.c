@@ -3,7 +3,7 @@
 
 #include "lib.h"
 #include "terminal.h"
-#include "init_devices.h"
+#include "keyboard.h"
 #include "syscalls.h"
 
 #define VIDEO       0xB8000

@@ -2,7 +2,7 @@
 #ifndef _INTERRUPT_WRAPPER_H_
 #define _INTERRUPT_WRAPPER_H_
 
-#include "init_devices.h"
+#include "keyboard.h"
 #include "rtc.h"
 #include "pit.h"
 
