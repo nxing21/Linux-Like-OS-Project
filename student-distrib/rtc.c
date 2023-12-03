@@ -102,7 +102,7 @@ void RTC_handler() {
     outb(RTC_REG_C, RTC_REGISTER_SELECT);
     garbage = inb(RTC_REGISTER_DATA_PORT);
 
-    for(i = 0; i < MAX_TERMINALS; i++){
+    for(i = 0; i < MAX_TERMINALS; i++) {
         // Sets RTC_counter for RTC_read
         if (RTC_counter[i] == 0) { // once counter = 0 change block to 0 indicating a tick
             RTC_block[i] = 0;
@@ -111,7 +111,6 @@ void RTC_handler() {
             RTC_counter[i]--; 
         }
     }
-    
 
     send_eoi(RTC_IRQ);
 }
@@ -153,11 +152,10 @@ int32_t RTC_close(int32_t fd) {
  *   SIDE EFFECTS: none
  */
 int32_t RTC_read(int32_t fd, void* buffer, int32_t nbytes) {
-
     RTC_counter[curr_terminal] = RTC_max_counter[curr_terminal]; //set counter to max (start value)
     RTC_block[curr_terminal] = 1; // initialize block to 1
 
-    while (1){
+    while (1) {
         if (RTC_block[curr_terminal] == 0){ //once counter hits 0 block becomes 0 and we can return from read
             break;
         }
