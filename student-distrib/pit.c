@@ -60,7 +60,7 @@ void scheduler() {
     asm volatile("                     \n\
           movl %%ebp, %0               \n\
           movl %%esp, %1               \n\
-      "
+          "
           : "=r" (temp_ebp), "=r" (temp_esp)
           :
           : "eax"
@@ -76,7 +76,6 @@ void scheduler() {
         terminal_array[curr_terminal].flag = 1;
         base_shell = 1;
         system_execute((uint8_t *) "shell");
-        
     }
 
     //get youngest process id of new terminal
