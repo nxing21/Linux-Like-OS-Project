@@ -57,6 +57,8 @@
 #define VIDEO_ADDR 0xB8000     // from lib.c
 #define CTL_L_CMD 255
 
+#define FOUR_KB 4096
+
 
 /* Initializes the PS/2 devices. */
 void init_ps2devices();

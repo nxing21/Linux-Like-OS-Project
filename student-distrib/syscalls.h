@@ -68,8 +68,6 @@ int32_t system_write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t system_open (const uint8_t* filename);
 int32_t system_close (int32_t fd);
 
-fops_t dir_ops_table;
-
 typedef struct process_control_block {
     fd_t file_descriptors[FILE_DESCRIPTOR_MAX];
     uint32_t pid;
