@@ -54,9 +54,11 @@ void init_RTC() {
     outb((prev_data & 0xF0)| RATE_OF_LOW_FREQ, RTC_REGISTER_DATA_PORT);
 
 
-    /* initializes RTC_block */
+    /* initializes RTC variables */
     for(i = 0; i < MAX_TERMINALS; i++){
             RTC_block[i] = 0;
+            RTC_max_counter[i] = 1;
+            RTC_counter[i] = 1;
     }
    
     /* Renables NMIs */
