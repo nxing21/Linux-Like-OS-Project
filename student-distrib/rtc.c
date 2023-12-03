@@ -2,7 +2,6 @@
 
 #include "rtc.h"
 #include "lib.h"
-#include "nmi.h"
 #include "syscalls.h"
 #include "terminal.h"
 
@@ -61,7 +60,12 @@ void init_RTC() {
     }
    
     /* Renables NMIs */
-    NMI_enable();
+    /* Sets bit 7 to 0, renabling NMIs */
+    prev_data = inb(NMI_PORT) & NMI_ENABLE_CMD;
+    outb(prev_data, NMI_PORT);
+    
+    /* Clears the input buffer */
+    prev_data = inb(NMI_PORT);
     
     /* Enables IRQ 8 on the PIC */
     enable_irq(RTC_IRQ);
@@ -94,9 +98,6 @@ void set_RTC_frequency(int freq) {
 void RTC_handler() {
     uint8_t garbage;   // garbage
     int i;
-
-    /* Function to test RTC */
-    // test_interrupts();
 
     /* Throws away the contents of Register C, allowing for interrupts to occur. */
     outb(RTC_REG_C, RTC_REGISTER_SELECT);

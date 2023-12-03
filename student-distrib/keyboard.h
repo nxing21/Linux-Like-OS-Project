@@ -54,9 +54,14 @@
 #define SINGLE_QUOTE_ASCII 0x27
 #define BACKWARD_SLASH_ASCII 0x5C
 #define SPACE_ASCII 0x20
+
 #define VIDEO_ADDR 0xB8000     // from lib.c
 #define CTL_L_CMD 255
 
+/* Terminal Constants*/
+#define TERMINAL_0 0
+#define TERMINAL_1 1
+#define TERMINAL_2 2
 #define FOUR_KB 4096
 
 

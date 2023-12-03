@@ -142,7 +142,6 @@ void shift_key_handler(uint8_t response) {
  *                 
  */
 void ctrl_key_handler(uint8_t response) {
-    // int i; /* loops through the buffer. */
     if (response == LEFT_CTL_PRESSED) {
         ctrl_held = 1;
     }
@@ -160,10 +159,12 @@ void ctrl_key_handler(uint8_t response) {
 /* 
  * alt_key_handler
  *   DESCRIPTION: Takes care of the ALT key.
- *   INPUTS: uint8_t response -- The ALT key.
+ *   INPUTS: uint8_t response -- The ALT key, the F1, F2, or F3 key.
  *   OUTPUTS: none
  *   RETURN VALUE: none
  *   SIDE EFFECTS: Sets flags based on the state of the ALT key.
+ *                 In the case of terminal switching, calls a function called switch_screen whose argument is the 
+ *                 terminal that the user wants to switch to. 
  *                 
  */
 void alt_key_handler(uint8_t response) {
@@ -177,13 +178,13 @@ void alt_key_handler(uint8_t response) {
 
     /* Set up the logic between switching the terminals. */
     if (response == F1_PRESSED) {
-        switch_screen(0);
+        switch_screen(TERMINAL_0);
     }
     if (response == F2_PRESSED) {
-        switch_screen(1);
+        switch_screen(TERMINAL_1);
     }
     if (response == F3_PRESSED) {
-        switch_screen(2);
+        switch_screen(TERMINAL_2);
     }
 }
 
@@ -278,16 +279,7 @@ void tab_key_handler() {
     int i;
     /* Try to add four spaces to the buffer and to the screen. */
     for (i = 0; i < 4; i++) {
-        //  if (keyboard_buffer_size > MAX_BUF_INDEX-1) {
-        //     return;
-        // }
-        // else {
-            // keyboard_buffer[keyboard_buffer_size] = SPACE_ASCII;
-            // keyboard_buffer_size++;
-            // DISPLAY_ON_MAIN_PAGE = 1;
-            // putc(SPACE_ASCII);
-            edit_buffer(SPACE_ASCII);
-        // }
+        edit_buffer(SPACE_ASCII);
     } 
 }
 
@@ -364,6 +356,15 @@ uint8_t shift_and_caps_data(uint8_t response) {
     return scan_code_data[response];
 }
 
+/* 
+ * switch_screen
+ *   DESCRIPTION: Remaps video memory corresponding to the terminal that the user wants to switch to, and saves our old video memory into a backup page.
+ *   INPUTS: uint8_t new_terminal - The terminal that the user wants to switch to.
+ *   OUTPUTS: none
+ *   RETURN VALUE: None
+ *   SIDE EFFECTS: Remaps video memory corresponding the terminal that the user wants to switch to, and repositions the cursor.
+ *                 
+ */
 void switch_screen(uint8_t new_terminal) {
     cli();
     memcpy((char *) VIDEO_ADDR + ((screen_terminal+1) * ALIGN), (char *) VIDEO_ADDR , FOUR_KB); // save current screen mem values to backup terminal video page

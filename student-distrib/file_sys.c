@@ -62,7 +62,6 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry) {
 
     if(found_flag == 1) {
         *dentry = found_dentry; //set load dentry with found dentry
-        // dentry->filename[32] = '\0';
         return 0; //successful
     }
     return -1; // not found
@@ -181,7 +180,6 @@ int32_t write_file(int32_t fd, const void* buf, int32_t nbytes) {
  * Function: checks if valid name and updates file descriptors accordingly
  */
 int32_t open_file(const uint8_t* filename) {
-    // dentry_t temp_dentry;
     return 0;
 }
 

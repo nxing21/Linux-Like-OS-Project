@@ -8,7 +8,7 @@
 
 #include "types.h"
 
-/* Ports that each PIC sits on */
+/* Ports that each PIC sits on. The next consecutive port of each main PIC port allows for the PIC to be programmed to our specifications. */
 #define MASTER_8259_PORT    0x20
 #define SLAVE_8259_PORT     0xA0
 
@@ -21,9 +21,6 @@
 #define ICW3_MASTER         0x04 // ICW3: Used when there is more than one
 #define ICW3_SLAVE          0x02 // PIC present, loads an 8-bit slave register
 #define ICW4                0x01 // 8086 operations are performed
-
-#define PIC_READ_IRR        0x0A // Command word that allows us to read IRR
-#define PIC_READ_ISR        0x0B // Command word that allows us to read ISR
 
 #define START_SLAVE_PIC     8 /* The start of the Slave PIC IRQs */
 #define MAX_IRQS            15

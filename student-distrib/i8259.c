@@ -5,7 +5,7 @@
 #include "i8259.h"
 #include "lib.h"
 
-/* Interrupt masks to determine which interrupts are enabled and disabled */
+/* The default masks, all IRQs on the PIC are currently disabled. */
 uint8_t master_mask = 0xFF; /* IRQs 0-7  */
 uint8_t slave_mask = 0xFF;  /* IRQs 8-15 */
 
@@ -30,7 +30,7 @@ void i8259_init(void) {
 
     outb(ICW4, MASTER_8259_PORT+1); // Have the PICs use 8086 mode
     outb(ICW4, SLAVE_8259_PORT+1);
-    outb(master_mask, MASTER_8259_PORT+1); // Restore the saved masks
+    outb(master_mask, MASTER_8259_PORT+1); // Set the mask.
     outb(slave_mask, SLAVE_8259_PORT+1); 
 
     enable_irq(SLAVE_PIC_IRQ); /* Enables the second PIC*/
@@ -47,6 +47,9 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
     uint16_t port;
     uint8_t value;
+    if (irq_num > MAX_IRQS){ /* Not a valid IRQ */
+        return;
+    }
     if (irq_num < START_SLAVE_PIC){
         port = MASTER_8259_PORT+1;
     }
@@ -55,7 +58,7 @@ void enable_irq(uint32_t irq_num) {
         irq_num -= START_SLAVE_PIC; 
     }
 
-    value = inb(port) & ~(1 << irq_num);
+    value = inb(port) & ~(1 << irq_num); /* Setting a certain bit of the PIC mask to 0, telling PIC to enable the corresponding IRQ*/
     outb(value, port);
 
 }
@@ -71,6 +74,9 @@ void enable_irq(uint32_t irq_num) {
 void disable_irq(uint32_t irq_num) {
     uint16_t port;
     uint8_t value;
+    if (irq_num > MAX_IRQS){ /* Not a valid IRQ */
+        return;
+    }
     if (irq_num < START_SLAVE_PIC){
         port = MASTER_8259_PORT+1;
     }
@@ -79,7 +85,7 @@ void disable_irq(uint32_t irq_num) {
         irq_num -= START_SLAVE_PIC; 
     }
 
-    value = inb(port) | (1 << irq_num);
+    value = inb(port) | (1 << irq_num); /* Setting a certain bit of the PIC mask to 1, telling PIC to disable the corresponding IRQ*/
     outb(value, port);
 }
 

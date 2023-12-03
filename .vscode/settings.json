@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "i8259.h": "c"
+        "i8259.h": "c",
+        "file_sys.h": "c"
     }
 }

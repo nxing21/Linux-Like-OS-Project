@@ -8,18 +8,22 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
-#include "pit.h"
 
 // MP 3.1: Added headers
 #include "keyboard.h"
 #include "rtc.h"
 #include "page.h"
+
 // MP 3.2: Added headers
 #include "file_sys.h"
 #include "terminal.h"
 #include "idt.h"
+
 // MP 3.3: Added headers
 #include "syscalls.h"
+
+//MP 3.5: Added headers
+#include "pit.h"
 
 // #define RUN_TESTS
 
@@ -34,7 +38,6 @@ unsigned int fs;
 void entry(unsigned long magic, unsigned long addr) {
 
     multiboot_info_t *mbi;
-    int i; /* Allows us to loop through each terminal. */
 
     /* Clear the screen. */
     DISPLAY_ON_MAIN_PAGE = 0;
@@ -153,6 +156,7 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
     
+    /* Init the IDT. */
     idt_init();
 
     /* Init the PIC */
@@ -176,15 +180,11 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Initializes the PIT. */
     init_pit();
     DISPLAY_ON_MAIN_PAGE = 0;
-    
-    for (i = 0; i < MAX_TERMINALS; i++){
-        curr_terminal = i;
-        clear();
-    }
 
-    curr_terminal = 0;
-
+    /* Init file system. */
     init_file_sys(fs);
+
+    /* Init the file operations table. */
     init_fops_table();
 
     /* Enable interrupts */
@@ -192,16 +192,14 @@ void entry(unsigned long magic, unsigned long addr) {
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     printf("Enabling Interrupts\n");
-    // clear();
+
+    clear();
 
 #ifdef RUN_TESTS
     // /* Run tests */
     // launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
-    /* TODO: CONSIDER THE CASE WHERE THE USER IS SPAMMING ALT-F while the OS is trying to set up the first base shell. */
-    /* If we are trying to open all shells at startup using PIT, do we need this system_execute*/
-    /* Can we assume it will hit the system_execute faster than PIT interrupt?*/
     system_execute((uint8_t *) "shell");
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");

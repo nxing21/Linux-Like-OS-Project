@@ -285,7 +285,6 @@ int32_t system_halt(uint8_t status) {
     int i; // looping variable
 
     // Get current and parent PCB
-    /* I think we need to base closing the curr_pid by using the pid of the curr_terminal*/
     int halting_pid = terminal_array[curr_terminal].pid;
 
     pcb_t* pcb = get_pcb(halting_pid);

@@ -6,13 +6,17 @@
 #define RTC_REGISTER_DATA_PORT 0x71 /* Port that allows read/write to registers*/
 
 #include "lib.h"
-#include "nmi.h"
 #include "i8259.h"
 
 /* Registers A-C of the RTC */
 #define RTC_REG_A   0x0A
 #define RTC_REG_B   0x0B
 #define RTC_REG_C   0x0C
+
+/* NMI-related Macros */
+#define NMI_PORT    0x70
+#define NMI_ENABLE_CMD 0x7F /* Sets bit 7 in the NMI port to 0, enabling NMIs. Use bitwise AND. */
+#define NMI_DISABLE_CMD  0x80 /* Sets bit 7 in the NMI port to 1, disabling NMIs. Use bitwise OR. */
 
 #define rtc_max_frequency           32768
 #define rtc_max_usable_frequency    1024

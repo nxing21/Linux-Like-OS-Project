@@ -9,7 +9,6 @@
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
-// #define ATTRIB      0x7
 #define CURSOR_LOC_HIGH_REG 0x0E
 #define CURSOR_LOC_LOW_REG 0x0F
 #define GET_8_MSB 8
@@ -17,9 +16,6 @@
 #define CRTC_ADDR_PORT 0x3D4
 #define CRTC_DATA_PORT 0x3D5
 
-
-// static int screen_x;
-// static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
 int ATTRIB = 0x7;
@@ -30,12 +26,13 @@ int terminal_flag = 0;
 /* void clear(void);
  * Inputs: void
  * Return Value: none
- * Function: Clears video memory */
+ * Function: Clears video memory on a specific terminal. */
 void clear(void) {
     int32_t i;
     uint8_t ATTRIB;
     char *true_mem = video_mem;
 
+    /* Checking if the terminal screen that we are editing is not currently on the screen. */
     if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE == 0)) {
         true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
         terminal_array[curr_terminal].screen_x=0;
@@ -43,6 +40,7 @@ void clear(void) {
         terminal_flag = 1;
         ATTRIB = terminal_array[curr_terminal].attribute;
     }
+    /* Case where the screen that is being cleared is currently is on the screen. */
     else {
         DISPLAY_ON_MAIN_PAGE = 0; //setting flag back to zero, it's keyboard handlers jobs to let libc know each time
         terminal_array[screen_terminal].screen_x=0;
@@ -51,6 +49,7 @@ void clear(void) {
         terminal_flag = 0;
     }
 
+    /* Set the whole screen to empty.*/
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(true_mem + (i << 1)) = ' ';
         *(uint8_t *)(true_mem + (i << 1) + 1) = ATTRIB;
@@ -200,7 +199,7 @@ int32_t puts(int8_t* s) {
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
- *  Function: Output a character to the console */
+ *  Function: Output a character to the respective console */
 void putc(uint8_t c) {
     int i, j;
     uint8_t ATTRIB;
@@ -208,12 +207,14 @@ void putc(uint8_t c) {
     char *true_mem = video_mem;
     int true_term_id = screen_terminal;
 
+    /* Check if the terminal that we want to edit is currently on screen. */
     if(curr_terminal != screen_terminal && (DISPLAY_ON_MAIN_PAGE == 0)) {
         true_mem = (char *) VIDEO_ADDR + ((curr_terminal+1) << 12);
         true_term_id = curr_terminal;
         terminal_flag = 1;
         ATTRIB = terminal_array[curr_terminal].attribute;
     }
+    /* Case where the terminal we are trying to edit is on screen. */
     else {
         DISPLAY_ON_MAIN_PAGE = 0; //setting flag back to zero, it's keyboard handlers jobs to let libc know each time
         terminal_flag = 0;
@@ -228,15 +229,14 @@ void putc(uint8_t c) {
         *(uint8_t *)(true_mem + ((NUM_COLS * terminal_array[true_term_id].screen_y + terminal_array[true_term_id].screen_x) << 1)) = c;
         *(uint8_t *)(true_mem + ((NUM_COLS * terminal_array[true_term_id].screen_y + terminal_array[true_term_id].screen_x) << 1) + 1) = ATTRIB;
         terminal_array[true_term_id].screen_x++;
-        check_size(); // added function
-        terminal_array[true_term_id].screen_x %= NUM_COLS;
-        // screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        check_size(); /* Checks if we went out of bounds. */
     }
 
     /* Checks if the y position exceeds the window. If so, scroll up and reposition the cursor.*/
     if (terminal_array[true_term_id].screen_y > NUM_ROWS-1){
         for (i = 0; i < NUM_ROWS-1; i++){
             for (j = 0; j < NUM_COLS; j++){
+                /* For each iteration, replace the top row with the row below it. */
                 character = *(uint8_t *)(true_mem + ((NUM_COLS * (i+1) + j) << 1));
                 *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1)) = character;
                 *(uint8_t *)(true_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
@@ -556,11 +556,13 @@ void test_interrupts(void) {
  * Function: Checks the position of x and y to see if its out of bounds. */
 void check_size(){
     int true_terminal = screen_terminal;
+
+    /* Checks what terminal we are trying to edit. */
     if(terminal_flag == 1) {
         true_terminal = curr_terminal;
     }
 
-
+    /* If we go out of bounds in the x direction, make screen_x = 0 and move screen_y down one row. */
     if (terminal_array[true_terminal].screen_x >= NUM_COLS){ 
         terminal_array[true_terminal].screen_y++;
         terminal_array[true_terminal].screen_x = 0;
@@ -570,12 +572,14 @@ void check_size(){
 /*  erase_char()
  * Inputs: None
  * Return Value: None
- * Function: Deletes a character from the screen*/
+ * Function: Deletes a character from the screen of the terminal that we are looking at. */
 void erase_char(){
     /*erase_char is only used by typing triggerd cursor movement, meaning only screen terminal*/
     terminal_flag = 0;
     /* Deletes the previous character. */
-    terminal_array[screen_terminal].screen_x--;
+    terminal_array[screen_terminal].screen_x--;\
+
+    /* Checks if we went out of bounds in the direction. If so, place screen_x at the very last column and move screen_y up one row. */
     if (terminal_array[screen_terminal].screen_x < 0){
         terminal_array[screen_terminal].screen_x = NUM_COLS-1;
         terminal_array[screen_terminal].screen_y--;
