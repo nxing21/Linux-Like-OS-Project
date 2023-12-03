@@ -2,9 +2,37 @@
 #include "lib.h"
 #include "terminal.h"
 
-uint8_t buffer[MAX_BUF_SIZE];
-uint8_t write_buffer[MAX_BUF_SIZE];
-int buffer_size = 0;
+/* 
+ * init_terminal.
+ *   DESCRIPTION: Sets up the terminals by setting the buffer size of each terminal to 0.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Sets the buffer size of each terminal to 0.
+ */
+void init_terminal() {
+    int i; /* Loop through each terminal in the terminal array*/
+    curr_terminal = 0;
+    screen_terminal = 0;
+    for (i = 0; i < MAX_TERMINALS; i++){
+        terminal_array[i].terminal_id = i;
+        terminal_array[i].buffer_size = 0;
+        terminal_array[i].screen_x = 0;
+        terminal_array[i].screen_y = 0;
+        terminal_array[i].flag = 0;
+        terminal_array[i].pid = -1;
+        terminal_array[i].waitingInRead  = 0;
+        terminal_array[i].enter_flag = 0;
+    }
+    // At the start, only the first terminal (terminal 0) will be active
+    terminal_array[0].flag = 1; 
+
+    /* Setting attributes of each terminal. */
+    terminal_array[0].attribute =  0x07; //grey text on black bg
+    terminal_array[1].attribute= 0x70; // reverse reverse
+    terminal_array[2].attribute = 0x9F; // white text, blue bg
+
+}
 
 /* 
  * terminal_read
@@ -20,33 +48,59 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     int numbytes = 0; /* number of bytes read. */
     int i; /* allows us to iterate through the buffer. */
     int enterAtEnd; /* checks if there is an enter at the end*/
+    int true_bytes = nbytes;
     enterAtEnd = 0;
-    while (buffer[buffer_size-1] != END_OF_LINE){
+
+    /* Parameter checking.*/
+    if (buf == NULL){
+        return -1;
+    }
+    if (nbytes <= 0){
+        return -1;
     }
 
+
+    /* Indicates that this is a program that uses user input. */
+    terminal_array[curr_terminal].waitingInRead = 1;
+
+    while (1){
+        cli();
+        if (terminal_array[curr_terminal].enter_flag == 1){
+            break;
+        }
+        sti();
+    }
+
+    if(MAX_BUF_SIZE < nbytes){
+        true_bytes = MAX_BUF_SIZE;
+    }
     /* copies the terminal buffer into the userspace buffer. */
-    for (i = 0; i < nbytes; i++) {
-        if (i < buffer_size) {
+    for (i = 0; i < true_bytes; i++) {
+        if (i < terminal_array[curr_terminal].buffer_size) {
             numbytes++;
-            ((uint8_t *)buf)[i] = buffer[i]; 
+            ((uint8_t *)buf)[i] = terminal_array[curr_terminal].buffer[i]; 
         } 
-        if (buffer[i] == END_OF_LINE) {
+        if (terminal_array[curr_terminal].buffer[i] == END_OF_LINE) {
             enterAtEnd = 1;
             break;
         }
     }
     /* Checks if the very last byte is the End of Line. */
-    if (enterAtEnd == 0 && i < buffer_size && ((uint8_t *)buf)[i-1] != END_OF_LINE) {
+    if (enterAtEnd == 0 && i < terminal_array[curr_terminal].buffer_size && ((uint8_t *)buf)[i-1] != END_OF_LINE) {
         ((uint8_t *)buf)[i-1] = END_OF_LINE;
     }
 
     /* clear the terminal buffer */
-    for (i = 0; i < nbytes; i++) {
-        buffer[i] = 0x0;
+    for (i = 0; i < true_bytes; i++) {
+        terminal_array[curr_terminal].buffer[i] = 0x0;
     }
-    buffer_size = 0;
+    terminal_array[curr_terminal].buffer_size = 0;
+    terminal_array[curr_terminal].waitingInRead = 0;
+    terminal_array[curr_terminal].enter_flag = 0;
+    sti();
     return numbytes;
 }
+//double check
 
 /* 
  * terminal_write
@@ -62,26 +116,25 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
     int numbytes = 0; /* Number of bytes written. */
     int i; /* Iterates through the user buffer. */
 
-    /* clear the write buffer. */
-    for (i = 0; i < MAX_BUF_SIZE; i++) {
-        write_buffer[i] = 0x0;
+    /* Parameter checking.*/
+    if (buf == NULL){
+        return -1;
     }
-    /* Copies the user buffer into a write buffer. */
-    for (i = 0; i < nbytes; i++) {
-        write_buffer[i] = ((uint8_t *)buf)[i];
+    if (nbytes <= 0){
+        return -1;
     }
 
     /* Prints characters from the write buffer to the screen. */
+    cli();
     for (i = 0; i < nbytes; i++){
-        if (write_buffer[i] != NULL) {
-            putc(write_buffer[i]);
+        if (((uint8_t *)buf)[i] != NULL) {
+            putc(((uint8_t *)buf)[i]);
             numbytes++;
         }
     }
-
-    clear_writebuffer();
-
+    sti();
     return numbytes;
+
 }
 
 /* 
@@ -94,50 +147,58 @@ int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
  */
 int edit_buffer(uint8_t response) {
     cli();
-    /* Case where the terminal buffer is full. */ 
-        /* Checks if the second to last index is the FULL and is the ENTER KEY*/
-    if (buffer_size == MAX_BUF_SIZE-2 && response == ENTER_KEY){
-        buffer[buffer_size] = END_OF_LINE;
-        buffer_size++;
-    }
-    /* Case to delete from the buffer. */
-    else if (response == BACKSPACE_PRESSED) {
-        if (buffer_size > 0) {
-            buffer[buffer_size] = 0x0;
-            buffer_size--;
-        }
-        if (buffer_size == 0) {
-            buffer[buffer_size] = 0x0;
+    int i; /* Loops through the terminal buffer. */
+
+    if (response == CTL_L_CMD){
+        DISPLAY_ON_MAIN_PAGE = 1;
+        clear();
+        for (i = 0; i < terminal_array[screen_terminal].buffer_size; i++) {
+            DISPLAY_ON_MAIN_PAGE = 1;
+            putc(terminal_array[screen_terminal].buffer[i] );
         }
     }
-    /* Add a character to the buffer */
-    else{
-        if (response == ENTER_KEY) {
-            buffer[buffer_size] = END_OF_LINE;
+    else if (terminal_array[screen_terminal].waitingInRead == 1 && response != 0x0) {
+        /* Case where the terminal buffer is almost full, just waiting for ENTER KEY. */ 
+        if (terminal_array[screen_terminal].buffer_size == MAX_BUF_SIZE-2 && response == ENTER_KEY){
+            terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
+            DISPLAY_ON_MAIN_PAGE = 1;
+            putc('\n');
+            terminal_array[screen_terminal].enter_flag = 1;
+            terminal_array[screen_terminal].buffer_size++;
+
         }
-        else {
-            buffer[buffer_size] = response;
+        /* Case to delete from the buffer. */
+        else if (response == BACKSPACE_PRESSED) {
+            if (terminal_array[screen_terminal].buffer_size > 0) {
+                erase_char();
+                terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = 0x0;
+                terminal_array[screen_terminal].buffer_size--;
+            }
+            if (terminal_array[screen_terminal].buffer_size == 0) {
+                terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = 0x0;
+            }
         }
-        buffer_size++;
+        /* Add a character to the buffer */
+        else{
+            if (terminal_array[screen_terminal].buffer_size == MAX_BUF_SIZE -1 && response != ENTER_KEY){
+                /* Do nothing.*/
+            }
+            else if (response == ENTER_KEY) {
+                terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = END_OF_LINE;
+                DISPLAY_ON_MAIN_PAGE = 1;
+                putc('\n');
+                terminal_array[screen_terminal].enter_flag = 1;
+                terminal_array[screen_terminal].buffer_size++;
+            }
+            else {
+                terminal_array[screen_terminal].buffer[terminal_array[screen_terminal].buffer_size] = response;
+                DISPLAY_ON_MAIN_PAGE = 1;
+                putc(response);
+                terminal_array[screen_terminal].buffer_size++;
+            }
+        }
     }
     sti();
-    return 0;
-}
-
-/* 
- * clear_writebuffer
- *   DESCRIPTION: Clears the input buffer and resets the size.
- *   INPUTS: none
- *   OUTPUTS: none
- *   RETURN VALUE: Returns 0 on success.
- *   SIDE EFFECTS: Clears the input buffer and reset the size.
- */
-int clear_writebuffer() {
-    /* clear the buffer, resetes size. */
-    int i; 
-    for (i = 0; i < MAX_BUF_SIZE; i++) {
-        write_buffer[i] = 0x0;
-    }
     return 0;
 }
 
@@ -153,11 +214,10 @@ int terminal_open(const char* filename) {
     int i; /* allows us to iterate through the buffer. */
 
     /* clear the buffer. */
-    for (i = 0; i < buffer_size; i++){
-        buffer[i] = 0x0;
-        write_buffer[i] = 0x0;
+    for (i = 0; i < terminal_array[curr_terminal].buffer_size; i++){
+        terminal_array[curr_terminal].buffer[i] = 0x0;
     }
-    buffer_size = 0;
+    terminal_array[curr_terminal].buffer_size = 0;
     return 0;
 }
 

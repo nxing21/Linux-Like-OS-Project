@@ -166,9 +166,69 @@ Nov 10th: 2023:
     - This also fixed our grep function
     - Took us about 4 hour.
 
+<<<<<<< HEAD
 Nov 27th: 2023:
     - For terminal switching, we originally planned on opening a base shell of a terminal only upon the first terminal switch.
     - However, we faced a bug where 6 shells would open on the first terminal.
     - We tried to fix the issue, but ultimately we decided to switch our design choice such that each of the 3 terminals would open a base
     shell upon startup, after we could not fully fix the issue.
     - Took us about 3 hours of fixing before we eventually changed our design choice.
+=======
+<<<<<<< HEAD
+----------------------------------------------------------------------------------------------------------------------------------------
+Nov 9th, 2023:
+    - Several scheduling problems
+
+Nov 27th, 2023:
+    - Terminal would boot loop after running a program twice.
+    - We originally had it so that the pcb would hold its parent's information (esp. ebp)
+    - Changed it so that the scheduler will handle all cases of switching tss info
+    - Changed it so that each pcb will hold its respective information
+    - After making those changes, the program would page fault after halting
+    - Was not saving parent pcb information in system execute.
+    - Made that change in logic, programs do not page fault after halting. 
+
+Nov 28th, 2023:
+    - Fixed an issue with cursor
+    - When running a program that requires a lot of time (counter, pingpong),
+    the visual cursor in other terminals would be moved to that area as well.
+    - Looking at our logic for moving cursor, we had a line where it would move the cursor using the
+    screen_x and screen_y of a terminal that was not being displayed at the moment.
+    - We got rid of that line, only making it so that visual cursor would only be moved using the screen_x and
+    screen_y of the terminal that is on screen.
+    - Took about 10 minutes to fix.
+
+Nov 28th, 2023:
+    - Issue with ls and grep not being able to run after being used for a couple times.
+    - Changed everything that used curr_pid into the pid that is stored in the curr_terminal
+    - Sometimes when running a program, it boot loops.
+
+Nov 30th, 2023
+    - Noticed an issue with running counter on one terminal and then fast terminal switching.
+    - Whenever we fast swapped, elements of the counter would cause the other terminals to either lose or gain garbage 
+    video output.
+    - We noticed that in counter, it solely uses terminal_write.
+    - We then decided to add a cli and sti around the for loop for the putc statement.
+    - After implementing that change, fast terminal switching with counter does not cause any unintended video memory issues.
+    - Took about 2 hours to debug.
+    
+BUGS TO WRITE ABOUT:
+- ls or grep do not work after running it for a couple times. 
+- fish is not working.
+=======
+Nov 24th: 2023:
+    - Faced an issue where terminal array in-use flag was getting overwritten to garbage values
+    - We noticed that our terminal read buffer that was apart of the terminal struct was overflowing and messing up the subsequent elements.
+    - This exposed that we weren't capping the nbytes of terminal read to 128 bytes in our newer implementation.
+    - We then figured to take the minimum of 128 and input nbytes as what we would use.
+    - This also fixed our flag issue and potentially prevented future issues.
+    - Took us about 2 hours to find and 20 minutes to fix.
+
+Nov 24th: 2023:
+    - Faced an issue where on opening terminal our shell page faulted looped
+    - We noted that out checks in PIT was not working as intended.
+    - We tried a bunch of differen implementations thinking that was the issue.
+    - Turns out we were setting  a variable to -1 that was initialized to -1. 
+    - To fix we set the type as int.
+    - Took 1 day to find and 5 minutes to fix.
+>>>>>>> 8ed964239c96edb911aa570815a94a48465408b2

@@ -19,5 +19,7 @@
 
 INTR_LINK(keyboard_handler_linkage, keyboard_handler)
 INTR_LINK(rtc_handler_linkage, RTC_handler)
+INTR_LINK(pit_handler_linkage, pit_handler)
+
 
 
