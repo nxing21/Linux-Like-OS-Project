@@ -4,11 +4,11 @@
 
 /* 
  * init_terminal.
- *   DESCRIPTION: Sets up the terminals by setting the buffer size of each terminal to 0.
+ *   DESCRIPTION: Initializing each terminal.
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: none
- *   SIDE EFFECTS: Sets the buffer size of each terminal to 0.
+ *   SIDE EFFECTS: Resets flags, the buffer, the buffer size, and other necessary data for each terminal.
  */
 void init_terminal() {
     int i; /* Loop through each terminal in the terminal array*/
@@ -100,7 +100,6 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
     sti();
     return numbytes;
 }
-//double check
 
 /* 
  * terminal_write
@@ -149,6 +148,7 @@ int edit_buffer(uint8_t response) {
     cli();
     int i; /* Loops through the terminal buffer. */
 
+    /* Clearing the screen with the CTRL-L command */
     if (response == CTL_L_CMD){
         DISPLAY_ON_MAIN_PAGE = 1;
         clear();
@@ -157,6 +157,7 @@ int edit_buffer(uint8_t response) {
             putc(terminal_array[screen_terminal].buffer[i] );
         }
     }
+    /* Case when the user wants to edit the buffer and is currently in a program that takes user input. */
     else if (terminal_array[screen_terminal].waitingInRead == 1 && response != 0x0) {
         /* Case where the terminal buffer is almost full, just waiting for ENTER KEY. */ 
         if (terminal_array[screen_terminal].buffer_size == MAX_BUF_SIZE-2 && response == ENTER_KEY){

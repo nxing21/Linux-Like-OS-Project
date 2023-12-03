@@ -72,6 +72,7 @@ void build_idt() {
     // Sets system call vector (x80) with corresponding function pointer
     SET_IDT_ENTRY(idt[SYSTEM_CALL_VECTOR], system_call_linkage);
 
+    /* Interupts regarding the PIC. */
     idt[RTC].reserved3 = 0; // Need to change to interrupt gate. See ISA manual page 156.
     idt[RTC].present = 1;
     idt[KEYBOARD].reserved3 = 0; // Need to change to interrupt gate. See ISA manual page 156.
@@ -274,14 +275,3 @@ void simd_fp_error() {
     printf("SIMD Floating-Point Exception\n");
     system_halt((uint8_t) EXCEPTION);
 }
-
-// /* system_call()
-//  * Inputs: none
-//  * Return Value: none
-//  * Function: Prints system call message and sends to infinite loop.
-//  *           Will be changed in later checkpoints.
-//  */
-// void system_call() {
-//     printf("System Call");
-//     while(1){};
-// }

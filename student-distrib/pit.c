@@ -8,7 +8,7 @@ extern int cur_processes[NUM_PROCESSES];
 
 /* init_pit
  * DESCRIPTION: Initializes the PIT by enabling IRQ0 on the PIC, turning on square wave interrupts on the pit,
- *                and setting the PIC frequency to divisor.
+ *                and setting the PIC frequency to the intended rate.
  * Inputs: none
  * Outputs: none
  * Return Value: none
@@ -16,8 +16,7 @@ extern int cur_processes[NUM_PROCESSES];
  */
 void init_pit() {
     /* Use channel 0 and a square wave generator. */
-    int hz = RATE; /* We will divide the Input Clock's frequency with this value to get an IRQ every 10 milliseconds*/
-    int divisor = INPUT_CLOCK_HZ / hz;       /* Calculate our divisor */
+    int divisor = INPUT_CLOCK_HZ / RATE;       /* Calculate our divisor by dividing the max frequency of the PIT by the rate that we want. */
     outb(SET_CHANNEL_0, COMMAND_REGISTER);             /* Set our command byte 0x36 */
     outb(divisor & LOW_BYTE, CHANNEL_0);   /* Set low byte of divisor */
     outb(divisor >> HIGH_BYTE, CHANNEL_0);     /* Set high byte of divisor */
@@ -46,12 +45,13 @@ void pit_handler() {
  * Inputs: none
  * Outputs: none
  * Return Value: none
- * Function: Switches between processes and executes base shells of terminal 2 and 3.
+ * Function: Switches between processes and executes base shells of terminal 1 and 2.
  */
 void scheduler() {
     pcb_t* old_pcb = get_pcb(terminal_array[curr_terminal].pid);
     pcb_t* next_pcb;
     int next_pid = -1;
+    
     // Temp variables to hold ebp and esp
     uint32_t temp_esp;
     uint32_t temp_ebp;

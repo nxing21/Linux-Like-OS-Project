@@ -4,8 +4,6 @@
 #include "lib.h"
 
 #define CTL_PRESSED    0x1D
-#define TERMINAL_READ  0x11
-#define TERMINAL_WRITE 0x12
 #define BACKSPACE_PRESSED 0x0E
 #define ENTER_KEY 0x1C
 #define MAX_BUF_SIZE  128
