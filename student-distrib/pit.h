@@ -12,7 +12,7 @@
 #define LOW_BYTE 0xFF
 #define HIGH_BYTE 8
 #define SET_CHANNEL_0 0x36
-#define RATE 100 /* Allows for the PIT to raise the IRQ about every 10 milliseconds */ 
+#define RATE 20 /* Allows for the PIT to raise the IRQ about every 10 milliseconds */ 
 
 int active_terminals[MAX_TERMINALS];
 

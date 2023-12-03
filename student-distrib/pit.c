@@ -79,7 +79,7 @@ void scheduler() {
         
     }
 
-    //get youngest process id of new terminal
+    // get youngest process id of new terminal
     next_pid = terminal_array[curr_terminal].pid;
     
     if(curr_terminal == screen_terminal){ //if current terminal being handled is screen terminal give vidmap addr to actual screen vid mem
