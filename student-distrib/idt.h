@@ -10,6 +10,7 @@
 /* Interrupts and corresponding vector number. */
 #define KEYBOARD   0x21
 #define RTC        0x28
+#define PIT        0x20
 
 /* Vector number for system calls. */
 #define SYSTEM_CALL_VECTOR    0x80

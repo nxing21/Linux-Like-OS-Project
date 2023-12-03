@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+#include "pit.h"
 
 // MP 3.1: Added headers
 #include "init_devices.h"
@@ -20,7 +21,7 @@
 // MP 3.3: Added headers
 #include "syscalls.h"
 
-#define RUN_TESTS
+// #define RUN_TESTS
 
 unsigned int fs;
 
@@ -33,8 +34,10 @@ unsigned int fs;
 void entry(unsigned long magic, unsigned long addr) {
 
     multiboot_info_t *mbi;
+    int i; /* Allows us to loop through each terminal. */
 
     /* Clear the screen. */
+    DISPLAY_ON_MAIN_PAGE = 0;
     clear();
 
     /* Am I booted by a Multiboot-compliant boot loader? */
@@ -161,13 +164,26 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the keyboard*/
     init_ps2devices();
 
+    /* Init the terminal. */
+    init_terminal();
+    
     /* Init the RTC */
     init_RTC();
 
     /* Init the page*/
     init_page();
 
-    clear();
+    /* Initializes the PIT. */
+    init_pit();
+    DISPLAY_ON_MAIN_PAGE = 0;
+    
+    for (i = 0; i < MAX_TERMINALS; i++){
+        curr_terminal = i;
+        clear();
+    }
+
+    curr_terminal = 0;
+
     init_file_sys(fs);
     init_fops_table();
 
@@ -176,7 +192,6 @@ void entry(unsigned long magic, unsigned long addr) {
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     printf("Enabling Interrupts\n");
-    sti();
     // clear();
 
 #ifdef RUN_TESTS
@@ -184,6 +199,9 @@ void entry(unsigned long magic, unsigned long addr) {
     // launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
+    /* TODO: CONSIDER THE CASE WHERE THE USER IS SPAMMING ALT-F while the OS is trying to set up the first base shell. */
+    /* If we are trying to open all shells at startup using PIT, do we need this system_execute*/
+    /* Can we assume it will hit the system_execute faster than PIT interrupt?*/
     system_execute((uint8_t *) "shell");
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");

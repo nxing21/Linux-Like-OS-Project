@@ -1,13 +1,15 @@
 #include "syscalls.h"
 #include "file_sys.h"
 #include "lib.h"
+#include "terminal.h"
 
 // global variables, keep track of starting index of boot block, inodes, and data blocks
 boot_block_t *boot_block;
 inode_t * inode;
 uint32_t data_blocks;
+uint32_t dentry_counter;
 // global dentry variable
-dentry_t *dentry;
+// dentry_t *dentry;
 
 /* void init_file_sys(uint32_t starting_addr)
  * Inputs: uint32_t starting_addr = starting address of file system
@@ -18,6 +20,7 @@ void init_file_sys(uint32_t starting_addr) {
     boot_block= (boot_block_t *) starting_addr;
     inode = (inode_t *)(starting_addr + BYTES_PER_BLOCK); // starting inode address
     data_blocks = (starting_addr + BYTES_PER_BLOCK + boot_block->inode_count * BYTES_PER_BLOCK); // starting data blocks address
+    dentry_counter = 0;
 }
 
 /* int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry)
@@ -149,7 +152,7 @@ int32_t read_file(int32_t fd, void* buf, int32_t nbytes) {
     int offset;
     int32_t bytes_read;
     uint8_t * buffer = (uint8_t*) buf;
-    pcb_t *pcb = get_pcb(curr_pid);
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid);
 
     if(fd >= FILE_DESCRIPTOR_MAX || fd < 0) { //check if valid fd index
         return -1;
@@ -209,21 +212,22 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes) {
     uint8_t * buffer = (uint8_t*) buf;
     // counters so we know what index to put in buffer
     uint32_t num_read = 0;
-    pcb_t *pcb = get_pcb(curr_pid);
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid);
 
     // check if we've read all files
-    if (pcb->file_descriptors[fd].file_pos >= boot_block->dir_count) {
+    if (dentry_counter >= boot_block->dir_count) {
+        dentry_counter = 0;
         return 0;
     }
 
     // get dentry of current file
     dentry_t dentry = boot_block->direntries[pcb->file_descriptors[fd].file_pos];
-    read_dentry_by_index(pcb->file_descriptors[fd].file_pos, &dentry);
+    read_dentry_by_index(dentry_counter, &dentry);
     for (j = 0; j < FILENAME_LEN; j++) {
         buffer[num_read] = dentry.filename[j]; // copy character in filename into main buffer
         num_read++;
     }
-    pcb->file_descriptors[fd].file_pos++;
+    dentry_counter++;
     return num_read;
 }
 

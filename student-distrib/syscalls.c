@@ -5,9 +5,10 @@
 #include "page.h"
 #include "x86_desc.h"
 #include "terminal.h"
+#include "pit.h"
 
 int cur_processes[NUM_PROCESSES] = {0,0,0,0,0,0}; // cur_processes keeps track of current processes that are running
-char* cur_args = ""; // keeps track of current arguments inputted
+
 
 /* init_fops_table()
  * Inputs: none
@@ -55,13 +56,18 @@ void init_fops_table() {
  * prepares stack and context switch values, IRET
  */
 int32_t system_execute(const uint8_t* command) {
+    cli(); // clear interrupts
     int8_t elf_check[ELF_LENGTH]; // holds ELF that we want to compare with
     uint8_t filename[FILENAME_LEN + 1]; // holds name of executable we want to execute
     int8_t buf[ELF_LENGTH]; // holds info
     uint32_t pid; // process ID
     int arg_idx = 0; // start of arguments
+    uint32_t temp_esp;
+    uint32_t temp_ebp;
+    char* cur_args = ""; // keeps track of current arguments inputted
 
     if (command == NULL) {
+        sti();
         return -1;
     }
     int i; // looping variable
@@ -80,7 +86,7 @@ int32_t system_execute(const uint8_t* command) {
         i++;
     }
     // Get the name of the executable
-    while (command[i] != '\0' && i < FILENAME_LEN ) {
+    while (command[i] != '\0' && i < FILENAME_LEN) {
         if (command[i] == ' ') {
             arg_idx = i + 1; //where the first arg potentially is
             while (command[arg_idx] == ' ') { //skipping spaces between executable name and first arg
@@ -128,18 +134,23 @@ int32_t system_execute(const uint8_t* command) {
     dentry_t dentry;
     // Check the validity of the filename
     if (read_dentry_by_name(filename, &dentry) == -1) {
+        sti();
         return -1;
     }
 
     // Check ELF magic constant
     read_data(dentry.inode_num, 0, (uint8_t *) buf, ELF_LENGTH);
     if (strncmp(elf_check, buf, ELF_LENGTH) != 0) {
+        sti();
         return -1;
     }
+
+    /*--------------------------------------------------------------------------------------------------*/
 
     // Find free PID location
     for (i = 0; i <= NUM_PROCESSES; i++) {
         if (i == NUM_PROCESSES) {
+            sti();
             return -1; // no available space for new process
         }
         else if (cur_processes[i] == 0) { // not in use process
@@ -158,12 +169,41 @@ int32_t system_execute(const uint8_t* command) {
 
     // Create PCB
     pcb_t *pcb = get_pcb(pid);
+    pcb_t *parent_pcb;
     // Initialize PCB's pid
     pcb->pid = pid;
+    // store pcb's arguments
+    pcb->args = cur_args;
 
-    // Set curr_pid to current pid
-    pcb->parent_pid = curr_pid;
-    curr_pid = pid;
+    // Check if base shell of the terminal it's on
+    if (base_shell == 1) {
+        pcb->parent_pid = BASE_SHELL;
+        terminal_array[curr_terminal].pid = pid;
+        pcb->terminal_id = curr_terminal;
+    }
+    else {
+        // Set parent pcb to the pid in the terminal_array
+        pcb->parent_pid = terminal_array[screen_terminal].pid;
+        parent_pcb = get_pcb(terminal_array[screen_terminal].pid);
+
+            /* Getting the ebp and esp of the current terminal. */
+         asm volatile("                     \n\
+            movl %%ebp, %0               \n\
+            movl %%esp, %1               \n\
+            "
+            : "=r" (temp_ebp), "=r" (temp_esp)
+            :
+            : "eax"
+            );
+
+        /* Storing the ebp and esp of the current terminal onto the stack. */
+        parent_pcb->ebp = temp_ebp;
+        parent_pcb->esp = temp_esp;
+        terminal_array[screen_terminal].pid = pid;
+        pcb->terminal_id = screen_terminal;
+    }
+
+    base_shell = 0;    
 
     // Initializing stdin
     pcb->file_descriptors[0].file_op_table_ptr = &term_read_ops;
@@ -192,24 +232,6 @@ int32_t system_execute(const uint8_t* command) {
     tss.esp0 = EIGHT_MB - pid * EIGHT_KB;
     tss.ss0 = KERNEL_DS;
 
-    // Temp variables to hold ebp and esp
-    uint32_t temp_esp;
-    uint32_t temp_ebp;
-
-    // Grabbing ebp and esp to store for later context switching
-    asm volatile("                           \n\
-                movl %%ebp, %0               \n\
-                movl %%esp, %1               \n\
-                "
-                : "=r" (temp_ebp), "=r" (temp_esp)
-                :
-                : "eax"
-                );
-
-    // Initialize PCB's ebp and esp
-    pcb->ebp = temp_ebp;
-    pcb->esp = temp_esp;
-
     // Reads EIP (bytes 24-27)
     uint32_t eip;
     read_data(dentry.inode_num, 24, (uint8_t*)&eip, 4); // Magic numbers: 24 is the starting index, 4 is the length of bytes 24-27
@@ -219,11 +241,12 @@ int32_t system_execute(const uint8_t* command) {
 
     // https://wiki.osdev.org/Getting_to_Ring_3
     
+    update_tss(pid, curr_terminal); 
+
     // IRET
     // First line "0x02B is USER_DS"
     // Setting up stack for IRET context switch
     asm volatile("                                          \n\
-                cli                                         \n\
                 movw $0x2B, %%ax # user ds                  \n\
                 movw %%ax, %%ds                             \n\
                 pushl %0                                    \n\
@@ -239,7 +262,6 @@ int32_t system_execute(const uint8_t* command) {
                 : "r" (USER_DS), "r" (USER_ESP), "r" (USER_CS), "r" (eip)
                 : "eax"
                 );
-
     asm volatile("iret");
     asm volatile("                  \n\
                 execute_return:     \n\
@@ -259,16 +281,20 @@ int32_t system_execute(const uint8_t* command) {
  * and jumpts to execute return.
  */
 int32_t system_halt(uint8_t status) {
+    cli();
     int i; // looping variable
 
     // Get current and parent PCB
-    pcb_t* pcb = get_pcb(curr_pid);
+    /* I think we need to base closing the curr_pid by using the pid of the curr_terminal*/
+    int halting_pid = terminal_array[curr_terminal].pid;
+
+    pcb_t* pcb = get_pcb(halting_pid);
     uint32_t parent_pid = pcb->parent_pid;
     pcb_t* parent_pcb = get_pcb(parent_pid);
     uint32_t ext_status;
 
     // If currently running base shell, reload
-    if (curr_pid == 0) {
+    if (parent_pid == BASE_SHELL && terminal_array[curr_terminal].flag == 1) {
         asm volatile("                                          \n\
                     cli                                         \n\
                     movw $0x2B, %%ax  # user ds                 \n\
@@ -291,23 +317,23 @@ int32_t system_halt(uint8_t status) {
     }
 
     // Update cur_processes
-    cur_processes[curr_pid] = 0;
+    cur_processes[halting_pid] = 0;
 
     // Set the curr_pid to the parent pid.
-    curr_pid = parent_pid;
+    terminal_array[curr_terminal].pid = parent_pid;
     
     // Restore paging and flush TLB
-    process_page(parent_pcb->pid);
+    process_page(parent_pid);
     flushTLB();
 
     // Close all file operations
     for (i = 0; i < FILE_DESCRIPTOR_MAX; i++) {
-        pcb->file_descriptors[i].flags = NOT_IN_USE; // marking as not in use
+        system_close(i);
     }
 
     // Restoring tss
-    tss.esp0 = pcb->tss_esp0;
-    tss.ss0 = pcb->tss_ss0;
+    tss.esp0 = EIGHT_MB - parent_pid * EIGHT_KB;
+    tss.ss0 = KERNEL_DS;
 
     if(status == EXCEPTION) { // accounting for status being 8 bits
         ext_status = EXCEPTION+1;
@@ -315,7 +341,11 @@ int32_t system_halt(uint8_t status) {
     else{
         ext_status = status;
     }
-    
+
+    update_tss(parent_pid, curr_terminal);
+    terminal_array[curr_terminal].pid = parent_pid;
+
+    sti();
     // Assembly to load old esp, ebp, and status 
     asm volatile("                           \n\
                 movl %0, %%eax               \n\
@@ -324,7 +354,7 @@ int32_t system_halt(uint8_t status) {
                 jmp execute_return           \n\
                 "
                 :
-                : "r" (ext_status), "r" (pcb->esp), "r" (pcb->ebp)
+                : "r" (ext_status), "r" (parent_pcb->esp), "r" (parent_pcb->ebp)
                 : "eax"
                 );
     // Will never reach here
@@ -340,7 +370,7 @@ int32_t system_halt(uint8_t status) {
  * if so we call the corresponding read.
  */
 int32_t system_read (int32_t fd, void* buf, int32_t nbytes) {
-    pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid); // getting current pcb pointer
     if((fd >= 0 && fd < FILE_DESCRIPTOR_MAX && fd != 1) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->read(fd, buf, nbytes); // returning respective read
     }
@@ -358,7 +388,7 @@ int32_t system_read (int32_t fd, void* buf, int32_t nbytes) {
  * if so we call the corresponding write.
  */
 int32_t system_write (int32_t fd, const void* buf, int32_t nbytes) {
-    pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid); // getting current pcb pointer
     if((fd >= 1 && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         return pcb->file_descriptors[fd].file_op_table_ptr->write(fd, buf, nbytes); // returning respective write
     }
@@ -378,7 +408,7 @@ int32_t system_open (const uint8_t* filename) {
     uint32_t file_type;
     int i;
     int index = -1;
-    pcb_t *pcb = get_pcb(curr_pid); // getting current pcb pointer
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid); // getting current pcb pointer
     for(i = FILE_DESCRIPTOR_MIN; i < FILE_DESCRIPTOR_MAX; i++) { // finding first open file descriptor
         if(pcb->file_descriptors[i].flags == NOT_IN_USE) {
             index = i; // setting index of  open fd
@@ -424,7 +454,7 @@ int32_t system_open (const uint8_t* filename) {
  * if so we call the corresponding close.
  */
 int32_t system_close (int32_t fd) {
-    pcb_t *pcb = get_pcb(curr_pid);
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid);
     // Check if fd is valid index and if fd is in use
     if ((fd >= FILE_DESCRIPTOR_MIN && fd < FILE_DESCRIPTOR_MAX) && pcb->file_descriptors[fd].flags != NOT_IN_USE) { 
         pcb->file_descriptors[fd].flags = NOT_IN_USE; // marking as not in use
@@ -443,13 +473,16 @@ int32_t system_close (int32_t fd) {
  * Function: Reads the program’s command line arguments into a user-level buffer.
  */
 int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
-    if(strlen(cur_args) + 1 > nbytes || strlen(cur_args) == 0) { //+1 to account for '\0' b/c strlen doesn't count it
+    // cli();
+    pcb_t *pcb = get_pcb(terminal_array[curr_terminal].pid);
+    if(strlen(pcb->args) + 1 > nbytes || strlen(pcb->args) == 0) { //+1 to account for '\0' b/c strlen doesn't count it
         return -1;
     }
     else { //if checks pass copy current aargs into user buffer
-        memcpy(buf, cur_args, nbytes); 
+        memcpy(buf, pcb->args, nbytes); 
         return 0;
     } 
+    // sti();
 }
 
 /* system_vidmap(uint8_t** screen_start)
@@ -458,20 +491,20 @@ int32_t system_getargs(uint8_t* buf, int32_t nbytes) {
  * Function: Sets up Video Map paging and gives user space access
  */
 int32_t system_vidmap(uint8_t** screen_start) {
+    
     if(screen_start == (uint8_t**) NULL || !(screen_start >= (uint8_t**) ONE_TWENTY_EIGHT_MB && screen_start <= (uint8_t**) ONE_THIRTY_TWO_MB)) {
         return -1;
     }
     else {
         page_directory[USER_ADDR_INDEX + 1].kb.page_size = 0;   // 4 kB pages
         page_directory[USER_ADDR_INDEX + 1].kb.present = 1; // set to present
-        page_directory[USER_ADDR_INDEX + 1].kb.base_addr = (unsigned int)(vid_map) >> shift_12; // physical address set
+        page_directory[USER_ADDR_INDEX + 1].kb.base_addr = ((unsigned int)(vid_map) >> shift_12); // physical address set
         page_directory[USER_ADDR_INDEX + 1].kb.user_supervisor = 1; //giving user access
         page_directory[USER_ADDR_INDEX + 1].kb.global = 1;
-
-        flushTLB();
         vid_map[0].present = 1; // set to present
         vid_map[0].user_supervisor = 1; //giving user access
-        vid_map[0].base_addr = (int) VIDEO_ADDR / ALIGN; // physical address set
+        vid_map[0].base_addr = (int) (VIDEO_ADDR / ALIGN); // set to vid mem
+        flushTLB();
         *screen_start = (uint8_t*) ONE_TWENTY_EIGHT_MB + FOUR_MB; // setting start of virtual video memory
     }
 
@@ -521,5 +554,18 @@ void process_page(int process_id) {
  */
 pcb_t* get_pcb(uint32_t pid) {
     return (pcb_t *) (EIGHT_MB - (pid + 1) * EIGHT_KB); // pcb start address formula
+}
+
+/* update_tss(int new_pid, int terminal_id)
+ * DESCRIPTION: Updates tss values of the inputted terminal
+ * Inputs: int new_pid: pid used for tss_esp0 calculation, 
+ *         int terminal_id: terminal index for terminal array (which terminal to alter)
+ * Outputs: none
+ * Return Value: none
+ * Function: Used in halt and execute to alter the base tss values of each terminal
+ */
+void update_tss(int new_pid, int terminal_id){
+    terminal_array[terminal_id].base_tss_esp0 = EIGHT_MB - new_pid * EIGHT_KB;
+    terminal_array[terminal_id].base_tss_ss0 = KERNEL_DS;
 }
 
