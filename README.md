@@ -1,3 +1,5 @@
+Here is a project I completed in Fall 2023 for UIUC ECE 391 (Computer Systems Engineering) with a group of 4 classmates including myself. Our final result was a Linux-like operating system including essential OS concepts such as interrupts, terminal, virtual to physical memory paging, file systems, system calls, scheduling, etc.
+
 ACADEMIC INTEGRITY
 -----
 Please review the University of Illinois Student Code before starting,
